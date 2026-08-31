@@ -1,0 +1,27 @@
+# Environment variables
+.env
+.env.local
+
+# Node modules
+node_modules/
+
+# Build artifacts
+dist/
+
+# OS metadata
+Thumbs.db
+.DS_Store
+
+# Heavy media assets (hosted on Supabase CDN)
+public/frames/
+public/assets/*.mp4
+frames/
+frame1/
+framess/
+*.mp4
+*.zip
+
+# Cloned and test folders
+final-websitte/
+arne/
+arne-new/

@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/send-otp", "destination": "/api/otp" },
+    { "source": "/api/verify-otp", "destination": "/api/otp" },
+    { "source": "/api/public/config", "destination": "/api/config" },
+    { "source": "/api/booking/", "destination": "/api/booking" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/payment", "destination": "/payment.html" },
+    { "source": "/confirmation", "destination": "/confirmation.html" },
+    { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/((?!api/|assets/|images/|frames/|js/|data/|public/|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}

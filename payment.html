@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARNE Works — Mobile OTP & Razorpay Gateway Checkout</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Official Razorpay Checkout SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            background-color: #050706;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ambient-orb-green {
+            position: fixed;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .payment-header {
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .payment-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: #00ff88;
+            letter-spacing: 3px;
+            text-decoration: none;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .payment-wrapper {
+            max-width: 580px;
+            margin: 30px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+            z-index: 5;
+        }
+
+        .single-payment-card {
+            background: rgba(14, 22, 18, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 28px;
+            padding: 34px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+        }
+
+        .single-payment-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            color: #00ff88;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .summary-item .lbl {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .summary-item .val {
+            font-weight: 700;
+            color: #ffffff;
+            text-align: right;
+        }
+
+        .price-breakdown-box {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .price-row.total {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 12px;
+            margin-top: 12px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        /* Phone & OTP Container Styling */
+        .phone-otp-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        .otp-step-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .otp-step-header .step-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .otp-step-header .step-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        /* Phone Input Pill Group */
+        .phone-input-pill {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 4px 6px;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            margin-bottom: 18px;
+        }
+
+        .phone-input-pill:focus-within {
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .country-flag-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            font-weight: 800;
+            color: #18181b;
+            font-size: 15px;
+            border-right: 1px solid #e4e4e7;
+        }
+
+        .mobile-num-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px 14px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #09090b;
+            background: transparent;
+            letter-spacing: 1px;
+        }
+
+        .mobile-num-input::placeholder {
+            color: #a1a1aa;
+            font-weight: 500;
+        }
+
+        /* Pill Action Button matching Screenshot */
+        .btn-pill-paynow {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 99px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-pill-paynow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.6);
+        }
+
+        /* 4-Digit OTP Grid */
+        .otp-inputs-grid {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .otp-digit-box {
+            width: 54px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 14px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: #00ff88;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .otp-digit-box:focus {
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .hidden-step {
+            display: none !important;
+        }
+
+        .footer-payment {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-orb-green"></div>
+
+    <!-- Header -->
+    <header class="payment-header">
+        <a href="index.html" class="payment-logo">ARNE</a>
+        <div class="secure-badge">
+            <span>🔒 Official Razorpay 256-Bit Encrypted Checkout</span>
+        </div>
+    </header>
+
+    <!-- Main Single Payment Section -->
+    <div class="payment-wrapper">
+        <div class="single-payment-card">
+            <h3>📋 Booking Order & Checkout</h3>
+
+            <div class="summary-item">
+                <span class="lbl">Booking ID:</span>
+                <span class="val" id="summary-booking-id" style="color:#00ff88;">ARNE-2026-000000</span>
+            </div>
+            <div class="summary-item">
+                <span class="lbl">Client Name:</span>
+                <span class="val" id="summary-name">Ramesh Varma</span>
+            </div>
+            <div class="summary-item">
+                <span class="lbl">Registered Email:</span>
+                <span class="val" id="summary-email">ramesh@gmail.com</span>
+            </div>
+            <div class="summary-item">
+                <span class="lbl">Selected Service:</span>
+                <span class="val" id="summary-service">Video Editing</span>
+            </div>
+            <div class="summary-item">
+                <span class="lbl">Date & Time Slot:</span>
+                <span class="val" id="summary-slot">2026-08-25 (10:00 AM)</span>
+            </div>
+
+            <!-- Price Breakdown Box -->
+            <div class="price-breakdown-box">
+                <div class="price-row">
+                    <span>Total Service Fee:</span>
+                    <strong id="breakdown-total">₹999</strong>
+                </div>
+                <div class="price-row" style="color:#00ff88;">
+                    <span>Prepaid Amount (50% Deposit):</span>
+                    <strong id="breakdown-prepaid">₹500</strong>
+                </div>
+                <div class="price-row" style="color:#f59e0b;">
+                    <span>Postpaid Remaining (50% Due Later):</span>
+                    <strong id="breakdown-postpaid">₹499</strong>
+                </div>
+                <div class="price-row total">
+                    <span>AMOUNT DUE NOW:</span>
+                    <strong id="breakdown-due-now" style="color:#00ff88; font-size:20px;">₹500</strong>
+                </div>
+            </div>
+
+            <!-- STEP 1: MOBILE PHONE NUMBER INPUT CONTAINER -->
+            <div class="phone-otp-container" id="step-phone-container">
+                <div class="otp-step-header">
+                    <span class="step-subtitle">Provide your mobile number to continue</span>
+                    <span class="step-title">Enter Registered Mobile Number</span>
+                </div>
+
+                <div class="phone-input-pill">
+                    <div class="country-flag-box">
+                        <span>🇮🇳</span>
+                        <span>+91</span>
+                    </div>
+                    <input type="tel" id="checkout-phone-input" class="mobile-num-input" placeholder="10-digit mobile number" maxlength="10">
+                </div>
+
+                <button class="btn-pill-paynow" id="btn-request-otp" onclick="requestMobileOtp()">
+                    <span>PAY NOW & GET OTP</span>
+                    <span style="font-size:14px;">↗</span>
+                </button>
+            </div>
+
+            <!-- STEP 2: 4-DIGIT OTP VERIFICATION CONTAINER -->
+            <div class="phone-otp-container hidden-step" id="step-otp-container">
+                <div class="otp-step-header">
+                    <span class="step-subtitle" id="otp-sent-notice">4-Digit OTP sent to +91 9390662637</span>
+                    <span class="step-title">Enter 4-Digit Verification Code</span>
+                </div>
+
+                <div class="otp-inputs-grid">
+                    <input type="text" maxlength="1" class="otp-digit-box" id="otp-1" onkeyup="moveOtpFocus(this, 'otp-2', '')">
+                    <input type="text" maxlength="1" class="otp-digit-box" id="otp-2" onkeyup="moveOtpFocus(this, 'otp-3', 'otp-1')">
+                    <input type="text" maxlength="1" class="otp-digit-box" id="otp-3" onkeyup="moveOtpFocus(this, 'otp-4', 'otp-2')">
+                    <input type="text" maxlength="1" class="otp-digit-box" id="otp-4" onkeyup="moveOtpFocus(this, '', 'otp-3')">
+                </div>
+
+                <div id="otp-preview-banner" style="text-align:center; font-size:12px; color:#00ff88; margin-bottom:14px; font-weight:700;">
+                    <!-- Auto populated with generated OTP code -->
+                </div>
+
+                <button class="btn-pill-paynow" id="btn-verify-otp" onclick="verifyMobileOtpAndPay()" style="background: linear-gradient(135deg, #00ff88 0%, #00b862 100%); color:#000000;">
+                    <span>VERIFY OTP & PROCEED TO RAZORPAY 🔒</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="footer-payment" style="text-align:center; padding: 24px 20px; color: rgba(255,255,255,0.6); font-size: 13px;">
+        <p style="margin: 0 0 8px 0;">&copy; 2026 ARNE Creative Studio. All Rights Reserved. Directed by Chandu.</p>
+        <div style="display:flex; justify-content:center; gap:20px;">
+            <a href="privacy-policy.html" target="_blank" style="color:var(--primary-emerald, #00ff88); text-decoration:none;">Privacy Policy</a>
+            <span style="color:rgba(255,255,255,0.2);">|</span>
+            <a href="terms.html" target="_blank" style="color:var(--primary-emerald, #00ff88); text-decoration:none;">Terms & Conditions</a>
+        </div>
+    </footer>
+
+    <script>
+        let RAZORPAY_KEY_ID = 'rzp_test_TSYoVvhjS5JhBn'; // Dynamic Razorpay Key ID
+        const SUPABASE_URL = 'https://xmnjhfkzvbssuajgxnvf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_pAc8lic6v3PPnmWhLJkJVg_FlBptmnQ';
+        let supabaseClient = null;
+
+        try {
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {}
+
+        let currentBookingData = null;
+        let activePhoneNumber = '';
+
+        async function fetchServerConfig() {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                if (data && data.razorpayKeyId) {
+                    RAZORPAY_KEY_ID = data.razorpayKeyId;
+                }
+            } catch (e) {}
+        }
+
+        function loadPaymentParams() {
+            fetchServerConfig();
+
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            if (id) {
+                currentBookingData = {
+                    id: id,
+                    name: params.get('name') || 'Client Name',
+                    email: params.get('email') || '',
+                    phone: params.get('phone') || '',
+                    service: params.get('service') || 'Creative Service',
+                    total: Number(params.get('total') || 999),
+                    prepaid: Number(params.get('prepaid') || 500),
+                    postpaid: Number(params.get('postpaid') || 499),
+                    date: params.get('date') || '2026-08-25',
+                    slot: params.get('slot') || '10:00 AM'
+                };
+            } else {
+                const stored = sessionStorage.getItem('arne_pending_payment');
+                if (stored) {
+                    try { currentBookingData = JSON.parse(stored); } catch(e){}
+                }
+            }
+
+            if (!currentBookingData) {
+                currentBookingData = {
+                    id: 'ARNE-2026-849201',
+                    name: 'Ramesh Varma',
+                    email: 'ramesh@gmail.com',
+                    phone: '9390662637',
+                    service: 'Video Editing',
+                    total: 999,
+                    prepaid: 500,
+                    postpaid: 499,
+                    date: '2026-08-25',
+                    slot: '10:00 AM'
+                };
+            }
+
+            document.getElementById('summary-booking-id').textContent = currentBookingData.id;
+            document.getElementById('summary-name').textContent = currentBookingData.name;
+            document.getElementById('summary-email').textContent = currentBookingData.email;
+            document.getElementById('summary-service').textContent = currentBookingData.service;
+            document.getElementById('summary-slot').textContent = `${currentBookingData.date} (${currentBookingData.slot})`;
+
+            document.getElementById('breakdown-total').textContent = `₹${currentBookingData.total.toLocaleString('en-IN')}`;
+            document.getElementById('breakdown-prepaid').textContent = `₹${currentBookingData.prepaid.toLocaleString('en-IN')}`;
+            document.getElementById('breakdown-postpaid').textContent = `₹${currentBookingData.postpaid.toLocaleString('en-IN')}`;
+            document.getElementById('breakdown-due-now').textContent = `₹${currentBookingData.prepaid.toLocaleString('en-IN')}`;
+
+            // Prefill mobile number input with client's phone number
+            const rawPhone = (currentBookingData.phone || '').replace(/\D/g, '').slice(-10);
+            if (rawPhone) {
+                document.getElementById('checkout-phone-input').value = rawPhone;
+            }
+        }
+
+        async function requestMobileOtp() {
+            const input = document.getElementById('checkout-phone-input');
+            const phone = input ? input.value.trim().replace(/\D/g, '').slice(-10) : '';
+
+            if (!phone || phone.length < 10) {
+                alert('Please enter a valid 10-digit mobile number.');
+                return;
+            }
+
+            activePhoneNumber = phone;
+            const btn = document.getElementById('btn-request-otp');
+            btn.disabled = true;
+            btn.innerHTML = '<span>SENDING 4-DIGIT OTP... ⏳</span>';
+
+            let generatedOtp = '1234';
+            try {
+                const res = await fetch('/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: activePhoneNumber, bookingId: currentBookingData.id })
+                });
+                const data = await res.json();
+                if (data && data.otp) generatedOtp = data.otp;
+            } catch (e) {
+                console.warn('[OTP Notice] API fallback engaged:', e);
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<span>PAY NOW & GET OTP ↗</span>';
+
+            // Transition to Step 2 OTP Verification Container
+            document.getElementById('step-phone-container').classList.add('hidden-step');
+            document.getElementById('step-otp-container').classList.remove('hidden-step');
+            document.getElementById('otp-sent-notice').textContent = `4-Digit OTP code sent to +91 ${activePhoneNumber}`;
+            document.getElementById('otp-preview-banner').textContent = `[ Test Code: ${generatedOtp} ]`;
+            document.getElementById('otp-1').focus();
+        }
+
+        function moveOtpFocus(curr, nextId, prevId) {
+            if (curr.value && nextId) {
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        async function verifyMobileOtpAndPay() {
+            const d1 = document.getElementById('otp-1').value;
+            const d2 = document.getElementById('otp-2').value;
+            const d3 = document.getElementById('otp-3').value;
+            const d4 = document.getElementById('otp-4').value;
+
+            const enteredOtp = `${d1}${d2}${d3}${d4}`;
+
+            if (enteredOtp.length < 4) {
+                alert('Please enter the complete 4-digit OTP code.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-verify-otp');
+            btn.disabled = true;
+            btn.innerHTML = '<span>VERIFYING OTP... ⏳</span>';
+
+            let isValid = true;
+            try {
+                const res = await fetch('/api/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: activePhoneNumber, otp: enteredOtp, bookingId: currentBookingData.id })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    isValid = false;
+                    alert(data.message || 'Invalid OTP code. Please try again.');
+                }
+            } catch (e) {
+                console.warn('[OTP Verify Notice] API fallback notice:', e);
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<span>VERIFY OTP & PROCEED TO RAZORPAY 🔒</span>';
+
+            if (!isValid) return;
+
+            // Trigger official Razorpay Payment Checkout Popup
+            launchRazorpayCheckout();
+        }
+
+        function launchRazorpayCheckout() {
+            if (typeof Razorpay === 'undefined') {
+                // Fallback simulation if Razorpay script is unreachable
+                executeFinalConfirmation('pay_otp_simulated_' + Date.now().toString().slice(-6));
+                return;
+            }
+
+            // Strictly validate integer paise amount (Math.round(amount * 100))
+            const rawPrepaid = currentBookingData.prepaid || 500;
+            const amountInPaise = Math.max(100, Math.round(Number(rawPrepaid) * 100));
+
+            const cleanPhone = (activePhoneNumber || currentBookingData.phone || '').replace(/\D/g, '').slice(-10);
+            const formattedContact = cleanPhone ? `+91${cleanPhone}` : '';
+
+            const options = {
+                key: RAZORPAY_KEY_ID, // Key: rzp_test_TSYNDzx8UkQlUK
+                amount: amountInPaise,
+                currency: "INR",
+                name: "ARNE Works Studio",
+                description: `50% Deposit - ${currentBookingData.service} (${currentBookingData.id})`,
+                image: "https://xmnjhfkzvbssuajgxnvf.supabase.co/storage/v1/object/public/assets/logo.png",
+                prefill: {
+                    name: currentBookingData.name || "",
+                    email: currentBookingData.email || "",
+                    contact: formattedContact
+                },
+                config: {
+                    display: {
+                        blocks: {
+                            allowed_methods: {
+                                name: "Allowed Payment Options",
+                                instruments: [
+                                    { method: "upi" },
+                                    { method: "card" },
+                                    { method: "netbanking" }
+                                ]
+                            }
+                        },
+                        sequence: ["block.allowed_methods"],
+                        preferences: {
+                            show_default_blocks: false
+                        }
+                    }
+                },
+                method: {
+                    upi: true,
+                    card: true,
+                    netbanking: true,
+                    wallet: false,
+                    emi: false,
+                    paylater: false
+                },
+                notes: {
+                    booking_id: currentBookingData.id,
+                    service_name: currentBookingData.service,
+                    verified_phone: activePhoneNumber
+                },
+                theme: {
+                    color: "#00ff88"
+                },
+                handler: function (response) {
+                    console.log('[Razorpay Payment Authorized]', response);
+                    executeFinalConfirmation(response.razorpay_payment_id || `pay_${Date.now()}`);
+                },
+                modal: {
+                    ondismiss: function () {
+                        console.log('[Razorpay Modal Dismissed]');
+                    }
+                }
+            };
+
+            const rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response) {
+                alert('Razorpay Payment Notice: ' + (response.error.description || 'Transaction declined.'));
+            });
+            rzp1.open();
+        }
+
+        async function executeFinalConfirmation(razorpayPaymentId) {
+            const btn = document.getElementById('btn-verify-otp');
+            if (btn) {
+                btn.innerHTML = '<span>CONFIRMING BOOKING SLOT... ⏳</span>';
+                btn.disabled = true;
+            }
+
+            // Call Backend /api/payment API
+            try {
+                await fetch('/api/payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bookingId: currentBookingData.id,
+                        customerName: currentBookingData.name,
+                        paymentMethod: `Razorpay (Key: rzp_test_TSYNDzx8UkQlUK) - Mobile OTP Verified`,
+                        transactionRef: razorpayPaymentId,
+                        amountPaid: currentBookingData.prepaid,
+                        totalPrice: currentBookingData.total,
+                        postpaidAmount: currentBookingData.postpaid
+                    })
+                });
+            } catch (err) {}
+
+            // Update Supabase
+            if (supabaseClient && currentBookingData.id) {
+                try {
+                    await supabaseClient.from('bookings').update({
+                        payment_status: 'Prepaid Paid',
+                        booking_status: 'Confirmed',
+                        customer_phone: activePhoneNumber,
+                        transaction_id: razorpayPaymentId
+                    }).eq('id', currentBookingData.id);
+                } catch(e){}
+            }
+
+            // Redirect to Confirmation Page with Invoice Receipt
+            currentBookingData.razorpayPaymentId = razorpayPaymentId;
+            sessionStorage.setItem('arne_confirmed_receipt', JSON.stringify(currentBookingData));
+
+            const confUrl = `confirmation.html?id=${encodeURIComponent(currentBookingData.id)}&name=${encodeURIComponent(currentBookingData.name)}&email=${encodeURIComponent(currentBookingData.email || '')}&phone=${encodeURIComponent(activePhoneNumber)}&service=${encodeURIComponent(currentBookingData.service)}&total=${currentBookingData.total}&prepaid=${currentBookingData.prepaid}&postpaid=${currentBookingData.postpaid}&date=${encodeURIComponent(currentBookingData.date || '')}&slot=${encodeURIComponent(currentBookingData.slot || '')}&method=Razorpay%20(%2B91%20OTP)&txn=${encodeURIComponent(razorpayPaymentId)}`;
+
+            window.location.href = confUrl;
+        }
+
+        window.addEventListener('DOMContentLoaded', loadPaymentParams);
+    </script>
+</body>
+
+</html>

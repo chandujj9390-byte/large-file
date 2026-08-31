@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARNE Works — Booking & Payment Confirmed</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050706;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ambient-orb {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.12) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .conf-header {
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 10;
+        }
+
+        .conf-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: #00ff88;
+            letter-spacing: 3px;
+            text-decoration: none;
+        }
+
+        .conf-container {
+            max-width: 680px;
+            margin: 50px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+            z-index: 5;
+        }
+
+        .receipt-card-page {
+            background: rgba(18, 26, 22, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 30px 70px rgba(0, 255, 136, 0.15);
+            text-align: center;
+        }
+
+        .success-badge-large {
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 255, 136, 0.15);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px auto;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .conf-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: #00ff88;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .conf-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+        }
+
+        .receipt-details-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            font-size: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-row .lbl {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .detail-row .val {
+            font-weight: 700;
+            color: #ffffff;
+            text-align: right;
+        }
+
+        .action-buttons-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 500px) {
+            .action-buttons-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-outline-conf {
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-conf:hover {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .btn-green-conf {
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #00ff88 0%, #00b862 100%);
+            color: #000000;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.3);
+            transition: transform 0.2s ease;
+        }
+
+        .btn-green-conf:hover {
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            .conf-header, .action-buttons-group, .conf-subtitle, .ambient-orb {
+                display: none !important;
+            }
+            .receipt-card-page {
+                border: 1px solid #000;
+                color: #000;
+                background: #fff;
+                box-shadow: none;
+            }
+            .detail-row .lbl, .detail-row .val {
+                color: #000 !important;
+            }
+        }
+
+        .footer-conf {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-orb"></div>
+
+    <header class="conf-header">
+        <a href="index.html" class="conf-logo">ARNE</a>
+        <span style="font-size:12px; font-weight:700; color:#00ff88;">✓ BOOKING CONFIRMED</span>
+    </header>
+
+    <div class="conf-container">
+        <div class="receipt-card-page">
+            <div class="success-badge-large">✓</div>
+            <h1 class="conf-title">Booking Confirmed!</h1>
+            <p class="conf-subtitle">Thank you for choosing ARNE Creative Studio. Your slot and 50% deposit have been successfully authorized.</p>
+
+            <!-- Digital Invoice Details Box -->
+            <div class="receipt-details-box">
+                <div class="detail-row">
+                    <span class="lbl">Booking Reference ID:</span>
+                    <span class="val" id="c-booking-id" style="color:#00ff88;">ARNE-2026-000000</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Transaction Reference:</span>
+                    <span class="val" id="c-txn-id">TXN-ARNE-948201</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Client Name:</span>
+                    <span class="val" id="c-name">Ramesh Varma</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Client Contact:</span>
+                    <span class="val" id="c-contact">9876543210</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Selected Service:</span>
+                    <span class="val" id="c-service">Video Editing</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Scheduled Slot:</span>
+                    <span class="val" id="c-slot">2026-08-25 (10:00 AM)</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Total Service Fee:</span>
+                    <span class="val" id="c-total">₹999</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">50% Prepaid Deposit Paid:</span>
+                    <span class="val" id="c-prepaid" style="color:#00ff88;">₹500</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">50% Postpaid Due Later:</span>
+                    <span class="val" id="c-postpaid" style="color:#f59e0b;">₹499</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Payment Method:</span>
+                    <span class="val" id="c-method">UPI (Google Pay / PhonePe)</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons-group">
+                <button class="btn-outline-conf" onclick="window.print()">🖨️ PRINT RECEIPT</button>
+                <a href="index.html" class="btn-green-conf">🏠 RETURN HOME</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-conf">
+        <p style="margin: 0 0 8px 0;">&copy; 2026 ARNE Creative Studio. All Rights Reserved. Directed by Chandu.</p>
+        <div style="display:flex; justify-content:center; gap:20px;">
+            <a href="privacy-policy.html" target="_blank" style="color:var(--primary-emerald, #00ff88); text-decoration:none;">Privacy Policy</a>
+            <span style="color:rgba(255,255,255,0.2);">|</span>
+            <a href="terms.html" target="_blank" style="color:var(--primary-emerald, #00ff88); text-decoration:none;">Terms & Conditions</a>
+        </div>
+    </footer>
+
+    <script>
+        function loadConfirmationData() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            let data = null;
+            if (id) {
+                data = {
+                    id: id,
+                    txnId: params.get('txn') || `TXN-ARNE-${Date.now().toString().slice(-6)}`,
+                    name: params.get('name') || 'Client Name',
+                    contact: `${params.get('phone') || ''} / ${params.get('email') || ''}`,
+                    service: params.get('service') || 'Creative Service',
+                    slot: `${params.get('date') || ''} (${params.get('slot') || ''})`,
+                    total: Number(params.get('total') || 999),
+                    prepaid: Number(params.get('prepaid') || 500),
+                    postpaid: Number(params.get('postpaid') || 499),
+                    method: params.get('method') || 'UPI (Google Pay / PhonePe / Paytm)'
+                };
+            } else {
+                const stored = sessionStorage.getItem('arne_confirmed_receipt');
+                if (stored) {
+                    try { data = JSON.parse(stored); } catch(e){}
+                }
+            }
+
+            if (!data) {
+                data = {
+                    id: 'ARNE-2026-849201',
+                    txnId: 'TXN-ARNE-948201',
+                    name: 'Ramesh Varma',
+                    contact: '9876543210 / ramesh@gmail.com',
+                    service: 'Video Editing',
+                    slot: '2026-08-25 (10:00 AM)',
+                    total: 999,
+                    prepaid: 500,
+                    postpaid: 499,
+                    method: 'UPI (Google Pay / PhonePe / QR)'
+                };
+            }
+
+            document.getElementById('c-booking-id').textContent = data.id;
+            document.getElementById('c-txn-id').textContent = data.txnId;
+            document.getElementById('c-name').textContent = data.name;
+            document.getElementById('c-contact').textContent = data.contact;
+            document.getElementById('c-service').textContent = data.service;
+            document.getElementById('c-slot').textContent = data.slot;
+            document.getElementById('c-total').textContent = `₹${data.total.toLocaleString('en-IN')}`;
+            document.getElementById('c-prepaid').textContent = `₹${data.prepaid.toLocaleString('en-IN')}`;
+            document.getElementById('c-postpaid').textContent = `₹${data.postpaid.toLocaleString('en-IN')}`;
+            document.getElementById('c-method').textContent = data.method;
+        }
+
+        window.addEventListener('DOMContentLoaded', loadConfirmationData);
+    </script>
+</body>
+
+</html>
