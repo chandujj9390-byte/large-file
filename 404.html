@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting — ARNE Works</title>
+    <script>
+        // GitHub Pages SPA router redirect
+        sessionStorage.redirect = location.href;
+        var path = window.location.pathname;
+        if (path.endsWith('/payment') || path.endsWith('/payment/')) {
+            window.location.replace('payment.html');
+        } else if (path.endsWith('/confirmation') || path.endsWith('/confirmation/')) {
+            window.location.replace('confirmation.html');
+        } else if (path.endsWith('/privacy-policy') || path.endsWith('/privacy-policy/')) {
+            window.location.replace('privacy-policy.html');
+        } else if (path.endsWith('/terms') || path.endsWith('/terms/')) {
+            window.location.replace('terms.html');
+        } else {
+            window.location.replace('index.html');
+        }
+    </script>
+    <meta http-equiv="refresh" content="0;URL='index.html'">
+</head>
+<body>
+    <p>Redirecting to <a href="index.html">ARNE Works</a>...</p>
+</body>
+</html>

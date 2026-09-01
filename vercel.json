@@ -1,15 +1,41 @@
 {
   "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.css",
+      "headers": [
+        { "key": "Content-Type", "value": "text/css; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/api/send-otp", "destination": "/api/otp" },
     { "source": "/api/verify-otp", "destination": "/api/otp" },
     { "source": "/api/public/config", "destination": "/api/config" },
-    { "source": "/api/booking/", "destination": "/api/booking" },
+    { "source": "/api/booking", "destination": "/api/booking" },
+    { "source": "/api/booking/(.*)", "destination": "/api/booking" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/payment", "destination": "/payment.html" },
     { "source": "/confirmation", "destination": "/confirmation.html" },
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
-    { "source": "/terms", "destination": "/terms.html" },
-    { "source": "/((?!api/|assets/|images/|frames/|js/|data/|public/|.*\\..*).*)", "destination": "/index.html" }
+    { "source": "/terms", "destination": "/terms.html" }
   ]
 }

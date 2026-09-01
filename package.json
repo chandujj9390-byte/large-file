@@ -4,7 +4,7 @@
   "description": "ARNE Works Full-Stack Website & Backend Architecture",
   "scripts": {
     "start": "node server.js",
-    "build": "echo 'Build completed successfully'"
+    "build": "node scripts/build.js"
   },
   "dependencies": {
     "@react-three/drei": "^9.121.5",

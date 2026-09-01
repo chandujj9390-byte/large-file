@@ -1,6 +1,6 @@
 $port = 8765
 $prefix = "http://localhost:$port/"
-$root = "d:\Users\chand\Downloads\own website"
+$root = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $dbPath = Join-Path $root "data\db.json"
 
 function Get-DBData {
@@ -175,28 +175,55 @@ while ($listener.IsListening) {
         }
 
         # STATIC FILE SERVING
-        $localPath = Join-Path $root $urlPath.TrimStart('/')
+        $relPath = $urlPath.TrimStart('/').Replace('/', '\')
+        $candidates = @(
+            (Join-Path $root $relPath),
+            (Join-Path $root "public\$relPath"),
+            (Join-Path $root ($relPath -replace '^public\\', ''))
+        )
         
-        if (Test-Path $localPath -PathType Leaf) {
-            $bytes = [System.IO.File]::ReadAllBytes($localPath)
-            
-            $ext = [System.IO.Path]::GetExtension($localPath).ToLower()
+        $resolvedPath = $null
+        foreach ($cand in $candidates) {
+            if (Test-Path $cand -PathType Leaf) {
+                $resolvedPath = $cand
+                break
+            }
+        }
+        
+        if ($resolvedPath) {
+            $bytes = [System.IO.File]::ReadAllBytes($resolvedPath)
+            $ext = [System.IO.Path]::GetExtension($resolvedPath).ToLower()
             switch ($ext) {
                 ".html" { $response.ContentType = "text/html; charset=utf-8" }
                 ".css"  { $response.ContentType = "text/css; charset=utf-8" }
                 ".js"   { $response.ContentType = "application/javascript; charset=utf-8" }
                 ".png"  { $response.ContentType = "image/png" }
                 ".jpg"  { $response.ContentType = "image/jpeg" }
+                ".jpeg" { $response.ContentType = "image/jpeg" }
+                ".svg"  { $response.ContentType = "image/svg+xml" }
+                ".webp" { $response.ContentType = "image/webp" }
+                ".json" { $response.ContentType = "application/json; charset=utf-8" }
+                ".mp4"  { $response.ContentType = "video/mp4" }
+                ".mp3"  { $response.ContentType = "audio/mpeg" }
                 default { $response.ContentType = "application/octet-stream" }
             }
             
             $response.ContentLength64 = $bytes.Length
             $response.OutputStream.Write($bytes, 0, $bytes.Length)
         } else {
-            $response.StatusCode = 404
-            $buffer = [System.Text.Encoding]::UTF8.GetBytes("404 Not Found")
-            $response.ContentLength64 = $buffer.Length
-            $response.OutputStream.Write($buffer, 0, $buffer.Length)
+            # Single-page app fallback: serve index.html
+            $indexPath = Join-Path $root "index.html"
+            if (Test-Path $indexPath -PathType Leaf) {
+                $bytes = [System.IO.File]::ReadAllBytes($indexPath)
+                $response.ContentType = "text/html; charset=utf-8"
+                $response.ContentLength64 = $bytes.Length
+                $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            } else {
+                $response.StatusCode = 404
+                $buffer = [System.Text.Encoding]::UTF8.GetBytes("404 Not Found")
+                $response.ContentLength64 = $buffer.Length
+                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+            }
         }
         $response.Close()
     } catch {
