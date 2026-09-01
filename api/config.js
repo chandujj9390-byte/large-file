@@ -31,14 +31,14 @@ module.exports = async function handler(req, res) {
             return sendJSON(res, 204, {});
         }
 
-        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_TSX6Tz78qBWw70';
-        const isTestMode = keyId.startsWith('rzp_test');
+        const keyId = process.env.RAZORPAY_KEY_ID || '';
+        const isTestMode = keyId ? keyId.startsWith('rzp_test') : false;
 
         return sendJSON(res, 200, {
             success: true,
             razorpayKeyId: keyId,
             isTestMode: isTestMode,
-            modeMessage: isTestMode ? 'Running in Test Mode' : (keyId ? 'Running in Production Live Mode' : 'Razorpay Key ID not configured in environment')
+            modeMessage: isTestMode ? 'Running in Test Mode' : (keyId ? 'Running in Production Live Mode' : 'Live Razorpay Key ID will be read from environment')
         });
     } catch (err) {
         console.error('[Config API Handler Error]', err);

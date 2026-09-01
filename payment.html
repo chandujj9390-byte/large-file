@@ -397,7 +397,7 @@
     </footer>
 
     <script>
-        let RAZORPAY_KEY_ID = 'rzp_test_TSYoVvhjS5JhBn'; // Dynamic Razorpay Key ID
+        let RAZORPAY_KEY_ID = ''; // Dynamic Live Razorpay Key ID from Server/Environment
         const SUPABASE_URL = 'https://xmnjhfkzvbssuajgxnvf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_pAc8lic6v3PPnmWhLJkJVg_FlBptmnQ';
         let supabaseClient = null;
@@ -581,7 +581,7 @@
             const formattedContact = cleanPhone ? `+91${cleanPhone}` : '';
 
             const options = {
-                key: RAZORPAY_KEY_ID, // Key: rzp_test_TSYNDzx8UkQlUK
+                key: RAZORPAY_KEY_ID,
                 amount: amountInPaise,
                 currency: "INR",
                 name: "ARNE Works Studio",
@@ -659,7 +659,7 @@
                     body: JSON.stringify({
                         bookingId: currentBookingData.id,
                         customerName: currentBookingData.name,
-                        paymentMethod: `Razorpay (Key: rzp_test_TSYNDzx8UkQlUK) - Mobile OTP Verified`,
+                        paymentMethod: 'Razorpay - Mobile OTP Verified',
                         transactionRef: razorpayPaymentId,
                         amountPaid: currentBookingData.prepaid,
                         totalPrice: currentBookingData.total,

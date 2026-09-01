@@ -166,13 +166,13 @@ const server = http.createServer(async (req, res) => {
 
     // Dynamic Public Config API (Razorpay Key ID & Environment Mode)
     if (req.method === 'GET' && (pathName === '/api/config' || pathName === '/api/public/config')) {
-        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_TSX6Tz78qBWw70';
-        const isTestMode = keyId.startsWith('rzp_test');
+        const keyId = process.env.RAZORPAY_KEY_ID || '';
+        const isTestMode = keyId ? keyId.startsWith('rzp_test') : false;
         return sendJSON(res, 200, {
             success: true,
             razorpayKeyId: keyId,
             isTestMode: isTestMode,
-            modeMessage: isTestMode ? 'Running in Test Mode - Do not scan with real phone' : 'Running in Live Mode'
+            modeMessage: isTestMode ? 'Running in Test Mode' : (keyId ? 'Running in Live Mode' : 'Live Mode')
         });
     }
 
