@@ -54,20 +54,65 @@ if (twilio && TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && !TWILIO_ACCOUNT_SID.inc
     }
 }
 
-module.exports = async function handleContactForm(req, res) {
-    if (req.method !== 'POST') {
-        res.writeHead(405, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, message: 'Method Not Allowed' }));
-        return;
-    }
-
+function sendJSON(res, statusCode, data) {
+    if (!res || res.writableEnded || res.headersSent) return;
     try {
-        const { name, email, phone } = req.body || {};
+        if (typeof res.setHeader === 'function') {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        }
+        if (typeof res.status === 'function' && typeof res.json === 'function') {
+            return res.status(statusCode).json(data);
+        }
+        if (typeof res.writeHead === 'function') {
+            res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+        }
+        res.end(JSON.stringify(data));
+    } catch (e) {
+        console.error('[Contact sendJSON Error]', e);
+        try { res.end(JSON.stringify(data)); } catch (_) {}
+    }
+}
+
+async function parseBody(req) {
+    if (!req) return {};
+    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
+    if (typeof req.body === 'string') {
+        try { return JSON.parse(req.body); } catch (_) { return {}; }
+    }
+    if (typeof req.on !== 'function' || req.readableEnded || req.complete) return {};
+    return new Promise((resolve) => {
+        let raw = '';
+        const timer = setTimeout(() => resolve({}), 2000);
+        req.on('data', chunk => { raw += chunk; });
+        req.on('end', () => {
+            clearTimeout(timer);
+            try { resolve(raw.trim() ? JSON.parse(raw) : {}); } catch (_) { resolve({}); }
+        });
+        req.on('error', () => {
+            clearTimeout(timer);
+            resolve({});
+        });
+    });
+}
+
+module.exports = async function handleContactForm(req, res) {
+    try {
+        if (req && req.method === 'OPTIONS') {
+            return sendJSON(res, 204, {});
+        }
+
+        if (req.method !== 'POST') {
+            return sendJSON(res, 405, { success: false, message: 'Method Not Allowed' });
+        }
+
+        const body = await parseBody(req);
+        const { name, email, phone } = body;
 
         if (!name || !email || !phone) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, message: 'Missing required fields: name, email, phone' }));
-            return;
+            return sendJSON(res, 400, { success: false, message: 'Missing required fields: name, email, phone' });
         }
 
         console.log(`[ARNE Contact API] New lead & subscription received: Name="${name}", Email="${email}", Phone="${phone}"`);
@@ -194,8 +239,7 @@ module.exports = async function handleContactForm(req, res) {
         const ownerWhatsAppResult = results[3].status === 'fulfilled' ? 'SUCCESS' : `FAILED: ${results[3].reason?.message || 'Config Missing'}`;
         const dbResult = results[4].status === 'fulfilled' ? 'SUCCESS' : `FAILED: ${results[4].reason?.message || 'DB Notice'}`;
 
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
+        return sendJSON(res, 200, {
             success: true,
             message: `Thank you, ${name}! Subscription & Thank You message sent with love to your Gmail and Mobile Number ❤️`,
             details: {
@@ -207,11 +251,10 @@ module.exports = async function handleContactForm(req, res) {
                 ownerWhatsAppStatus: ownerWhatsAppResult,
                 supabaseDatabaseStatus: dbResult
             }
-        }));
+        });
 
     } catch (err) {
         console.error('[ARNE Contact API Error]', err);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, message: 'Internal Server Error', error: err.message }));
+        return sendJSON(res, 500, { success: false, message: 'Internal Server Error', error: err.message });
     }
 };

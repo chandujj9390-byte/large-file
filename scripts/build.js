@@ -24,15 +24,18 @@ const itemsToCopy = [
     'frames',
     'js',
     'data',
+    'api',
     'index.html',
     'admin.html',
     'payment.html',
     'privacy-policy.html',
     'terms.html',
     'confirmation.html',
+    '404.html',
     'script.js',
     'style.css',
     'server.js',
+    'vercel.json',
     'package.json'
 ];
 

@@ -27,8 +27,8 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/send-otp", "destination": "/api/otp" },
-    { "source": "/api/verify-otp", "destination": "/api/otp" },
+    { "source": "/api/send-otp", "destination": "/api/send-otp" },
+    { "source": "/api/verify-otp", "destination": "/api/verify-otp" },
     { "source": "/api/public/config", "destination": "/api/config" },
     { "source": "/api/booking", "destination": "/api/booking" },
     { "source": "/api/booking/(.*)", "destination": "/api/booking" },
