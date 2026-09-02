@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARNE — Cinematic Creative Studio & Production</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Supabase JS Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="dark-theme">
+
+    <!-- Ambient Glass Background Orbs -->
+    <div class="ambient-tint-orb orb-1"></div>
+    <div class="ambient-tint-orb orb-2"></div>
+
+    <!-- PRELOADER SCREEN -->
+    <div id="preloader" class="preloader">
+        <div class="preloader-content">
+            <div class="preloader-letters">
+                <span class="pl-letter pl-letter-1">A</span>
+                <span class="pl-letter pl-letter-2">R</span>
+                <span class="pl-letter pl-letter-3">N</span>
+                <span class="pl-letter pl-letter-4">E</span>
+            </div>
+            <div class="preloader-bar-container">
+                <div class="preloader-bar"></div>
+            </div>
+            <span class="preloader-subtitle">STORIES</span>
+        </div>
+    </div>
+
+    <!-- Top Announcement Bar -->
+    <div class="announcement-bar" role="region" aria-label="Important Announcement">
+        <div class="announcement-track-container">
+            <div class="announcement-track">
+                <!-- Group 1 -->
+                <div class="announcement-item">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <div class="announcement-item">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <div class="announcement-item">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <div class="announcement-item">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <!-- Group 2 (Duplicate set for 100% seamless infinite marquee loop) -->
+                <div class="announcement-item" aria-hidden="true">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <div class="announcement-item" aria-hidden="true">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <div class="announcement-item" aria-hidden="true">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+                <div class="announcement-item" aria-hidden="true">
+                    <span class="announcement-logo">ARNE</span>
+                    <span class="announcement-text">AS PER YOUR REQUIREMENTS, PRICES MAY CHANGE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-brand">ARNE</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="#hero">Home</a>
+                <a href="#services">Services</a>
+                <a href="#work">Work</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="btn-primary btn-sparkle" onclick="openBookingModal()">
+                    <span>Book a Slot ↗</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+
+        <!-- HERO SECTION (Editorial Agency Style) -->
+        <section id="hero" class="hero-section">
+            <div class="fixed-canvas-wrapper">
+                <video class="hero-bg-video" autoplay muted loop playsinline preload="auto">
+                    <source src="https://xmnjhfkzvbssuajgxnvf.supabase.co/storage/v1/object/public/assets/showcase-video.mp4" type="video/mp4">
+                    <source src="assets/video.mp4" type="video/mp4">
+                    <source src="public/assets/video.mp4" type="video/mp4">
+                    <source src="video.mp4" type="video/mp4">
+                </video>
+                <canvas id="hero-canvas"></canvas>
+                <div class="hero-ambient-overlay"></div>
+            </div>
+
+            <div class="container hero-content-container">
+                <div class="hero-header-badge">
+                    <span class="badge-dot"></span>
+                    <span>CREATIVE STUDIO & PRODUCTION HOUSE</span>
+                </div>
+
+                <h1 class="hero-main-title">
+                    <span>WE CREATE</span>
+                    <span class="gradient-text">VISUALS THAT</span>
+                    <span>MOVE PEOPLE.</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    Cinematic shoots, professional editing, digital design and websites — all booked through one
+                    creative studio.
+                </p>
+
+                <div class="hero-cta-group">
+                    <button class="btn-primary btn-large" onclick="openBookingModal()">
+                        <span>BOOK A SLOT ↗</span>
+                    </button>
+                    <a href="#work" class="btn-outline btn-large">
+                        <span>VIEW OUR WORK</span>
+                    </a>
+                </div>
+
+                <!-- Floating Stats Pills -->
+                <div class="hero-stats-bar">
+                    <div class="stat-pill">
+                        <span class="stat-num">95%</span>
+                        <span class="stat-lbl">Client Satisfaction</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-num">08+</span>
+                        <span class="stat-lbl">Projects Completed</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="stat-num">24/7</span>
+                        <span class="stat-lbl">Booking Access</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVICES SECTION -->
+        <section id="services" class="section-padding services-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">SERVICES BUILT FOR YOUR NEXT IDEA</span>
+                    <h2 class="section-title">Crafted with Cinematic Precision</h2>
+                    <p class="section-desc">Transparent pricing with our <strong>50% Prepaid + 50% Postpaid</strong>
+                        flexible booking model.</p>
+                </div>
+
+                <!-- Core 5 Services Grid -->
+                <div class="services-grid" id="core-services-grid">
+                    <!-- Cards will be populated dynamically -->
+                </div>
+
+                <!-- Expandable Additional Services -->
+                <div class="additional-services-wrapper">
+                    <div class="expand-header">
+                        <h3>Additional Creative Services</h3>
+                        <p>Expand your project with specialized production add-ons</p>
+                    </div>
+                    <div class="additional-grid" id="additional-services-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTFOLIO / WORK SECTION -->
+        <section id="work" class="section-padding work-section">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-tag">SELECTED WORKS</span>
+                    <h2 class="section-title">WORK THAT SPEAKS WITHOUT WORDS</h2>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="portfolio-tabs">
+                    <button class="tab-btn active" onclick="filterPortfolio('all')">All</button>
+                    <button class="tab-btn" onclick="filterPortfolio('cinematic')">Cinematic Films</button>
+                    <button class="tab-btn" onclick="filterPortfolio('editing')">Video Editing</button>
+                    <button class="tab-btn" onclick="filterPortfolio('poster')">Poster Design</button>
+                    <button class="tab-btn" onclick="filterPortfolio('grading')">Color Grading</button>
+                    <button class="tab-btn" onclick="filterPortfolio('brand')">Brand Design system</button>
+                    <button class="tab-btn" onclick="filterPortfolio('website')">Website Design</button>
+                </div>
+
+                <!-- Portfolio Carousel Container with Navigation Arrows & Custom Scrollbar -->
+                <div class="portfolio-carousel-wrapper">
+                    <button class="carousel-arrow carousel-arrow-left" id="portfolio-prev-btn" onclick="scrollPortfolio('left')" aria-label="Previous Works">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+
+                    <!-- Single Row Horizontal Scrolling Container -->
+                    <div class="portfolio-grid portfolio-horizontal-track" id="portfolio-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <button class="carousel-arrow carousel-arrow-right" id="portfolio-next-btn" onclick="scrollPortfolio('right')" aria-label="Next Works">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section id="about" class="section-padding about-section">
+            <div class="container">
+                <div class="split-editorial">
+                    <div class="split-text">
+                        <span class="section-tag">ABOUT ARNEWORKS</span>
+                        <h2 class="editorial-headline">ABOUT ARNEWORKS</h2>
+                        <p class="editorial-subheadline"
+                            style="font-size: 17px; font-weight: 600; color: var(--primary-emerald); line-height: 1.6; margin-bottom: 24px;">
+                            Hi, I’m Chandu, founder of ARNEWORKS. With 4 years of experience in design and video
+                            editing, I turn your ideas into clean, engaging, and memorable brand experiences.
+                        </p>
+
+                        <div class="editorial-full-bio"
+                            style="font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 32px; display: flex; flex-direction: column; gap: 16px;">
+                            <p>
+                                Arne Stories was built with a single goal: to create designs that connect with people
+                                and leave a lasting impression. I focus on blending creativity with deep attention to
+                                detail and strategy, ensuring every project reflects your brand's unique purpose.
+                            </p>
+                            <p>
+                                From dynamic social media creatives to comprehensive brand visuals and polished video
+                                edits, I bring a refined approach to every blank canvas. Whether you need a fresh design
+                                identity or a seamless edit, my work is centered on making your brand stand out in a
+                                clean and unforgettable way.
+                            </p>
+                        </div>
+
+                        <div class="founder-badge">
+                            <div class="founder-avatar">ARNE</div>
+                            <div class="founder-info">
+                                <strong>Chandu</strong>
+                                <span>Founder & Creative Lead • Arne Stories</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FEATURED AERIAL SHOWCASE VIDEO PLAYER -->
+                    <div class="split-visual-card aerial-video-player-card"
+                        style="background: linear-gradient(135deg, rgba(0,255,136,0.12) 0%, rgba(9,13,11,0.92) 100%); border: 1px solid var(--border-glow); padding: 24px; border-radius: 32px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
+                        <div class="client-video-wrapper">
+                            <video controls playsinline preload="metadata" class="aerial-bridge-video"
+                                style="width: 100%; aspect-ratio: 16 / 9; border-radius: 20px; border: 1px solid var(--border-card); background: rgba(0, 0, 0, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); display: block; object-fit: cover;">
+                                <source src="https://xmnjhfkzvbssuajgxnvf.supabase.co/storage/v1/object/public/assets/showcase-video.mp4" type="video/mp4">
+                                <source src="assets/video.mp4" type="video/mp4">
+                                <source src="public/assets/video.mp4" type="video/mp4">
+                                <source src="video.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="section-padding contact-section">
+            <div class="container">
+                <div class="contact-box">
+                    <div class="contact-left">
+                        <span class="section-tag">LET'S CREATE SOMETHING</span>
+                        <h2 class="contact-title">START YOUR PROJECT ↗</h2>
+                        <p class="contact-desc">Have a custom inquiry or large-scale production requirement? Get in
+                            touch with Chandu and the ARNE team.</p>
+
+                        <div class="contact-links">
+                            <a href="mailto:arnestories26@gmail.com" class="c-link">
+                                <span class="c-icon">📧</span> arnestories26@gmail.com
+                            </a>
+                            <a href="https://www.instagram.com/thearnestories/" target="_blank" class="c-link">
+                                <span class="c-icon">📸</span> @thearnestories
+                            </a>
+                            <a href="https://wa.me/919390662637" target="_blank" class="c-link">
+                                <span class="c-icon">💬</span> WhatsApp: +91 9390662637
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="contact-right">
+                        <form class="contact-form" onsubmit="handleContactSubmit(event)">
+                            <div class="form-group">
+                                <label>YOUR NAME</label>
+                                <input type="text" placeholder="" required id="c-name">
+                            </div>
+                            <div class="form-group">
+                                <label>EMAIL ADDRESS</label>
+                                <input type="email" placeholder="" required id="c-email">
+                            </div>
+                            <div class="form-group">
+                                <label>PHONE NUMBER</label>
+                                <input type="tel" placeholder="" required id="c-phone">
+                            </div>
+                            <button type="submit" class="btn-primary btn-full">
+                                <span>SEND MESSAGE ↗</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-left">
+                <a href="#" class="nav-logo">
+                    <span class="logo-brand">ARNE</span>
+                </a>
+                <p>&copy; 2026 ARNE Creative Studio. All rights reserved. Directed by Chandu.</p>
+            </div>
+            <div class="footer-right">
+                <a href="#services">Services</a>
+                <a href="#work">Portfolio</a>
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms.html">Terms & Conditions</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MODALS & PORTALS CONTAINER                -->
+    <!-- ========================================== -->
+
+    <!-- 1. PROFESSIONAL CUSTOMER DETAILS & SERVICE BOOKING FORM MODAL -->
+    <div class="modal-overlay" id="booking-modal">
+        <div class="modal-card booking-modal-card">
+            <button class="modal-close" onclick="closeBookingModal()">✕</button>
+
+            <!-- Header Title -->
+            <div class="booking-modal-header">
+                <span class="section-tag">ARNE WORKS — SERVICE BOOKING & RESERVATIONS</span>
+                <h2 class="modal-title">Book Your Slot</h2>
+                <p class="modal-subtitle">Fill in your details below to reserve your slot with ARNE Stories &
+                    Production.</p>
+            </div>
+
+            <!-- Validation Error Alert Banner -->
+            <div class="booking-alert-error hidden" id="booking-form-alert">
+                <span class="alert-icon">⚠️</span>
+                <span id="booking-alert-msg">Please fill in all required fields marked with * correctly.</span>
+            </div>
+
+            <!-- Form Content Layout (Split into Main Form + Live Summary Sidebar) -->
+            <div class="booking-form-wrapper" id="booking-form-content">
+                <form class="booking-main-form" id="arne-booking-form" onsubmit="handleBookingFormSubmit(event)"
+                    novalidate>
+
+                    <!-- SECTION 1: CUSTOMER DETAILS -->
+                    <div class="booking-section-card">
+                        <div class="booking-section-header">
+                            <span class="sec-num">01</span>
+                            <h3>Customer Details</h3>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="cust-full-name">Full Name <span class="req-star">*</span></label>
+                                <input type="text" id="cust-full-name" placeholder="" required
+                                    oninput="updateBookingSummaryLive()">
+                                <span class="field-error-msg" id="err-full-name">Full Name is required</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="cust-mobile">Mobile Number <span class="req-star">*</span></label>
+                                <input type="tel" id="cust-mobile" placeholder="" required
+                                    oninput="updateBookingSummaryLive()">
+                                <span class="field-error-msg" id="err-mobile">Enter a valid 10-digit mobile
+                                    number</span>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="cust-email">Email Address <span class="req-star">*</span></label>
+                                <input type="email" id="cust-email" placeholder="" required
+                                    oninput="updateBookingSummaryLive()">
+                                <span class="field-error-msg" id="err-email">Valid Email Address is required</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: SERVICE DETAILS -->
+                    <div class="booking-section-card">
+                        <div class="booking-section-header">
+                            <span class="sec-num">02</span>
+                            <h3>Service Details</h3>
+                        </div>
+
+                        <!-- Service Select Dropdown & Visual Chips -->
+                        <div class="form-group full-width">
+                            <label for="service-select">Select Service <span class="req-star">*</span></label>
+                            <select id="service-select" class="form-select" onchange="updateBookingSummaryLive()"
+                                required>
+                                <option value="">-- Choose Service --</option>
+                                <option value="Video Editing">Video Editing</option>
+                                <option value="Photo Editing">Photo Editing</option>
+                                <option value="Reel / Shorts Editing">Reel / Shorts Editing</option>
+                                <option value="Poster Designing">Poster Designing</option>
+                                <option value="Album Designing">Album Designing</option>
+                                <option value="Color Grading">Color Grading</option>
+                                <option value="Cinematic Shoot">Cinematic Shoot</option>
+                                <option value="Indoor Shoot">Indoor Shoot</option>
+                                <option value="Outdoor Shoot">Outdoor Shoot</option>
+                                <option value="Website Designing">Website Designing</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span class="field-error-msg" id="err-service">Please select a service</span>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="project-description">Project Requirements <span class="req-star"></span></label>
+                            <textarea id="project-description" rows="4"
+                                placeholder="Describe your project vision, key deliverables, style references, timeline requirements..."
+                                required oninput="updateBookingSummaryLive()"></textarea>
+                            <span class="field-error-msg" id="err-description">Project Requirements is required</span>
+                        </div>
+
+                        <!-- Anti-spam Honeypot Field -->
+                        <input type="text" id="hp-website" name="website_hp" style="display:none;" tabindex="-1"
+                            autocomplete="off">
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="pref-date">Preferred Date <span class="req-star">*</span></label>
+                                <input type="date" id="pref-date" required onchange="updateBookingSummaryLive()">
+                                <span class="field-error-msg" id="err-date">Preferred Date is required</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="pref-slot">Preferred Time / Slot <span class="req-star">*</span></label>
+                                <select id="pref-slot" class="form-select" required
+                                    onchange="updateBookingSummaryLive()">
+                                    <option value="">-- Choose Time Slot --</option>
+                                    <option value="Morning (10:00 AM - 01:00 PM)">Morning (10:00 AM - 01:00 PM)</option>
+                                    <option value="Afternoon (02:00 PM - 05:00 PM)">Afternoon (02:00 PM - 05:00 PM)
+                                    </option>
+                                    <option value="Evening (06:00 PM - 09:00 PM)">Evening (06:00 PM - 09:00 PM)</option>
+                                    <option value="Flexible">Flexible Slot</option>
+                                </select>
+                                <span class="field-error-msg" id="err-slot">Preferred Time Slot is required</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="est-budget">Estimated Budget <span class="req-star">*</span></label>
+                                <input type="text" id="est-budget" placeholder="e.g. ₹5,000 - ₹15,000 / Flexible"
+                                    required oninput="updateBookingSummaryLive()">
+                                <span class="field-error-msg" id="err-budget">Estimated Budget is required</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ref-link">Reference Link</label>
+                                <input type="url" id="ref-link" placeholder="https://youtube.com/... or Drive Link">
+                                <span class="field-error-msg" id="err-link">Enter a valid URL starting with http:// or
+                                    https://</span>
+                            </div>
+                        </div>
+
+                        <!-- Drag and Drop File Upload Area -->
+                        <div class="form-group full-width">
+                            <label>Reference Files / Images</label>
+                            <div class="drag-drop-zone" id="drag-drop-area" onclick="triggerFileInput()">
+                                <input type="file" id="ref-files-input" multiple accept="image/*,video/*,.pdf,.zip"
+                                    class="hidden-file-input" onchange="handleFileSelect(event)">
+                                <div class="upload-icon">📁</div>
+                                <h4>Upload Reference Files</h4>
+                                <p>Drag & drop files here or <span class="highlight-link">Browse Files</span></p>
+                                <span class="upload-hint">Supports Images, Videos, PDF, ZIP (Max 50MB per file)</span>
+                            </div>
+                            <div class="file-list-preview" id="file-list-preview">
+                                <!-- Uploaded file chips appear here -->
+                            </div>
+                            <span class="field-error-msg" id="err-file">File size exceeds max 50MB limit</span>
+                        </div>
+                    </div>
+
+                    <!-- ACTION BUTTONS ROW -->
+                    <div class="booking-actions-row" style="margin-top: 20px;">
+                        <button type="submit" class="btn-primary btn-large btn-sparkle" id="btn-book-slot-primary"
+                            style="width:100%;">
+                            <span id="btn-book-text">PROCEED TO SECURE PAYMENT ↗</span>
+                        </button>
+                        <p class="terms-agreement-note"
+                            style="font-size: 12px; color: rgba(255, 255, 255, 0.6); text-align: center; margin-top: 12px;">
+                            By proceeding, you agree to our <a href="terms.html" target="_blank"
+                                style="color: var(--primary-emerald); text-decoration: underline;">Terms &
+                                Conditions</a> and <a href="privacy-policy.html" target="_blank"
+                                style="color: var(--primary-emerald); text-decoration: underline;">Privacy Policy</a>.
+                        </p>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. CUSTOMER AUTHENTICATION MODAL -->
+        <div class="modal-overlay" id="auth-modal">
+            <div class="modal-card auth-modal-card">
+                <button class="modal-close" onclick="closeAuthModal()">✕</button>
+
+                <div class="auth-header">
+                    <h2>WELCOME TO ARNE</h2>
+                    <p>Sign in to manage your bookings, projects & postpaid balances.</p>
+                </div>
+
+                <div class="auth-options">
+                    <button class="btn-auth btn-google" onclick="loginWithGoogle()">
+                        <span class="g-icon">G</span>
+                        <span>Continue with Google</span>
+                    </button>
+
+                    <div class="auth-divider"><span>OR PHONE OTP</span></div>
+
+                    <div class="phone-auth-box">
+                        <div class="form-group" id="phone-input-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="auth-phone" placeholder="+91 98765 43210">
+                            <button class="btn-outline btn-full" onclick="sendPhoneOTP()">SEND OTP</button>
+                        </div>
+
+                        <div class="form-group hidden" id="otp-input-group">
+                            <label>Enter 6-Digit OTP</label>
+                            <input type="text" id="auth-otp" placeholder="123456" maxlength="6">
+                            <button class="btn-primary btn-full" onclick="verifyOTP()">VERIFY OTP & LOGIN</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. CUSTOMER PORTAL & DASHBOARD DRAWER -->
+        <div class="modal-overlay" id="customer-modal">
+            <div class="modal-card drawer-modal-card">
+                <button class="modal-close" onclick="closeCustomerPortal()">✕</button>
+
+                <div class="dashboard-header">
+                    <div class="dh-profile">
+                        <div class="dh-avatar" id="cust-avatar">C</div>
+                        <div>
+                            <h3 id="cust-name-display">Chandu</h3>
+                            <span id="cust-email-display">arneworks26@gmail.com</span>
+                        </div>
+                    </div>
+                    <button class="btn-outline btn-sm" onclick="logoutCustomer()">Logout</button>
+                </div>
+
+                <div class="dashboard-stats-grid">
+                    <div class="d-stat-card">
+                        <span class="d-num" id="d-total-bookings">0</span>
+                        <span class="d-lbl">Total Bookings</span>
+                    </div>
+                    <div class="d-stat-card">
+                        <span class="d-num" id="d-active-projects">0</span>
+                        <span class="d-lbl">Active Projects</span>
+                    </div>
+                    <div class="d-stat-card">
+                        <span class="d-num" id="d-pending-postpaid">₹0</span>
+                        <span class="d-lbl">Pending 50% Postpaid</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h4>My Bookings & Projects</h4>
+                    <div class="bookings-list" id="customer-bookings-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PORTFOLIO CASE STUDY DETAIL MODAL -->
+        <div class="modal-overlay" id="case-study-modal">
+            <div class="modal-card case-study-modal-card">
+                <button class="modal-close" onclick="closeCaseStudyModal()">✕</button>
+                <div id="case-study-content">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <script src="js/asset-loader.js"></script>
+        <script src="js/three-scene.js"></script>
+        <script src="script.js"></script>
+</body>
+
+</html>

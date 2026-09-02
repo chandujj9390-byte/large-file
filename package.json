@@ -1,0 +1,22 @@
+{
+  "name": "arne-works-website",
+  "version": "1.0.0",
+  "description": "ARNE Works Full-Stack Website & Backend Architecture",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node scripts/build.js"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.121.5",
+    "@react-three/fiber": "^8.17.10",
+    "@supabase/supabase-js": "^2.48.1",
+    "nodemailer": "^6.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.173.0",
+    "twilio": "^5.4.3"
+  },
+  "overrides": {
+    "three-mesh-bvh": "^0.8.2"
+  }
+}
