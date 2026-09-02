@@ -936,11 +936,11 @@
         // 1. Loading State: "Booking Slot..." with Spinner
         const btn = document.getElementById('btn-book-slot-primary');
         const btnText = document.getElementById('btn-book-text');
-        const originalBtnHTML = btnText ? btnText.innerHTML : 'PROCEED TO SECURE PAYMENT ↗';
+        const originalBtnHTML = btnText ? btnText.innerHTML : 'PROCEED TO BOOK ↗';
 
         if (btn) btn.disabled = true;
         if (btnText) {
-            btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Booking Slot & Sending Confirmation...';
+            btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Saving Booking & Opening Razorpay...';
         }
 
         // Generate Unique Booking ID (e.g. ARNE-2026-849201)
@@ -1021,11 +1021,11 @@
             };
         }
 
-        // Reset Button State
-        if (btn) btn.disabled = false;
-        if (btnText) btnText.innerHTML = originalBtnHTML;
-
         if (!requestSuccess && serverResponse && serverResponse.message) {
+            // Reset Button State on Error
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.innerHTML = originalBtnHTML;
+
             const alertEl = document.getElementById('booking-form-alert');
             const alertMsg = document.getElementById('booking-alert-msg');
             if (alertMsg) alertMsg.textContent = serverResponse.message || 'Failed to submit booking. Please check your inputs.';
@@ -1035,12 +1035,13 @@
             return;
         }
 
-        // Calculate pricing split (50% Prepaid + 50% Postpaid)
+        // 1. Calculate pricing split (50% Prepaid Deposit Due Now / 50% Postpaid Balance)
         const priceNum = Number((estBudget || '').replace(/\D/g, '')) || 999;
         const prepaidVal = Math.round(priceNum * 0.5 * 100) / 100;
         const postpaidVal = Math.round(priceNum * 0.5 * 100) / 100;
+        const amountInPaise = Math.max(100, Math.round(prepaidVal * 100));
 
-        // Store record locally
+        // 2. Save booking record locally
         const newBooking = {
             id: bookingId,
             customerName: fullName,
@@ -1056,17 +1057,19 @@
             totalPrice: priceNum,
             prepaid30: prepaidVal,
             postpaid70: postpaidVal,
-            status: 'Confirmed',
+            status: 'Slot Reserved (Payment Pending)',
             postpaidStatus: 'Pending',
+            paymentStatus: 'Pending Deposit',
             createdAt: new Date().toISOString()
         };
         bookingsStore.unshift(newBooking);
         saveBookings();
 
-        // Push Booking & Customer Data directly to Supabase Cloud Database if browser client initialized
+        // 3. Save booking details directly to Supabase Cloud Database
         if (supabaseClient) {
             try {
                 supabaseClient.from('bookings').insert([{
+                    id: bookingId,
                     client_name: fullName,
                     customer_name: fullName,
                     client_phone: mobile,
@@ -1085,15 +1088,15 @@
                     total_price: priceNum,
                     prepaid_amount: prepaidVal,
                     postpaid_amount: postpaidVal,
-                    amount_paid: prepaidVal,
-                    amount_remaining: postpaidVal,
-                    payment_method: paymentPref || 'UPI',
-                    status: 'confirmed',
-                    booking_status: 'Confirmed',
-                    payment_status: 'Pending',
+                    amount_paid: 0,
+                    amount_remaining: priceNum,
+                    payment_method: 'Razorpay Gateway',
+                    status: 'pending_deposit',
+                    booking_status: 'Slot Reserved (Payment Pending)',
+                    payment_status: 'Pending Deposit',
                     ref_link: refLink || 'None'
                 }]).then(res => {
-                    console.log('[ARNE Supabase] Slot booking stored in Supabase database:', res);
+                    console.log('[ARNE Supabase] Slot booking stored in Supabase:', res);
                 });
 
                 supabaseClient.from('customers').insert([{
@@ -1105,97 +1108,44 @@
                     location: location || 'N/A',
                     total_bookings: 1,
                     total_spent: priceNum,
-                    pending_amount: postpaidVal
+                    pending_amount: priceNum
                 }]).then(res => {
-                    console.log('[ARNE Supabase] Customer record updated in Supabase database:', res);
+                    console.log('[ARNE Supabase] Customer record stored in Supabase:', res);
                 });
             } catch (supErr) {
                 console.warn('[ARNE Supabase Notice] Database operation warning:', supErr);
             }
         }
 
-        // Clear Form Inputs on Success
-        const formEl = document.getElementById('arne-booking-form');
-        if (formEl && typeof formEl.reset === 'function') {
-            formEl.reset();
+        // 4. Save pending payment record and redirect to Confirm & OTP Page (payment.html)
+        const pendingBookingData = {
+            id: bookingId,
+            name: fullName,
+            email: email,
+            phone: mobile,
+            service: serviceName,
+            total: priceNum,
+            prepaid: prepaidVal,
+            postpaid: postpaidVal,
+            date: prefDate,
+            slot: prefSlot,
+            projectDesc: projectDesc
+        };
+        sessionStorage.setItem('arne_pending_payment', JSON.stringify(pendingBookingData));
+
+        if (btnText) {
+            btnText.innerHTML = '✓ Slot Reserved! Opening Confirmation & OTP Page...';
         }
-        uploadedRefFiles = [];
-        renderFileListPreview();
 
-        // Close Booking Modal
-        closeBookingModal();
+        const confirmUrl = `payment.html?id=${encodeURIComponent(bookingId)}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(mobile)}&service=${encodeURIComponent(serviceName)}&total=${priceNum}&prepaid=${prepaidVal}&postpaid=${postpaidVal}&date=${encodeURIComponent(prefDate)}&slot=${encodeURIComponent(prefSlot)}&t=${Date.now()}`;
 
-        // Display Success Toast & Confirmation Notification
-        showBookingSuccessNotification({
-            bookingId: bookingId,
-            customerName: fullName,
-            customerEmail: email,
-            serviceName: serviceName,
-            bookingDate: prefDate,
-            bookingTime: prefSlot
-        });
+        setTimeout(() => {
+            const formEl = document.getElementById('arne-booking-form');
+            if (formEl && typeof formEl.reset === 'function') formEl.reset();
+            closeBookingModal();
+            window.location.href = confirmUrl;
+        }, 400);
     };
-
-    function showBookingSuccessNotification(info) {
-        let toast = document.getElementById('arne-booking-success-toast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'arne-booking-success-toast';
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                z-index: 999999;
-                background: linear-gradient(135deg, rgba(14, 24, 18, 0.96) 0%, rgba(6, 10, 8, 0.98) 100%);
-                border: 1px solid #00ff88;
-                border-radius: 20px;
-                padding: 24px 28px;
-                box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(0,255,136,0.35);
-                backdrop-filter: blur(24px);
-                color: #ffffff;
-                max-width: 440px;
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                transform: translateY(120px);
-                opacity: 0;
-                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            `;
-            document.body.appendChild(toast);
-        }
-
-        toast.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:24px; color:#00ff88;">✓</span>
-                    <strong style="color:#00ff88; font-size:17px; font-family:'Syne',sans-serif; letter-spacing:0.5px;">Slot Booked Successfully!</strong>
-                </div>
-                <button onclick="document.getElementById('arne-booking-success-toast').style.opacity='0'; document.getElementById('arne-booking-success-toast').style.transform='translateY(120px)';" style="background:none; border:none; color:#71717a; font-size:18px; cursor:pointer; padding:0 4px;">✕</button>
-            </div>
-            <p style="font-size:13.5px; color:#e4e4e7; margin:0 0 14px 0; line-height:1.6;">
-                A confirmation email has been sent directly to <strong>${info.customerEmail || 'your inbox'}</strong>.
-            </p>
-            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(0,255,136,0.2); border-radius:12px; padding:12px 16px; margin-bottom:14px; font-size:12.5px; line-height:1.6;">
-                <div><span style="color:#a1a1aa;">Booking ID:</span> <strong style="color:#00ff88;">${info.bookingId}</strong></div>
-                <div><span style="color:#a1a1aa;">Service:</span> <strong>${info.serviceName}</strong></div>
-                <div><span style="color:#a1a1aa;">Slot:</span> 📅 <strong>${info.bookingDate}</strong> @ ⏰ <strong>${info.bookingTime}</strong></div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:11px; color:#00ff88; font-weight:700; background:rgba(0,255,136,0.12); padding:4px 10px; border-radius:99px;">CONFIRMED & EMAILED 📧</span>
-                <a href="https://wa.me/919390662637?text=Hi%20Chandu,%20I%20just%20booked%20slot%20${info.bookingId}%20for%20${encodeURIComponent(info.serviceName)}." target="_blank" style="color:#ffffff; font-size:11.5px; font-weight:700; text-decoration:none; background:#25D366; padding:6px 12px; border-radius:8px;">WhatsApp Lead 💬</a>
-            </div>
-        `;
-
-        setTimeout(() => {
-            toast.style.transform = 'translateY(0)';
-            toast.style.opacity = '1';
-        }, 50);
-
-        setTimeout(() => {
-            if (toast) {
-                toast.style.transform = 'translateY(120px)';
-                toast.style.opacity = '0';
-            }
-        }, 9000);
-    }
 
     // ----------------------------------------------------------------------
     // CUSTOMER AUTH & LOGIN MODAL

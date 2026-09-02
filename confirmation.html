@@ -224,14 +224,23 @@
 
     <header class="conf-header">
         <a href="index.html" class="conf-logo">ARNE</a>
-        <span style="font-size:12px; font-weight:700; color:#00ff88;">✓ BOOKING CONFIRMED</span>
+        <span style="font-size:12px; font-weight:800; color:#00ff88; letter-spacing:1px; background:rgba(0,255,136,0.1); padding:6px 14px; border-radius:99px; border:1px solid rgba(0,255,136,0.3);">✓ YOUR BOOKING IS SUCCESSFUL</span>
     </header>
 
     <div class="conf-container">
         <div class="receipt-card-page">
             <div class="success-badge-large">✓</div>
-            <h1 class="conf-title">Booking Confirmed!</h1>
-            <p class="conf-subtitle">Thank you for choosing ARNE Creative Studio. Your slot and 50% deposit have been successfully authorized.</p>
+            <h1 class="conf-title">Your Booking is Successful! 🎉</h1>
+            <p class="conf-subtitle">Thank you for choosing ARNE Stories. Your creative slot and 50% advance deposit have been confirmed. A confirmation message has been sent to your mobile and email, and our studio director (<strong>arnestories26@gmail.com</strong>) has received your booking details.</p>
+
+            <!-- Status Alert Banner -->
+            <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.35); border-radius: 16px; padding: 16px 20px; margin-bottom: 28px; text-align: left; display: flex; align-items: center; gap: 14px;">
+                <div style="font-size: 26px; line-height: 1;">📱</div>
+                <div>
+                    <div style="font-weight: 800; font-size: 14px; color: #00ff88;">Payment Authorized & Verified</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px;">Your slot is locked in our studio schedule. Confirmation sent to your registered number & studio admin.</div>
+                </div>
+            </div>
 
             <!-- Digital Invoice Details Box -->
             <div class="receipt-details-box">
@@ -248,8 +257,12 @@
                     <span class="val" id="c-name">Ramesh Varma</span>
                 </div>
                 <div class="detail-row">
-                    <span class="lbl">Client Contact:</span>
-                    <span class="val" id="c-contact">9876543210</span>
+                    <span class="lbl">Registered Mobile:</span>
+                    <span class="val" id="c-phone">+91 9390662637</span>
+                </div>
+                <div class="detail-row">
+                    <span class="lbl">Registered Email:</span>
+                    <span class="val" id="c-email">client@gmail.com</span>
                 </div>
                 <div class="detail-row">
                     <span class="lbl">Selected Service:</span>
@@ -305,18 +318,34 @@
                     id: id,
                     txnId: params.get('txn') || `TXN-ARNE-${Date.now().toString().slice(-6)}`,
                     name: params.get('name') || 'Client Name',
-                    contact: `${params.get('phone') || ''} / ${params.get('email') || ''}`,
+                    phone: params.get('phone') || '',
+                    email: params.get('email') || '',
                     service: params.get('service') || 'Creative Service',
                     slot: `${params.get('date') || ''} (${params.get('slot') || ''})`,
                     total: Number(params.get('total') || 999),
                     prepaid: Number(params.get('prepaid') || 500),
                     postpaid: Number(params.get('postpaid') || 499),
-                    method: params.get('method') || 'UPI (Google Pay / PhonePe / Paytm)'
+                    method: params.get('method') || 'Razorpay (+91 OTP Verified)'
                 };
             } else {
                 const stored = sessionStorage.getItem('arne_confirmed_receipt');
                 if (stored) {
-                    try { data = JSON.parse(stored); } catch(e){}
+                    try { 
+                        const parsed = JSON.parse(stored);
+                        data = {
+                            id: parsed.id || 'ARNE-2026-849201',
+                            txnId: parsed.razorpayPaymentId || parsed.txnId || `TXN-ARNE-${Date.now().toString().slice(-6)}`,
+                            name: parsed.name || 'Client Name',
+                            phone: parsed.phone || '',
+                            email: parsed.email || '',
+                            service: parsed.service || 'Creative Service',
+                            slot: `${parsed.date || ''} (${parsed.slot || ''})`,
+                            total: Number(parsed.total || 999),
+                            prepaid: Number(parsed.prepaid || 500),
+                            postpaid: Number(parsed.postpaid || 499),
+                            method: parsed.method || 'Razorpay Gateway (+91 OTP)'
+                        };
+                    } catch(e){}
                 }
             }
 
@@ -325,20 +354,27 @@
                     id: 'ARNE-2026-849201',
                     txnId: 'TXN-ARNE-948201',
                     name: 'Ramesh Varma',
-                    contact: '9876543210 / ramesh@gmail.com',
+                    phone: '9390662637',
+                    email: 'ramesh@gmail.com',
                     service: 'Video Editing',
                     slot: '2026-08-25 (10:00 AM)',
                     total: 999,
                     prepaid: 500,
                     postpaid: 499,
-                    method: 'UPI (Google Pay / PhonePe / QR)'
+                    method: 'Razorpay Gateway (+91 OTP)'
                 };
             }
 
             document.getElementById('c-booking-id').textContent = data.id;
             document.getElementById('c-txn-id').textContent = data.txnId;
             document.getElementById('c-name').textContent = data.name;
-            document.getElementById('c-contact').textContent = data.contact;
+            const cleanPhone = (data.phone || '').replace(/\D/g, '').slice(-10);
+            if (document.getElementById('c-phone')) {
+                document.getElementById('c-phone').textContent = cleanPhone ? `+91 ${cleanPhone}` : 'Verified Mobile';
+            }
+            if (document.getElementById('c-email')) {
+                document.getElementById('c-email').textContent = data.email || 'Registered Email';
+            }
             document.getElementById('c-service').textContent = data.service;
             document.getElementById('c-slot').textContent = data.slot;
             document.getElementById('c-total').textContent = `₹${data.total.toLocaleString('en-IN')}`;

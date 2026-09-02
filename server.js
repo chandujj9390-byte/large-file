@@ -11,6 +11,7 @@ const { handleBookingRequest } = require('./api/booking');
 const handleContactForm = require('./api/contact');
 const handlePaymentRequest = require('./api/payment');
 const handleOtpRequest = require('./api/otp');
+const handleCreateOrder = require('./api/create-order');
 
 // Load environment variables from .env
 const ROOT = __dirname;
@@ -368,6 +369,17 @@ const server = http.createServer(async (req, res) => {
             return await handleOtpRequest(req, res);
         } catch (err) {
             return sendJSON(res, 400, { success: false, message: 'Invalid OTP request payload.' });
+        }
+    }
+
+    // Create Razorpay Order API Endpoint
+    if (req.method === 'POST' && (pathName === '/api/create-order' || pathName === '/api/create-order/')) {
+        try {
+            const body = await parseJSON(req);
+            req.body = body;
+            return await handleCreateOrder(req, res);
+        } catch (err) {
+            return sendJSON(res, 400, { success: false, message: 'Invalid order creation payload.' });
         }
     }
 
