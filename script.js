@@ -1884,7 +1884,7 @@
     });
 
     // ----------------------------------------------------------------------
-    // CANVAS HERO ENGINE (240 FRAMES SEQUENCE INTEGRATION)
+    // CANVAS HERO ENGINE (240 FRAMES SEQUENCE INTEGRATION FROM frame1/)
     // ----------------------------------------------------------------------
     function initHeroCanvas() {
         const canvas = document.getElementById('hero-canvas');
@@ -1892,23 +1892,58 @@
         const ctx = canvas.getContext('2d', { alpha: true });
 
         const TOTAL_FRAMES = 240;
-        const SUPABASE_CDN_FRAMES_URL = 'https://xmnjhfkzvbssuajgxnvf.supabase.co/storage/v1/object/public/hero-frames';
         const images = new Array(TOTAL_FRAMES);
         let currentFrameIndex = 0;
         let targetFrameIndex = 0;
+        let autoPlayIndex = 0;
+        let isUserScrolling = false;
+        let scrollTimeout = null;
+        let lastFrameTime = 0;
+        const FPS = 24;
+        const frameInterval = 1000 / FPS;
 
-        function getFramePath(idx) {
+        function getFramePaths(idx) {
             const num = String(idx + 1).padStart(3, '0');
-            // If on production / deployed host, fetch directly from Supabase CDN public storage
-            if (typeof window !== 'undefined' && window.location && window.location.hostname && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-                return `${SUPABASE_CDN_FRAMES_URL}/ezgif-frame-${num}.png`;
+            return [
+                `frame1/ezgif-frame-${num}.png`,
+                `public/frame1/ezgif-frame-${num}.png`,
+                `./frame1/ezgif-frame-${num}.png`,
+                `./public/frame1/ezgif-frame-${num}.png`,
+                `https://xmnjhfkzvbssuajgxnvf.supabase.co/storage/v1/object/public/hero-frames/ezgif-frame-${num}.png`
+            ];
+        }
+
+        function loadFrame(idx, callback) {
+            if (images[idx] && images[idx].complete && images[idx].naturalWidth > 0) {
+                if (callback) callback(images[idx]);
+                return;
             }
-            const rawPath = `frames/ezgif-frame-${num}.png`;
-            return window.AssetLoader ? window.AssetLoader.normalizePath(rawPath) : `/frames/ezgif-frame-${num}.png`;
+
+            const paths = getFramePaths(idx);
+            let pIdx = 0;
+            const img = new Image();
+
+            function tryNextPath() {
+                if (pIdx < paths.length) {
+                    img.src = paths[pIdx++];
+                } else if (callback) {
+                    callback(null);
+                }
+            }
+
+            img.onload = () => {
+                images[idx] = img;
+                if (callback) callback(img);
+            };
+
+            img.onerror = () => {
+                tryNextPath();
+            };
+
+            tryNextPath();
         }
 
         function resize() {
-            // DPR capped to max 2 to prevent mobile WebGL context loss
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = Math.floor(window.innerWidth * dpr);
             canvas.height = Math.floor(window.innerHeight * dpr);
@@ -1916,9 +1951,9 @@
         }
 
         function draw(idx) {
-            if (!ctx || canvas.width === 0) return;
+            if (!ctx || canvas.width === 0 || canvas.height === 0) return;
             const safeIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(idx)));
-            
+
             // Find target image or nearest loaded fallback frame
             let img = images[safeIdx];
             if (!img || !img.complete || img.naturalWidth === 0) {
@@ -1955,6 +1990,13 @@
         }
 
         function updateScroll() {
+            isUserScrolling = true;
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isUserScrolling = false;
+                autoPlayIndex = currentFrameIndex;
+            }, 600);
+
             const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
             if (maxScroll > 0) {
                 const progress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
@@ -1962,70 +2004,83 @@
             }
         }
 
-        function loop() {
-            const delta = targetFrameIndex - currentFrameIndex;
-            currentFrameIndex += delta * 0.12;
-            if (Math.abs(delta) < 0.0001) currentFrameIndex = targetFrameIndex;
+        function loop(timestamp) {
+            if (!lastFrameTime) lastFrameTime = timestamp;
+            const elapsed = timestamp - lastFrameTime;
+
+            if (!isUserScrolling && window.scrollY < 100) {
+                // Auto-play smooth continuous loop when on hero/top of page
+                if (elapsed > frameInterval) {
+                    autoPlayIndex = (autoPlayIndex + 1) % TOTAL_FRAMES;
+                    targetFrameIndex = autoPlayIndex;
+                    lastFrameTime = timestamp - (elapsed % frameInterval);
+                }
+                const delta = targetFrameIndex - currentFrameIndex;
+                currentFrameIndex += delta * 0.2;
+            } else {
+                // Smooth scroll scrubbing interpolation
+                const delta = targetFrameIndex - currentFrameIndex;
+                currentFrameIndex += delta * 0.12;
+            }
+
+            if (Math.abs(targetFrameIndex - currentFrameIndex) < 0.0001) {
+                currentFrameIndex = targetFrameIndex;
+            }
+
             draw(currentFrameIndex);
             requestAnimationFrame(loop);
         }
 
-        // Progressive, non-blocking frame loader
+        // Initialize sizing
         resize();
 
-        // 1. Immediately load frame 0 so hero canvas renders instantly
-        const firstImg = new Image();
-        firstImg.src = getFramePath(0);
-        firstImg.onload = () => {
-            images[0] = firstImg;
-            draw(0);
+        // 1. Immediately load frame 0 for zero-delay instant render
+        loadFrame(0, (firstImg) => {
+            if (firstImg) {
+                draw(0);
+            }
             hidePreloader();
-        };
-        firstImg.onerror = () => {
-            hidePreloader();
-        };
-        setTimeout(hidePreloader, 1000);
+        });
+        setTimeout(hidePreloader, 600);
 
-        // 2. Load keyframes (every 5th frame) next, then fill in remaining frames in background chunks
+        // 2. Background queue: Preload keyframes first, then remaining frames in non-blocking batches
         const loadQueue = [];
-        for (let i = 0; i < TOTAL_FRAMES; i += 5) {
+        for (let i = 0; i < TOTAL_FRAMES; i += 4) {
             if (i !== 0) loadQueue.push(i);
         }
         for (let i = 0; i < TOTAL_FRAMES; i++) {
-            if (i % 5 !== 0) loadQueue.push(i);
+            if (i % 4 !== 0) loadQueue.push(i);
         }
 
-        function processNextBatch() {
+        function processBatch() {
             if (loadQueue.length === 0) return;
-            const BATCH_SIZE = 3;
+            const BATCH_SIZE = 4;
             const batch = loadQueue.splice(0, BATCH_SIZE);
             let batchLoaded = 0;
 
             batch.forEach(idx => {
-                const img = new Image();
-                img.src = getFramePath(idx);
-                img.onload = () => {
-                    images[idx] = img;
+                loadFrame(idx, () => {
                     batchLoaded++;
                     if (batchLoaded === batch.length) {
-                        setTimeout(processNextBatch, 16);
+                        setTimeout(processBatch, 16);
                     }
-                };
-                img.onerror = () => {
-                    batchLoaded++;
-                    if (batchLoaded === batch.length) {
-                        setTimeout(processNextBatch, 16);
-                    }
-                };
+                });
             });
         }
 
-        setTimeout(processNextBatch, 100);
+        setTimeout(processBatch, 50);
 
         window.addEventListener('scroll', updateScroll, { passive: true });
         window.addEventListener('resize', resize, { passive: true });
         updateScroll();
-        loop();
+        requestAnimationFrame(loop);
+    }
+
+    // Auto-initialize Hero Canvas on ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initHeroCanvas();
+    } else {
+        document.addEventListener('DOMContentLoaded', initHeroCanvas);
     }
 
     // ----------------------------------------------------------------------
