@@ -1895,12 +1895,7 @@
         const images = new Array(TOTAL_FRAMES);
         let currentFrameIndex = 0;
         let targetFrameIndex = 0;
-        let autoPlayIndex = 0;
-        let isUserScrolling = false;
-        let scrollTimeout = null;
-        let lastFrameTime = 0;
-        const FPS = 24;
-        const frameInterval = 1000 / FPS;
+        let lastDrawnFrame = -1;
 
         function getFramePaths(idx) {
             const num = String(idx + 1).padStart(3, '0');
@@ -1947,6 +1942,7 @@
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = Math.floor(window.innerWidth * dpr);
             canvas.height = Math.floor(window.innerHeight * dpr);
+            lastDrawnFrame = -1;
             draw(currentFrameIndex);
         }
 
@@ -1990,44 +1986,29 @@
         }
 
         function updateScroll() {
-            isUserScrolling = true;
-            if (scrollTimeout) clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                isUserScrolling = false;
-                autoPlayIndex = currentFrameIndex;
-            }, 600);
-
             const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
             if (maxScroll > 0) {
                 const progress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
                 targetFrameIndex = progress * (TOTAL_FRAMES - 1);
+            } else {
+                targetFrameIndex = 0;
             }
         }
 
-        function loop(timestamp) {
-            if (!lastFrameTime) lastFrameTime = timestamp;
-            const elapsed = timestamp - lastFrameTime;
-
-            if (!isUserScrolling && window.scrollY < 100) {
-                // Auto-play smooth continuous loop when on hero/top of page
-                if (elapsed > frameInterval) {
-                    autoPlayIndex = (autoPlayIndex + 1) % TOTAL_FRAMES;
-                    targetFrameIndex = autoPlayIndex;
-                    lastFrameTime = timestamp - (elapsed % frameInterval);
-                }
-                const delta = targetFrameIndex - currentFrameIndex;
-                currentFrameIndex += delta * 0.2;
+        function loop() {
+            const delta = targetFrameIndex - currentFrameIndex;
+            if (Math.abs(delta) > 0.001) {
+                currentFrameIndex += delta * 0.15;
             } else {
-                // Smooth scroll scrubbing interpolation
-                const delta = targetFrameIndex - currentFrameIndex;
-                currentFrameIndex += delta * 0.12;
-            }
-
-            if (Math.abs(targetFrameIndex - currentFrameIndex) < 0.0001) {
                 currentFrameIndex = targetFrameIndex;
             }
 
-            draw(currentFrameIndex);
+            const frameToDraw = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(currentFrameIndex)));
+            if (frameToDraw !== lastDrawnFrame) {
+                draw(frameToDraw);
+                lastDrawnFrame = frameToDraw;
+            }
+
             requestAnimationFrame(loop);
         }
 
@@ -2038,6 +2019,7 @@
         loadFrame(0, (firstImg) => {
             if (firstImg) {
                 draw(0);
+                lastDrawnFrame = 0;
             }
             hidePreloader();
         });
