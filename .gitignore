@@ -12,12 +12,9 @@ dist/
 Thumbs.db
 .DS_Store
 
-# Heavy media assets (hosted on Supabase CDN)
-public/frames/
-public/assets/*.mp4
+# Heavy media assets (tracked via Git LFS)
 frames/
 framess/
-*.mp4
 *.zip
 
 # Cloned and test folders
