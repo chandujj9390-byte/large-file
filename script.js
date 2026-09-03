@@ -22,6 +22,66 @@
     }
 
     // ----------------------------------------------------------------------
+    // LENIS HARDWARE-ACCELERATED SMOOTH SCROLL ENGINE
+    // ----------------------------------------------------------------------
+    let lenisInstance = null;
+
+    function initLenis() {
+        if (typeof Lenis === 'undefined') return;
+        if (lenisInstance) return;
+
+        try {
+            lenisInstance = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential decay curve for buttery momentum
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1.0,
+                touchMultiplier: 1.6,
+                infinite: false
+            });
+
+            window.lenis = lenisInstance;
+
+            function raf(time) {
+                if (lenisInstance) {
+                    lenisInstance.raf(time);
+                }
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Sync with window scroll events for hero canvas scrubbing and navigation spies
+            lenisInstance.on('scroll', () => {
+                window.dispatchEvent(new Event('scroll'));
+            });
+
+            // Smooth scroll for all anchor navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId && targetId !== '#') {
+                        const targetEl = document.querySelector(targetId);
+                        if (targetEl) {
+                            e.preventDefault();
+                            lenisInstance.scrollTo(targetEl, { offset: -80, duration: 1.3 });
+                        }
+                    }
+                });
+            });
+        } catch (err) {
+            console.warn('[Lenis Smooth Scroll Engine Notice]', err);
+        }
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initLenis();
+    } else {
+        document.addEventListener('DOMContentLoaded', initLenis);
+    }
+
+    // ----------------------------------------------------------------------
     // TINTED GLASS THEME SYSTEM
     // ----------------------------------------------------------------------
     window.setGlassTheme = function (themeName) {
@@ -704,11 +764,13 @@
 
         updateBookingSummaryLive();
         modal.classList.add('active');
+        if (window.lenis) window.lenis.stop();
     };
 
     window.closeBookingModal = function () {
         const modal = document.getElementById('booking-modal');
         if (modal) modal.classList.remove('active');
+        if (window.lenis) window.lenis.start();
     };
 
     window.startBookingService = function (serviceName) {
@@ -1883,12 +1945,14 @@
                 <button class="btn-primary btn-full" onclick="startBookingService('srv-1'); closeCaseStudyModal();">BOOK SIMILAR PROJECT ↗</button>
             `;
             modal.classList.add('active');
+            if (window.lenis) window.lenis.stop();
         }
     };
 
     window.closeCaseStudyModal = function () {
         const modal = document.getElementById('case-study-modal');
         if (modal) modal.classList.remove('active');
+        if (window.lenis) window.lenis.start();
     };
 
     // Global keyboard listener for ESC key to close any active modal
@@ -1898,6 +1962,7 @@
             if (activeModal) {
                 activeModal.classList.remove('active');
                 document.body.style.overflow = '';
+                if (window.lenis) window.lenis.start();
             }
         }
     });
