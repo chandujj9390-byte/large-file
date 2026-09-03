@@ -960,180 +960,39 @@
         const estBudget = document.getElementById('est-budget')?.value.trim() || 'Flexible';
         const refLink = document.getElementById('ref-link')?.value.trim() || 'None';
         const paymentPref = document.getElementById('pay-method')?.value || 'UPI / Card';
-        const hpWebsite = document.getElementById('hp-website')?.value || '';
 
-        const payload = {
-            booking_id: bookingId,
-            bookingId: bookingId,
-            client_name: fullName,
-            fullName: fullName,
-            client_phone: mobile,
-            mobile: mobile,
-            whatsapp: whatsapp,
-            client_email: email,
-            email: email,
-            company: company,
-            location: location,
-            service_type: serviceName,
-            serviceName: serviceName,
-            project_desc: projectDesc,
-            projectDesc: projectDesc,
-            booking_date: prefDate,
-            prefDate: prefDate,
-            booking_time: prefSlot,
-            prefSlot: prefSlot,
-            est_budget: estBudget,
-            estBudget: estBudget,
-            ref_link: refLink,
-            refLink: refLink,
-            paymentPref: paymentPref,
-            website_hp: hpWebsite
-        };
-
-        let serverResponse = null;
-        let requestSuccess = false;
-
-        try {
-            // First try /api/book-slot, then fallback to /api/booking if needed
-            let res = await fetch('/api/book-slot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok && res.status !== 400) {
-                res = await fetch('/api/booking', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            }
-
-            serverResponse = await res.json();
-            requestSuccess = serverResponse && (serverResponse.success === true || res.ok);
-        } catch (err) {
-            console.warn('[ARNE Booking Client Notice] Serverless API request error:', err);
-            // Fallback for offline/local simulation
-            requestSuccess = true;
-            serverResponse = {
-                success: true,
-                message: 'Slot booked successfully! A confirmation email has been sent to your inbox.'
-            };
-        }
-
-        // Reset Button State
-        if (btn) btn.disabled = false;
-        if (btnText) btnText.innerHTML = originalBtnHTML;
-
-        if (!requestSuccess && serverResponse && serverResponse.message) {
-            const alertEl = document.getElementById('booking-form-alert');
-            const alertMsg = document.getElementById('booking-alert-msg');
-            if (alertMsg) alertMsg.textContent = serverResponse.message || 'Failed to submit booking. Please check your inputs.';
-            if (alertEl) alertEl.classList.remove('hidden');
-            const card = document.querySelector('.booking-modal-card');
-            if (card) card.scrollTop = 0;
-            return;
-        }
-
-        // Calculate pricing split (50% Prepaid + 50% Postpaid)
+        // Calculate pricing split (50% Prepaid Deposit + 50% Postpaid)
         const priceNum = Number((estBudget || '').replace(/\D/g, '')) || 999;
         const prepaidVal = Math.round(priceNum * 0.5 * 100) / 100;
         const postpaidVal = Math.round(priceNum * 0.5 * 100) / 100;
 
-        // Store record locally
-        const newBooking = {
+        const bookingData = {
             id: bookingId,
-            customerName: fullName,
-            customerPhone: mobile,
-            customerWhatsapp: whatsapp || 'N/A',
-            customerEmail: email,
-            company: company || 'N/A',
-            location: location || 'N/A',
-            serviceName: serviceName,
-            projectDesc: projectDesc,
+            name: fullName,
+            email: email,
+            phone: mobile,
+            whatsapp: whatsapp,
+            company: company,
+            location: location,
+            service: serviceName,
+            desc: projectDesc,
             date: prefDate,
-            timeSlot: prefSlot,
-            totalPrice: priceNum,
-            prepaid30: prepaidVal,
-            postpaid70: postpaidVal,
-            status: 'Confirmed',
-            postpaidStatus: 'Pending',
-            createdAt: new Date().toISOString()
+            slot: prefSlot,
+            total: priceNum,
+            prepaid: prepaidVal,
+            postpaid: postpaidVal,
+            refLink: refLink,
+            paymentPref: paymentPref
         };
-        bookingsStore.unshift(newBooking);
-        saveBookings();
 
-        // Push Booking & Customer Data directly to Supabase Cloud Database if browser client initialized
-        if (supabaseClient) {
-            try {
-                supabaseClient.from('bookings').insert([{
-                    client_name: fullName,
-                    customer_name: fullName,
-                    client_phone: mobile,
-                    customer_phone: mobile,
-                    customer_whatsapp: whatsapp || 'N/A',
-                    client_email: email,
-                    customer_email: email,
-                    company: company || 'N/A',
-                    location: location || 'N/A',
-                    service_type: serviceName,
-                    service_name: serviceName,
-                    project_desc: projectDesc || 'N/A',
-                    booking_date: prefDate || null,
-                    booking_time: prefSlot || 'N/A',
-                    time_slot: prefSlot || 'N/A',
-                    total_price: priceNum,
-                    prepaid_amount: prepaidVal,
-                    postpaid_amount: postpaidVal,
-                    amount_paid: prepaidVal,
-                    amount_remaining: postpaidVal,
-                    payment_method: paymentPref || 'UPI',
-                    status: 'confirmed',
-                    booking_status: 'Confirmed',
-                    payment_status: 'Pending',
-                    ref_link: refLink || 'None'
-                }]).then(res => {
-                    console.log('[ARNE Supabase] Slot booking stored in Supabase database:', res);
-                });
+        // Store pending payment in sessionStorage
+        sessionStorage.setItem('arne_pending_payment', JSON.stringify(bookingData));
 
-                supabaseClient.from('customers').insert([{
-                    full_name: fullName,
-                    mobile: mobile,
-                    whatsapp: whatsapp || 'N/A',
-                    email: email,
-                    company: company || 'N/A',
-                    location: location || 'N/A',
-                    total_bookings: 1,
-                    total_spent: priceNum,
-                    pending_amount: postpaidVal
-                }]).then(res => {
-                    console.log('[ARNE Supabase] Customer record updated in Supabase database:', res);
-                });
-            } catch (supErr) {
-                console.warn('[ARNE Supabase Notice] Database operation warning:', supErr);
-            }
-        }
+        // Construct checkout URL pointing to payment.html
+        const paymentUrl = `payment.html?id=${encodeURIComponent(bookingId)}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(mobile)}&service=${encodeURIComponent(serviceName)}&date=${encodeURIComponent(prefDate)}&slot=${encodeURIComponent(prefSlot)}&desc=${encodeURIComponent(projectDesc)}&total=${priceNum}&prepaid=${prepaidVal}&postpaid=${postpaidVal}`;
 
-        // Clear Form Inputs on Success
-        const formEl = document.getElementById('arne-booking-form');
-        if (formEl && typeof formEl.reset === 'function') {
-            formEl.reset();
-        }
-        uploadedRefFiles = [];
-        renderFileListPreview();
-
-        // Close Booking Modal
-        closeBookingModal();
-
-        // Display Success Toast & Confirmation Notification
-        showBookingSuccessNotification({
-            bookingId: bookingId,
-            customerName: fullName,
-            customerEmail: email,
-            serviceName: serviceName,
-            bookingDate: prefDate,
-            bookingTime: prefSlot
-        });
+        // Redirect directly to the Mobile OTP & Razorpay Gateway Checkout page
+        window.location.href = paymentUrl;
     };
 
     function showBookingSuccessNotification(info) {

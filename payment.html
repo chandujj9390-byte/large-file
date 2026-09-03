@@ -434,6 +434,7 @@
                     email: params.get('email') || '',
                     phone: params.get('phone') || '',
                     service: params.get('service') || 'Creative Service',
+                    desc: params.get('desc') || 'Standard project requirement.',
                     total: Number(params.get('total') || 999),
                     prepaid: Number(params.get('prepaid') || 500),
                     postpaid: Number(params.get('postpaid') || 499),
@@ -651,7 +652,30 @@
                 btn.disabled = true;
             }
 
-            // Call Backend /api/payment API
+            // 1. Call Backend /api/book-slot to record booking & dispatch confirmation email
+            try {
+                await fetch('/api/book-slot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_id: currentBookingData.id,
+                        client_name: currentBookingData.name,
+                        client_email: currentBookingData.email,
+                        client_phone: activePhoneNumber || currentBookingData.phone,
+                        service_type: currentBookingData.service,
+                        booking_date: currentBookingData.date,
+                        booking_time: currentBookingData.slot,
+                        project_desc: currentBookingData.desc || 'Confirmed via Razorpay Gateway',
+                        est_budget: `₹${currentBookingData.total}`,
+                        payment_status: 'Prepaid Paid (50% Deposit Confirmed)',
+                        transaction_id: razorpayPaymentId
+                    })
+                });
+            } catch (err) {
+                console.warn('[BookSlot Backend Notice]', err);
+            }
+
+            // 2. Call Backend /api/payment API
             try {
                 await fetch('/api/payment', {
                     method: 'POST',
@@ -668,13 +692,13 @@
                 });
             } catch (err) {}
 
-            // Update Supabase
+            // 3. Update Supabase
             if (supabaseClient && currentBookingData.id) {
                 try {
                     await supabaseClient.from('bookings').update({
                         payment_status: 'Prepaid Paid',
                         booking_status: 'Confirmed',
-                        customer_phone: activePhoneNumber,
+                        customer_phone: activePhoneNumber || currentBookingData.phone,
                         transaction_id: razorpayPaymentId
                     }).eq('id', currentBookingData.id);
                 } catch(e){}
