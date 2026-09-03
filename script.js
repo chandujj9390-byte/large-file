@@ -76,7 +76,7 @@
         {
             id: 'srv-3',
             num: 'SERVICE 03',
-            name: 'Indoor & Outdoor Shooting',
+            name: 'Indoor or Outdoor Shooting',
             price: 3999,
             unit: 'STARTING FROM',
             desc: 'Professional cinematic shooting for events, products, brands, personal projects and social media.',
@@ -89,6 +89,15 @@
             price: 4999,
             unit: 'STARTING FROM',
             desc: 'Landing page, Business websites, Portfolio website, E-Commerce Website, 3D Websites etc.',
+            category: 'core'
+        },
+        {
+            id: 'srv-5',
+            num: 'SERVICE 05',
+            name: 'Shooting + Editing',
+            price: 2499,
+            unit: 'STARTING FROM',
+            desc: 'Complete package with cinematic indoor/outdoor shooting and professional post-production editing.',
             category: 'core'
         },
         {
@@ -168,18 +177,28 @@
         },
     ];
 
-    // Sync savedServices with updated default prices
+    // Sync savedServices with updated default services and prices
     let savedServices = JSON.parse(localStorage.getItem('arne_services'));
     if (savedServices) {
         savedServices.forEach(s => {
             const def = DEFAULT_SERVICES.find(d => d.id === s.id);
             if (def && !s.isCustomContact) {
                 s.price = def.price;
+                s.name = def.name;
+                s.num = def.num;
+                s.desc = def.desc;
             }
         });
-        if (!savedServices.some(s => s.id === 'srv-6')) {
-            savedServices.push(DEFAULT_SERVICES[5]);
-        }
+        DEFAULT_SERVICES.forEach(def => {
+            if (!savedServices.some(s => s.id === def.id)) {
+                savedServices.push(def);
+            }
+        });
+        savedServices.sort((a, b) => {
+            const idxA = DEFAULT_SERVICES.findIndex(d => d.id === a.id);
+            const idxB = DEFAULT_SERVICES.findIndex(d => d.id === b.id);
+            return idxA - idxB;
+        });
         localStorage.setItem('arne_services', JSON.stringify(savedServices));
     }
     let servicesStore = savedServices || DEFAULT_SERVICES;
