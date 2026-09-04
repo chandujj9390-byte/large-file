@@ -377,11 +377,7 @@
                     <input type="text" maxlength="1" class="otp-digit-box" id="otp-4" onkeyup="moveOtpFocus(this, '', 'otp-3')">
                 </div>
 
-                <div id="otp-preview-banner" style="text-align:center; font-size:12px; color:#00ff88; margin-bottom:14px; font-weight:700;">
-                    <!-- Auto populated with generated OTP code -->
-                </div>
-
-                <button class="btn-pill-paynow" id="btn-verify-otp" onclick="verifyMobileOtpAndPay()" style="background: linear-gradient(135deg, #00ff88 0%, #00b862 100%); color:#000000;">
+                <button class="btn-pill-paynow" id="btn-verify-otp" onclick="verifyMobileOtpAndPay()" style="background: linear-gradient(135deg, #00ff88 0%, #00b862 100%); color:#000000; margin-top: 14px;">
                     <span>VERIFY OTP & PROCEED TO RAZORPAY 🔒</span>
                 </button>
             </div>
@@ -497,7 +493,6 @@
             btn.disabled = true;
             btn.innerHTML = '<span>SENDING 4-DIGIT OTP... ⏳</span>';
 
-            let generatedOtp = '1234';
             try {
                 const res = await fetch('/api/send-otp', {
                     method: 'POST',
@@ -505,9 +500,11 @@
                     body: JSON.stringify({ phone: activePhoneNumber, bookingId: currentBookingData.id })
                 });
                 const data = await res.json();
-                if (data && data.otp) generatedOtp = data.otp;
+                if (!data || !data.success) {
+                    console.warn('[OTP Notice]:', data?.message);
+                }
             } catch (e) {
-                console.warn('[OTP Notice] API fallback engaged:', e);
+                console.warn('[OTP Notice]:', e);
             }
 
             btn.disabled = false;
@@ -516,8 +513,7 @@
             // Transition to Step 2 OTP Verification Container
             document.getElementById('step-phone-container').classList.add('hidden-step');
             document.getElementById('step-otp-container').classList.remove('hidden-step');
-            document.getElementById('otp-sent-notice').textContent = `4-Digit OTP code sent to +91 ${activePhoneNumber}`;
-            document.getElementById('otp-preview-banner').textContent = `[ Test Code: ${generatedOtp} ]`;
+            document.getElementById('otp-sent-notice').textContent = `4-Digit verification code sent to +91 ${activePhoneNumber}`;
             document.getElementById('otp-1').focus();
         }
 

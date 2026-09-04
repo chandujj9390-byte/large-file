@@ -70,7 +70,7 @@ module.exports = async function handler(req, res) {
         }
 
         const record = global.ARNE_OTP_STORE.get(cleanPhone);
-        const isValid = (otp === '1234') || (record && record.otp === otp && Date.now() < record.expiresAt);
+        const isValid = record && record.otp === otp && Date.now() < record.expiresAt;
 
         if (isValid) {
             global.ARNE_OTP_STORE.delete(cleanPhone);
@@ -82,7 +82,7 @@ module.exports = async function handler(req, res) {
         } else {
             return sendJSON(res, 400, {
                 success: false,
-                message: 'Invalid or expired 4-digit OTP. Please check or use universal test OTP 1234.'
+                message: 'Invalid or expired 4-digit OTP. Please check your SMS and try again.'
             });
         }
     } catch (err) {

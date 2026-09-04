@@ -20,7 +20,6 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState('phone'); // 'phone' | 'otp'
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [fallbackCode, setFallbackCode] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
       setOtpCode('');
       setStep('phone');
       setErrorMsg('');
-      setFallbackCode('');
       setLoading(false);
     }
   }, [isOpen]);
@@ -83,23 +81,11 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
         throw error;
       }
 
-      setFallbackCode('');
       setStep('otp');
       setResendTimer(45);
     } catch (err) {
       console.error('[Supabase signInWithOtp Error]:', err);
-      
-      // If Twilio provider is pending on Supabase dashboard, provide instant demo fallback code
-      const isProviderError = err.message && err.message.toLowerCase().includes('phone provider');
-      if (isProviderError) {
-        const demoCode = Math.floor(100000 + Math.random() * 900000).toString();
-        setFallbackCode(demoCode);
-        setStep('otp');
-        setResendTimer(45);
-        setErrorMsg('');
-      } else {
-        setErrorMsg(err.message || 'Failed to send OTP verification SMS. Please verify your phone number.');
-      }
+      setErrorMsg(err.message || 'Failed to send OTP verification SMS. Please verify your phone number.');
     } finally {
       // 4. Guaranteed Loading State Reset (Never hangs in loading state)
       setLoading(false);
@@ -121,39 +107,24 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
     let verified = false;
     let authUser = null;
 
-    if (fallbackCode && (otpCode.trim() === fallbackCode || otpCode.trim() === '123456')) {
-      verified = true;
-      authUser = { id: `client_${Date.now()}`, phone: formatted, role: 'authenticated' };
-    } else {
-      try {
-        const { data, error } = await supabase.auth.verifyOtp({
-          phone: formatted,
-          token: otpCode.trim(),
-          type: 'sms'
-        });
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: formatted,
+        token: otpCode.trim(),
+        type: 'sms'
+      });
 
-        if (error) {
-          if (otpCode.trim() === '123456') {
-            verified = true;
-            authUser = { id: `client_${Date.now()}`, phone: formatted, role: 'authenticated' };
-          } else {
-            throw error;
-          }
-        } else {
-          verified = true;
-          authUser = data?.user;
-        }
-      } catch (err) {
-        if (otpCode.trim() === '123456') {
-          verified = true;
-          authUser = { id: `client_${Date.now()}`, phone: formatted, role: 'authenticated' };
-        } else {
-          console.error('[Supabase verifyOtp Error]', err);
-          setErrorMsg(err.message || 'Invalid or expired OTP code.');
-          setLoading(false);
-          return;
-        }
+      if (error) {
+        throw error;
       }
+
+      verified = true;
+      authUser = data?.user;
+    } catch (err) {
+      console.error('[Supabase verifyOtp Error]', err);
+      setErrorMsg(err.message || 'Invalid or expired OTP code.');
+      setLoading(false);
+      return;
     }
 
     if (verified) {
@@ -197,15 +168,9 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
           <p className="text-[11px] text-gray-400 mt-1 max-w-[280px] mx-auto leading-relaxed">
             {step === 'phone'
               ? 'Enter your registered mobile number to receive a 6-digit OTP verification code.'
-              : `Enter the 6-digit code sent to ${getFormattedPhone()}`}
+              : `Enter the 6-digit code sent via SMS to ${getFormattedPhone()}`}
           </p>
         </div>
-
-        {fallbackCode && step === 'otp' && (
-          <div className="mb-3.5 p-2.5 rounded-xl bg-[#00ff88]/10 border border-[#00ff88]/30 text-[#00ff88] text-[11px] text-center font-medium">
-            🔐 Verification Code: <strong>{fallbackCode}</strong>
-          </div>
-        )}
 
         {errorMsg && (
           <div className="mb-3.5 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] flex items-center gap-2">

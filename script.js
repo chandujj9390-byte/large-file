@@ -1477,30 +1477,19 @@
         }
 
         const sb = getSupabaseClient();
-        let otpSentViaSupabase = false;
 
         // 3. Strict Try/Catch Block
         try {
-            if (sb) {
-                const { data, error } = await sb.auth.signInWithOtp({
-                    phone: formattedPhone
-                });
-
-                if (!error) {
-                    otpSentViaSupabase = true;
-                } else {
-                    console.warn('[Supabase signInWithOtp Provider Notice]:', error.message);
-                }
+            if (!sb) {
+                throw new Error('Supabase Client is not initialized.');
             }
 
-            // Generate instant secure fallback code if SMS provider is not yet activated on Supabase Dashboard
-            if (!otpSentViaSupabase) {
-                const random6 = Math.floor(100000 + Math.random() * 900000).toString();
-                pendingVerificationCode = random6;
-                console.log(`[ARNE Client Access] Verification OTP for ${formattedPhone}: ${random6}`);
-                showToast(`🔐 Verification Code: ${random6}`);
-            } else {
-                pendingVerificationCode = '';
+            const { data, error } = await sb.auth.signInWithOtp({
+                phone: formattedPhone
+            });
+
+            if (error) {
+                throw error;
             }
 
             // Switch cleanly to Step 2 (OTP Input)
@@ -1509,7 +1498,7 @@
             const badge = document.getElementById('auth-step-badge');
             if (badge) badge.textContent = '🔒';
             const subtext = document.getElementById('auth-modal-subtext');
-            if (subtext) subtext.textContent = `Enter the 6-digit verification code sent to ${formattedPhone}`;
+            if (subtext) subtext.textContent = `Enter the 6-digit verification code sent via SMS to ${formattedPhone}`;
 
             const otpInput = document.getElementById('auth-otp');
             if (otpInput) { 
@@ -1583,37 +1572,26 @@
         let verifiedUser = null;
 
         try {
-            // A. If fallback code was generated, verify match
-            if (pendingVerificationCode && (otp === pendingVerificationCode || otp === '123456')) {
-                verifiedUser = {
-                    id: `client_${Date.now()}`,
-                    phone: formattedPhone,
-                    role: 'authenticated'
-                };
-            } else if (sb) {
-                // B. Verify via Supabase API
-                const { data, error } = await sb.auth.verifyOtp({
-                    phone: formattedPhone,
-                    token: otp,
-                    type: 'sms'
-                });
-
-                if (error) {
-                    if (otp === '123456' || (pendingVerificationCode && otp === pendingVerificationCode)) {
-                        verifiedUser = { id: `client_${Date.now()}`, phone: formattedPhone, role: 'authenticated' };
-                    } else {
-                        throw error;
-                    }
-                } else {
-                    verifiedUser = data?.user;
-                    activeAuthSession = data?.session;
-                }
-            } else if (otp === '123456' || otp === pendingVerificationCode) {
-                verifiedUser = { id: `client_${Date.now()}`, phone: formattedPhone, role: 'authenticated' };
+            if (!sb) {
+                throw new Error('Supabase client is not available.');
             }
 
+            // Verify strictly via live Supabase API
+            const { data, error } = await sb.auth.verifyOtp({
+                phone: formattedPhone,
+                token: otp,
+                type: 'sms'
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            verifiedUser = data?.user;
+            activeAuthSession = data?.session;
+
             if (!verifiedUser) {
-                throw new Error('Invalid 6-digit code. Please enter the correct code.');
+                throw new Error('Invalid or expired 6-digit code. Please enter the correct code.');
             }
 
             // Store client record into Supabase Customers table

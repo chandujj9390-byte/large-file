@@ -97,8 +97,7 @@ module.exports = async function handler(req, res) {
         return sendJSON(res, 200, {
             success: true,
             message: `4-Digit OTP sent successfully to +91 ${cleanPhone}`,
-            phone: cleanPhone,
-            otp: generatedOtp
+            phone: cleanPhone
         });
     } catch (err) {
         console.error('[Send OTP Handler Error]', err);
