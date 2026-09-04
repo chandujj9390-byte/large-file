@@ -1790,6 +1790,54 @@ html.lenis body {
     z-index: 10;
 }
 
+/* Trustpilot TrustBox Footer Stacking */
+.trustbox-footer-container {
+    margin-bottom: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.trustbox-wrapper-card {
+    width: min(100%, 720px);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 16px 24px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.trustbox-wrapper-card:hover {
+    border-color: rgba(0, 255, 136, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.08);
+}
+
+.trustbox-wrapper-card .trustpilot-widget {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.trustpilot-brand-label {
+    color: var(--primary-emerald, #00ff88);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.trustpilot-brand-label:hover {
+    opacity: 0.85;
+}
+
 .footer-container {
     display: flex;
     justify-content: space-between;
