@@ -1366,7 +1366,7 @@
         document.getElementById('form-send-otp')?.classList.remove('hidden');
         document.getElementById('form-verify-otp')?.classList.add('hidden');
         const badge = document.getElementById('auth-step-badge');
-        if (badge) badge.textContent = '📱';
+        if (badge) badge.textContent = 'ARNE';
         const subtext = document.getElementById('auth-modal-subtext');
         if (subtext) subtext.textContent = 'Enter your registered mobile number to receive a 6-digit OTP verification code.';
         clearAuthAlert();

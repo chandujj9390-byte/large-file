@@ -218,8 +218,8 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
         </button>
 
         <div className="text-center mb-5">
-          <div className="w-10 h-10 rounded-xl bg-[#00ff88]/10 border border-[#00ff88]/25 text-[#00ff88] flex items-center justify-center mx-auto mb-2.5 text-base">
-            {step === 'phone' ? '📱' : '🔒'}
+          <div className="w-11 h-11 rounded-xl bg-[#00ff88]/10 border border-[#00ff88]/25 text-[#00ff88] flex items-center justify-center mx-auto mb-2.5 text-xs font-black tracking-widest font-mono">
+            {step === 'phone' ? 'ARNE' : '🔒'}
           </div>
           <h2 className="text-lg font-black tracking-wide text-white">
             {step === 'phone' ? 'CLIENT ACCESS PORTAL' : 'VERIFY CODE'}
@@ -259,9 +259,6 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
                   required
                 />
               </div>
-              <span className="block text-[10px] text-gray-500 mt-1">
-                Registered client email linked to Supabase
-              </span>
             </div>
 
             <div>
@@ -274,7 +271,7 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
                 </span>
                 <input
                   type="tel"
-                  placeholder="93906 62637"
+                  placeholder="ENTER MOBILE NUMBER"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="w-full px-3 py-3 bg-transparent text-white text-sm outline-none placeholder-gray-600"
