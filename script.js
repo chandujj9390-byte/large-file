@@ -1002,79 +1002,85 @@
     }
 
     // Submit Handling
-    window.handleSecondarySubmit = function () {
+    window.handleSecondarySubmit = function (e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
         const form = document.getElementById('arne-booking-form');
-        if (form) handleBookingFormSubmit(new Event('submit', { cancelable: true }));
+        if (form) handleBookingFormSubmit(e || new Event('submit', { cancelable: true }));
+        return false;
     };
 
     window.handleBookingFormSubmit = async function (e) {
-        if (e) e.preventDefault();
+        // 1. Prevent Default Behavior: Absolute first line
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
 
-        if (!validateBookingForm()) {
-            const card = document.querySelector('.booking-modal-card');
-            if (card) card.scrollTop = 0;
-            return;
-        }
-
-        // 1. Loading State: "Booking Slot..." with Spinner
         const btn = document.getElementById('btn-book-slot-primary');
         const btnText = document.getElementById('btn-book-text');
         const originalBtnHTML = btnText ? btnText.innerHTML : 'PROCEED TO SECURE PAYMENT ↗';
 
-        if (btn) btn.disabled = true;
-        if (btnText) {
-            btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Booking Slot & Sending Confirmation...';
-        }
+        // 3. Add Error Catching: Wrap entire validation, database insertion and payment routing in try/catch block
+        try {
+            if (!validateBookingForm()) {
+                const card = document.querySelector('.booking-modal-card');
+                if (card) card.scrollTop = 0;
+                return false;
+            }
 
-        // Generate Unique Booking ID (e.g. ARNE-2026-849201)
-        const randomCode = Math.floor(100000 + Math.random() * 900000);
-        const bookingId = `ARNE-2026-${randomCode}`;
+            // 1. Loading State: "Booking Slot..." with Spinner
+            if (btn) btn.disabled = true;
+            if (btnText) {
+                btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Booking Slot & Processing Payment...';
+            }
 
-        const fullName = document.getElementById('cust-full-name')?.value.trim() || '';
-        const mobile = document.getElementById('cust-mobile')?.value.trim() || '';
-        const whatsapp = document.getElementById('cust-whatsapp')?.value.trim() || mobile;
-        const email = document.getElementById('cust-email')?.value.trim() || '';
-        const company = document.getElementById('cust-company')?.value.trim() || '';
-        const location = document.getElementById('cust-location')?.value.trim() || '';
-        const serviceName = document.getElementById('service-select')?.value || 'Creative Service';
-        const projectDesc = document.getElementById('project-description')?.value.trim() || 'No additional requirements.';
-        const prefDate = document.getElementById('pref-date')?.value || '';
-        const prefSlot = document.getElementById('pref-slot')?.value || '';
-        const estBudget = document.getElementById('est-budget')?.value.trim() || 'Flexible';
-        const refLink = document.getElementById('ref-link')?.value.trim() || 'None';
-        const paymentPref = document.getElementById('pay-method')?.value || 'UPI / Card';
+            // Generate Unique Booking ID (e.g. ARNE-2026-849201)
+            const randomCode = Math.floor(100000 + Math.random() * 900000);
+            const bookingId = `ARNE-2026-${randomCode}`;
 
-        // Calculate pricing split (50% Prepaid Deposit + 50% Postpaid)
-        const priceNum = Number((estBudget || '').replace(/\D/g, '')) || 999;
-        const prepaidVal = Math.round(priceNum * 0.5 * 100) / 100;
-        const postpaidVal = Math.round(priceNum * 0.5 * 100) / 100;
+            const fullName = document.getElementById('cust-full-name')?.value.trim() || '';
+            const mobile = document.getElementById('cust-mobile')?.value.trim() || '';
+            const whatsapp = document.getElementById('cust-whatsapp')?.value.trim() || mobile;
+            const email = document.getElementById('cust-email')?.value.trim() || '';
+            const company = document.getElementById('cust-company')?.value.trim() || '';
+            const location = document.getElementById('cust-location')?.value.trim() || '';
+            const serviceName = document.getElementById('service-select')?.value || 'Creative Service';
+            const projectDesc = document.getElementById('project-description')?.value.trim() || 'No additional requirements.';
+            const prefDate = document.getElementById('pref-date')?.value || '';
+            const prefSlot = document.getElementById('pref-slot')?.value || '';
+            const estBudget = document.getElementById('est-budget')?.value.trim() || 'Flexible';
+            const refLink = document.getElementById('ref-link')?.value.trim() || 'None';
+            const paymentPref = document.getElementById('pay-method')?.value || 'UPI / Card';
 
-        const bookingData = {
-            id: bookingId,
-            name: fullName,
-            email: email,
-            phone: mobile,
-            whatsapp: whatsapp,
-            company: company,
-            location: location,
-            service: serviceName,
-            desc: projectDesc,
-            date: prefDate,
-            slot: prefSlot,
-            total: priceNum,
-            prepaid: prepaidVal,
-            postpaid: postpaidVal,
-            refLink: refLink,
-            paymentPref: paymentPref
-        };
+            // Calculate pricing split (50% Prepaid Deposit + 50% Postpaid)
+            const priceNum = Number((estBudget || '').replace(/\D/g, '')) || 999;
+            const prepaidVal = Math.round(priceNum * 0.5 * 100) / 100;
+            const postpaidVal = Math.round(priceNum * 0.5 * 100) / 100;
 
-        // Store pending payment in sessionStorage
-        sessionStorage.setItem('arne_pending_payment', JSON.stringify(bookingData));
+            const bookingData = {
+                id: bookingId,
+                name: fullName,
+                email: email,
+                phone: mobile,
+                whatsapp: whatsapp,
+                company: company,
+                location: location,
+                service: serviceName,
+                desc: projectDesc,
+                date: prefDate,
+                slot: prefSlot,
+                total: priceNum,
+                prepaid: prepaidVal,
+                postpaid: postpaidVal,
+                refLink: refLink,
+                paymentPref: paymentPref
+            };
 
-        // Direct Supabase Cloud Database Insertion (Stores Patient / Customer Form Data)
-        if (supabaseClient) {
-            try {
-                await supabaseClient.from('bookings').insert([{
+            // Store pending payment in sessionStorage
+            sessionStorage.setItem('arne_pending_payment', JSON.stringify(bookingData));
+
+            // Direct Supabase Cloud Database Insertion (Stores Patient / Customer Form Data)
+            if (supabaseClient) {
+                const { error: bookingErr } = await supabaseClient.from('bookings').insert([{
                     id: bookingId,
                     client_name: fullName,
                     client_email: email,
@@ -1101,13 +1107,13 @@
                     payment_status: 'Pending',
                     ref_link: refLink
                 }]);
-                console.log('[ARNE Supabase] Booking & patient form record saved to Supabase:', bookingId);
-            } catch (err) {
-                console.warn('[ARNE Supabase Notice] Client-side booking save notice:', err);
-            }
+                if (bookingErr) {
+                    console.error('[ARNE Supabase Booking Insert Error]', bookingErr);
+                } else {
+                    console.log('[ARNE Supabase] Booking & patient form record saved to Supabase:', bookingId);
+                }
 
-            try {
-                await supabaseClient.from('customers').insert([{
+                const { error: custErr } = await supabaseClient.from('customers').insert([{
                     full_name: fullName,
                     mobile: mobile,
                     whatsapp: whatsapp,
@@ -1115,16 +1121,46 @@
                     company: company,
                     location: location
                 }]);
-            } catch (cErr) {
-                console.warn('[ARNE Supabase Notice] Client-side customer save notice:', cErr);
+                if (custErr) {
+                    console.error('[ARNE Supabase Customer Insert Error]', custErr);
+                }
             }
+
+            // 2. Fix API Paths: Relative path call to /api/book-slot endpoint
+            try {
+                await fetch('/api/book-slot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_id: bookingId,
+                        client_name: fullName,
+                        client_email: email,
+                        client_phone: mobile,
+                        service_type: serviceName,
+                        booking_date: prefDate,
+                        booking_time: prefSlot,
+                        project_desc: projectDesc,
+                        est_budget: `₹${priceNum}`,
+                        payment_status: 'Pending'
+                    })
+                });
+            } catch (apiErr) {
+                console.warn('[ARNE Backend /api/book-slot notice]', apiErr.message);
+            }
+
+            // Construct checkout URL pointing to payment.html (relative path)
+            const paymentUrl = `payment.html?id=${encodeURIComponent(bookingId)}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(mobile)}&service=${encodeURIComponent(serviceName)}&date=${encodeURIComponent(prefDate)}&slot=${encodeURIComponent(prefSlot)}&desc=${encodeURIComponent(projectDesc)}&total=${priceNum}&prepaid=${prepaidVal}&postpaid=${postpaidVal}`;
+
+            // Redirect to the Payment Gateway Checkout page
+            window.location.href = paymentUrl;
+            return false;
+        } catch (err) {
+            console.error('[ARNE Booking Submission Fatal Error]', err);
+            alert('Booking Submission Error: ' + (err.message || 'An unexpected error occurred. Please try again.'));
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.innerHTML = originalBtnHTML;
+            return false;
         }
-
-        // Construct checkout URL pointing to payment.html
-        const paymentUrl = `payment.html?id=${encodeURIComponent(bookingId)}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(mobile)}&service=${encodeURIComponent(serviceName)}&date=${encodeURIComponent(prefDate)}&slot=${encodeURIComponent(prefSlot)}&desc=${encodeURIComponent(projectDesc)}&total=${priceNum}&prepaid=${prepaidVal}&postpaid=${postpaidVal}`;
-
-        // Redirect directly to the Mobile OTP & Razorpay Gateway Checkout page
-        window.location.href = paymentUrl;
     };
 
     function showBookingSuccessNotification(info) {
@@ -1923,27 +1959,36 @@
     // CONTACT FORM HANDLER & CASE STUDY MODAL
     // ----------------------------------------------------------------------
     window.handleContactSubmit = async function (e) {
-        e.preventDefault();
-        const name = document.getElementById('c-name')?.value.trim() || '';
-        const email = document.getElementById('c-email')?.value.trim() || '';
-        const phone = document.getElementById('c-phone')?.value.trim() || '';
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
 
-        // Save contact message directly to Supabase
-        if (supabaseClient) {
-            try {
-                await supabaseClient.from('contact_messages').insert([{
+        try {
+            const name = document.getElementById('c-name')?.value.trim() || '';
+            const email = document.getElementById('c-email')?.value.trim() || '';
+            const phone = document.getElementById('c-phone')?.value.trim() || '';
+
+            // Save contact message directly to Supabase
+            if (supabaseClient) {
+                const { error: contactErr } = await supabaseClient.from('contact_messages').insert([{
                     name: name,
                     email: email,
                     phone: phone
                 }]);
-                console.log('[ARNE Supabase] Contact message saved to Supabase');
-            } catch (supErr) {
-                console.warn('[ARNE Supabase Notice] Contact message save notice:', supErr);
+                if (contactErr) {
+                    console.error('[ARNE Supabase Contact Insert Error]', contactErr);
+                } else {
+                    console.log('[ARNE Supabase] Contact message saved to Supabase');
+                }
             }
-        }
 
-        alert(`✨ Thank you ${name}! Your inquiry has been received. We will contact you at ${email} / ${phone} shortly.`);
-        e.target.reset();
+            alert(`✨ Thank you ${name}! Your inquiry has been received. We will contact you at ${email} / ${phone} shortly.`);
+            e.target?.reset();
+            return false;
+        } catch (contactErr) {
+            console.error('[ARNE Contact Submission Error]', contactErr);
+            alert('Contact Submission Error: ' + (contactErr.message || 'Failed to send message. Please try again.'));
+            return false;
+        }
     };
 
     window.handleGradingMouseMove = function (e, container) {

@@ -313,7 +313,7 @@
                     </div>
 
                     <div class="contact-right">
-                        <form class="contact-form" onsubmit="handleContactSubmit(event)">
+                        <form class="contact-form" onsubmit="event.preventDefault(); handleContactSubmit(event); return false;">
                             <div class="form-group">
                                 <label>YOUR NAME</label>
                                 <input type="text" placeholder="" required id="c-name">
@@ -379,7 +379,7 @@
 
             <!-- Form Content Layout (Split into Main Form + Live Summary Sidebar) -->
             <div class="booking-form-wrapper" id="booking-form-content" data-lenis-prevent>
-                <form class="booking-main-form" id="arne-booking-form" onsubmit="handleBookingFormSubmit(event)"
+                <form class="booking-main-form" id="arne-booking-form" onsubmit="event.preventDefault(); handleBookingFormSubmit(event); return false;"
                     novalidate data-lenis-prevent>
 
                     <!-- SECTION 1: CUSTOMER DETAILS -->
