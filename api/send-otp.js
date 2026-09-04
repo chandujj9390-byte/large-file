@@ -69,14 +69,17 @@ module.exports = async function handler(req, res) {
             return sendJSON(res, 400, { success: false, message: 'Please enter a valid 10-digit mobile number' });
         }
 
-        // Generate 4-digit OTP (Universal backup is 1234)
-        const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        // Generate secure 6-digit or 4-digit OTP
+        const digits = body.digits === 4 ? 4 : 6;
+        const generatedOtp = digits === 4 
+            ? Math.floor(1000 + Math.random() * 9000).toString()
+            : Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = Date.now() + 10 * 60 * 1000;
 
         global.ARNE_OTP_STORE.set(cleanPhone, { otp: generatedOtp, expiresAt });
-        console.log(`[ARNE OTP Service] OTP generated for +91 ${cleanPhone}: [ ${generatedOtp} ]`);
+        console.log(`[ARNE OTP Service] ${digits}-Digit OTP generated for +91 ${cleanPhone}`);
 
-        // Attempt Twilio WhatsApp if credentials exist
+        // Attempt Twilio SMS / WhatsApp if credentials exist
         const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID;
         const TWILIO_AUTH = process.env.TWILIO_AUTH_TOKEN;
         if (TWILIO_SID && TWILIO_AUTH && !TWILIO_SID.includes('YOUR_')) {
@@ -87,7 +90,7 @@ module.exports = async function handler(req, res) {
                 await client.messages.create({
                     from: sender,
                     to: `whatsapp:+91${cleanPhone}`,
-                    body: `🔑 *ARNE Works Verification Code*\n\nYour 4-digit Booking OTP is: *${generatedOtp}*\n\nEnter this code to confirm your booking slot. Valid for 10 minutes.`
+                    body: `🔑 *ARNE Works Verification Code*\n\nYour ${digits}-digit OTP is: *${generatedOtp}*\n\nValid for 10 minutes.`
                 });
             } catch (tErr) {
                 console.warn('[Twilio Dispatch Notice]', tErr.message);
@@ -96,7 +99,7 @@ module.exports = async function handler(req, res) {
 
         return sendJSON(res, 200, {
             success: true,
-            message: `4-Digit OTP sent successfully to +91 ${cleanPhone}`,
+            message: `${digits}-Digit OTP sent successfully to +91 ${cleanPhone}`,
             phone: cleanPhone
         });
     } catch (err) {

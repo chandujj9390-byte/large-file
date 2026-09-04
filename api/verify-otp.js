@@ -76,13 +76,18 @@ module.exports = async function handler(req, res) {
             global.ARNE_OTP_STORE.delete(cleanPhone);
             return sendJSON(res, 200, {
                 success: true,
-                message: 'OTP verified successfully. Confirming booking slot...',
-                phone: cleanPhone
+                message: 'OTP verified successfully.',
+                phone: cleanPhone,
+                user: {
+                    id: `client_${cleanPhone}`,
+                    phone: `+91${cleanPhone}`,
+                    role: 'authenticated'
+                }
             });
         } else {
             return sendJSON(res, 400, {
                 success: false,
-                message: 'Invalid or expired 4-digit OTP. Please check your SMS and try again.'
+                message: 'Invalid or expired OTP code. Please check and try again.'
             });
         }
     } catch (err) {
