@@ -1635,6 +1635,13 @@
             closeAuthModal();
 
             showToast(`✓ Welcome! Verified access granted for ${formattedPhone}`);
+
+            // Automatically open Client Booking History drawer
+            setTimeout(() => {
+                if (typeof openCustomerPortal === 'function') {
+                    openCustomerPortal();
+                }
+            }, 300);
         } catch (err) {
             console.error('[Supabase verifyOtp Error]', err);
             showAuthAlert(err.message || 'Invalid or expired verification code. Please try again.');
@@ -1673,20 +1680,34 @@
         const custName = document.getElementById('cust-name-display');
         const custEmail = document.getElementById('cust-email-display');
 
+        // SVG Contact / User Profile Icon Logo
+        const contactLogoSvg = `
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        `;
+
+        const drawerAvatarSvg = `
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        `;
+
         if (user) {
             // User is Authenticated
             if (loggedOutIcon) loggedOutIcon.classList.add('hidden');
             if (loggedInAvatar) {
                 loggedInAvatar.classList.remove('hidden');
-                // Calculate display initials (e.g. last 2 digits of phone or first char of email)
-                const phoneStr = user.phone || '';
-                const displayChar = phoneStr.length >= 2 ? phoneStr.slice(-2) : (user.email ? user.email.charAt(0).toUpperCase() : 'U');
-                loggedInAvatar.textContent = displayChar;
+                // Display Contact Logo SVG Icon (Image 1 fix)
+                loggedInAvatar.innerHTML = contactLogoSvg;
+                loggedInAvatar.setAttribute('title', `Logged in as ${user.phone || user.email || 'Client'}`);
             }
             if (dropdownPhone) dropdownPhone.textContent = user.phone || user.email || 'Verified Client';
-            if (custAvatar) custAvatar.textContent = (user.phone ? user.phone.slice(-2) : 'C');
+            if (custAvatar) custAvatar.innerHTML = drawerAvatarSvg;
             if (custName) custName.textContent = user.phone || user.email || 'Client';
-            if (custEmail) custEmail.textContent = user.email || user.phone || '';
+            if (custEmail) custEmail.textContent = user.email || (user.phone ? `${user.phone} (SMS Verified)` : 'Verified Client');
         } else {
             // User is Logged Out
             if (loggedOutIcon) loggedOutIcon.classList.remove('hidden');
@@ -1835,14 +1856,25 @@
     };
 
     // ----------------------------------------------------------------------
-    // CUSTOMER DASHBOARD DRAWER
+    // CLIENT BOOKING HISTORY & CUSTOMER DASHBOARD DRAWER
     // ----------------------------------------------------------------------
-    window.openCustomerPortal = function () {
-        if (!currentUser || !currentUser.isLoggedIn) {
+    window.openCustomerPortal = async function () {
+        const activeUser = activeAuthSession?.user || JSON.parse(sessionStorage.getItem('arne_client_session') || 'null') || (currentUser?.isLoggedIn ? currentUser : null);
+        if (!activeUser) {
             openAuthModal();
             return;
         }
-        renderCustomerDashboard();
+
+        // Close Login Modal if currently open
+        closeAuthModal();
+
+        // Close user dropdown menu
+        const dropdown = document.getElementById('user-dropdown-menu');
+        if (dropdown) dropdown.classList.add('hidden');
+
+        // Render real-time booking history for this client
+        await renderCustomerDashboard(activeUser);
+
         const modal = document.getElementById('customer-modal');
         if (modal) {
             modal.classList.add('active');
@@ -1861,30 +1893,100 @@
     };
 
     window.logoutCustomer = function () {
-        currentUser = { isLoggedIn: false };
-        saveUser();
-        updateUserNavUI();
+        handleSupabaseSignOut();
         closeCustomerPortal();
     };
 
-    function renderCustomerDashboard() {
-        const userBookings = bookingsStore.filter(b => b.customerEmail === currentUser.email || b.customerName === currentUser.name);
+    async function renderCustomerDashboard(user) {
+        if (!user) return;
+        const userPhone = (user.phone || '').replace(/\D/g, '');
+        const userEmail = (user.email || '').toLowerCase().trim();
 
-        document.getElementById('d-total-bookings').textContent = userBookings.length;
+        const nameEl = document.getElementById('cust-name-display');
+        const emailEl = document.getElementById('cust-email-display');
+        if (nameEl) nameEl.textContent = user.phone || user.email || 'Verified Client';
+        if (emailEl) emailEl.textContent = user.email || (user.phone ? `${user.phone} • Verified SMS Access` : 'Client Account');
 
+        // 1. Gather bookings from localStorage
+        let localBookings = [];
+        try {
+            const raw = localStorage.getItem('arne_bookings');
+            if (raw) localBookings = JSON.parse(raw);
+        } catch (_) {}
+
+        // Filter local bookings for current user
+        let userBookings = localBookings.filter(b => {
+            const bPhone = (b.customerPhone || b.phone || '').replace(/\D/g, '');
+            const bEmail = (b.customerEmail || b.email || '').toLowerCase().trim();
+            return (userPhone && bPhone && (bPhone.includes(userPhone.slice(-10)) || userPhone.includes(bPhone.slice(-10)))) ||
+                   (userEmail && bEmail && bEmail === userEmail);
+        });
+
+        // 2. Fetch remote bookings from Supabase 'bookings' table
+        const sb = getSupabaseClient();
+        if (sb && (userPhone || userEmail)) {
+            try {
+                let query = sb.from('bookings').select('*');
+                if (userPhone && userEmail) {
+                    query = query.or(`phone.ilike.%${userPhone.slice(-10)}%,email.ilike.%${userEmail}%`);
+                } else if (userPhone) {
+                    query = query.ilike('phone', `%${userPhone.slice(-10)}%`);
+                } else if (userEmail) {
+                    query = query.ilike('email', `%${userEmail}%`);
+                }
+
+                const { data: dbBookings, error } = await query;
+                if (!error && Array.isArray(dbBookings)) {
+                    dbBookings.forEach(dbB => {
+                        const exists = userBookings.some(ub => ub.id === dbB.booking_id || ub.id === dbB.id);
+                        if (!exists) {
+                            userBookings.push({
+                                id: dbB.booking_id || `ARNE-${dbB.id}`,
+                                serviceName: dbB.service_type || 'Production Package',
+                                date: dbB.booking_date || 'Confirmed Slot',
+                                timeSlot: dbB.booking_time || 'Scheduled',
+                                prepaid30: dbB.advance_paid || 0,
+                                postpaid70: dbB.postpaid_due || 0,
+                                status: dbB.payment_status === 'Paid' ? 'Fully Paid' : (dbB.payment_status || 'Prepaid Paid'),
+                                postpaidStatus: dbB.payment_status === 'Paid' ? 'Paid' : 'Pending'
+                            });
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('[Supabase Bookings Fetch Notice]:', err.message);
+            }
+        }
+
+        // Update Dashboard Summary Stats
+        const totalEl = document.getElementById('d-total-bookings');
+        const activeEl = document.getElementById('d-active-projects');
+        const pendingEl = document.getElementById('d-pending-postpaid');
+
+        if (totalEl) totalEl.textContent = userBookings.length;
         const activeCount = userBookings.filter(b => b.status !== 'Completed' && b.status !== 'Fully Paid').length;
-        document.getElementById('d-active-projects').textContent = activeCount;
+        if (activeEl) activeEl.textContent = activeCount;
 
         const pendingPostpaidSum = userBookings
             .filter(b => b.postpaidStatus === 'Pending')
-            .reduce((sum, b) => sum + b.postpaid70, 0);
-        document.getElementById('d-pending-postpaid').textContent = `₹${pendingPostpaidSum.toLocaleString('en-IN')}`;
+            .reduce((sum, b) => sum + (Number(b.postpaid70) || 0), 0);
+        if (pendingEl) pendingEl.textContent = `₹${pendingPostpaidSum.toLocaleString('en-IN')}`;
 
+        // Render Booking List
         const listEl = document.getElementById('customer-bookings-list');
         if (!listEl) return;
 
         if (userBookings.length === 0) {
-            listEl.innerHTML = `<p style="color: var(--text-muted);">No bookings found yet. Click "Book a Slot" to start your first project!</p>`;
+            listEl.innerHTML = `
+                <div style="text-align:center; padding: 28px 16px; background: rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:18px;">
+                    <div style="font-size:32px; margin-bottom:8px;">📅</div>
+                    <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:4px;">No Booking History Yet</div>
+                    <p style="font-size:12px; color: var(--text-muted); margin-bottom:16px;">Ready to elevate your production? Reserve your shoot date now.</p>
+                    <button class="btn-primary btn-sparkle" onclick="closeCustomerPortal(); openBookingModal();" style="font-size:12px; padding:10px 20px;">
+                        <span>Book a Slot ↗</span>
+                    </button>
+                </div>
+            `;
             return;
         }
 
@@ -1892,13 +1994,18 @@
             <div class="booking-item-card">
                 <div class="bic-top">
                     <strong>${b.id}</strong>
-                    <span class="status-tag ${b.postpaidStatus === 'Paid' ? 'tag-fullpaid' : 'tag-prepaid'}">${b.status}</span>
+                    <span class="status-tag ${b.postpaidStatus === 'Paid' ? 'tag-fullpaid' : 'tag-prepaid'}">${b.status || 'Confirmed'}</span>
                 </div>
-                <div style="font-size:16px; font-weight:800; margin-bottom:6px;">${b.serviceName}</div>
-                <div style="font-size:13px; color: var(--text-secondary); margin-bottom:12px;">📅 ${b.date} @ ${b.timeSlot}</div>
+                <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:4px;">${b.serviceName}</div>
+                <div style="font-size:12.5px; color: var(--text-secondary); margin-bottom:10px;">📅 Date: <strong>${b.date}</strong> @ ⏰ <strong>${b.timeSlot}</strong></div>
                 <div class="service-payment-split">
-                    <span>50% Prepaid: ₹${b.prepaid30} (Paid ✓)</span>
-                    <span>50% Postpaid: ₹${b.postpaid70} (${b.postpaidStatus})</span>
+                    <span>💳 Advance: <strong>₹${(b.prepaid30 || 0).toLocaleString('en-IN')}</strong> (Paid ✓)</span>
+                    <span>⏳ Postpaid Due: <strong>₹${(b.postpaid70 || 0).toLocaleString('en-IN')}</strong> (${b.postpaidStatus || 'Pending'})</span>
+                </div>
+                <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+                    <a href="https://wa.me/919390662637?text=Hi%20Chandu,%20inquiring%20about%20my%20booking%20${encodeURIComponent(b.id)}%20(${encodeURIComponent(b.serviceName)})." target="_blank" style="font-size:11.5px; font-weight:700; color:#25D366; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:rgba(37,211,102,0.1); padding:6px 12px; border-radius:8px; border:1px solid rgba(37,211,102,0.25);">
+                        <span>Chat Support on WhatsApp</span> 💬
+                    </a>
                 </div>
             </div>
         `).join('');
