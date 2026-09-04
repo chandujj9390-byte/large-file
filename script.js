@@ -1456,6 +1456,7 @@
     }
 
     let pendingAuthPhone = '';
+    let pendingAuthEmail = '';
     let pendingVerificationCode = '';
 
     function getFormattedPhoneInput() {
@@ -1482,6 +1483,18 @@
         clearAuthAlert();
         const btn = document.getElementById('btn-send-otp');
         const originalText = btn ? btn.innerHTML : 'SEND VERIFICATION OTP ↗';
+
+        // 1. Validate Gmail / Email Address
+        const emailInput = document.getElementById('auth-email');
+        const emailVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        if (!emailVal || !emailRegex.test(emailVal)) {
+            showAuthAlert('Please enter a valid Gmail / email address.');
+            return;
+        }
+
+        pendingAuthEmail = emailVal;
 
         // 2. Enforce Country Code (+91 default)
         const formattedPhone = getFormattedPhoneInput();
@@ -1597,6 +1610,7 @@
         const otpInput = document.getElementById('auth-otp');
         const otp = otpInput ? otpInput.value.trim() : '';
         const formattedPhone = pendingAuthPhone || getFormattedPhoneInput();
+        const clientEmail = pendingAuthEmail || document.getElementById('auth-email')?.value.trim().toLowerCase() || `client.${formattedPhone.replace(/\D/g, '')}@gmail.com`;
 
         if (otp.length !== 6) {
             showAuthAlert('Please enter the complete 6-digit OTP code.');
@@ -1636,6 +1650,7 @@
                     verifiedUser = data.user || {
                         id: `client_${formattedPhone.replace(/\D/g, '').slice(-10)}`,
                         phone: formattedPhone,
+                        email: clientEmail,
                         role: 'authenticated'
                     };
                 } else {
@@ -1643,14 +1658,19 @@
                 }
             }
 
-            // Store client record into Supabase Customers table
+            if (verifiedUser) {
+                verifiedUser.email = clientEmail;
+            }
+
+            // Store client record with actual Gmail into Supabase Customers table
             if (sb) {
                 try {
+                    const displayName = clientEmail.includes('@') ? clientEmail.split('@')[0] : `Client (${formattedPhone.slice(-4)})`;
                     await sb.from('customers').insert([{
-                        full_name: `Client (${formattedPhone.slice(-4)})`,
+                        full_name: displayName,
                         mobile: formattedPhone,
                         whatsapp: formattedPhone,
-                        email: `client.${formattedPhone.replace(/\D/g, '')}@arnestories.com`
+                        email: clientEmail
                     }]);
                 } catch (_) {}
             }

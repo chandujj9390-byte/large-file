@@ -15,6 +15,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  * - Error resilience for Supabase SMS provider setup
  */
 export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
+  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [step, setStep] = useState('phone'); // 'phone' | 'otp'
@@ -32,6 +33,7 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
 
   useEffect(() => {
     if (!isOpen) {
+      setEmail('');
       setPhoneNumber('');
       setOtpCode('');
       setStep('phone');
@@ -59,6 +61,14 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
       e.preventDefault();
     }
     setErrorMsg('');
+
+    // 1. Validate Gmail Address
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setErrorMsg('Please enter a valid Gmail / email address.');
+      return;
+    }
 
     // 2. Enforce Country Code (+91 default)
     const formatted = getFormattedPhone(phoneNumber);
@@ -126,6 +136,7 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
 
     setLoading(true);
     const formatted = getFormattedPhone();
+    const clientEmail = (email || '').trim().toLowerCase() || `client.${formatted.replace(/\D/g, '')}@gmail.com`;
     let verified = false;
     let authUser = null;
 
@@ -156,11 +167,16 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
           authUser = data.user || {
             id: `client_${formatted.replace(/\D/g, '').slice(-10)}`,
             phone: formatted,
+            email: clientEmail,
             role: 'authenticated'
           };
         } else {
           throw new Error(data?.message || 'Invalid or expired 6-digit verification code.');
         }
+      }
+
+      if (authUser) {
+        authUser.email = clientEmail;
       }
     } catch (err) {
       console.error('[Verify OTP Error]', err);
@@ -172,11 +188,12 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
     if (verified) {
       // Save client profile to Supabase
       try {
+        const displayName = clientEmail.includes('@') ? clientEmail.split('@')[0] : `Client (${formatted.slice(-4)})`;
         await supabase.from('customers').insert([{
-          full_name: `Client (${formatted.slice(-4)})`,
+          full_name: displayName,
           mobile: formatted,
           whatsapp: formatted,
-          email: `client.${formatted.replace(/\D/g, '')}@arnestories.com`
+          email: clientEmail
         }]);
       } catch (_) {}
 
@@ -221,9 +238,32 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
           </div>
         )}
 
-        {/* STEP 1: Phone Form */}
+        {/* STEP 1: Phone & Email Form */}
         {step === 'phone' && (
           <form onSubmit={handleSendOtp} className="space-y-3.5">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+                Gmail Address *
+              </label>
+              <div className="flex items-center rounded-xl bg-white/[0.04] border border-white/10 focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88] transition-all overflow-hidden">
+                <span className="px-3 py-3 text-xs font-bold text-[#00ff88] bg-[#00ff88]/10 border-r border-white/10 whitespace-nowrap">
+                  ✉️
+                </span>
+                <input
+                  type="email"
+                  placeholder="yourname@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-3 bg-transparent text-white text-sm outline-none placeholder-gray-600"
+                  autoFocus
+                  required
+                />
+              </div>
+              <span className="block text-[10px] text-gray-500 mt-1">
+                Registered client email linked to Supabase
+              </span>
+            </div>
+
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
                 Registered Mobile Number *
@@ -238,7 +278,6 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="w-full px-3 py-3 bg-transparent text-white text-sm outline-none placeholder-gray-600"
-                  autoFocus
                   required
                 />
               </div>
