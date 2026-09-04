@@ -207,7 +207,7 @@ async function handleBookSlotRequest(reqData) {
                     console.log(`[ARNE BookSlot] Booking ${bookingId} successfully saved to Supabase.`);
                 }
 
-                // Also update/insert customer profile if possible
+                // Also update/insert customer profile and patient record if possible
                 try {
                     await supabaseClient.from('customers').insert([{
                         full_name: clientName,
@@ -217,6 +217,22 @@ async function handleBookSlotRequest(reqData) {
                         company: company,
                         location: location,
                         total_bookings: 1
+                    }]);
+                } catch (_) {}
+
+                try {
+                    await supabaseClient.from('patients').insert([{
+                        booking_id: bookingId,
+                        patient_name: clientName,
+                        email: clientEmail,
+                        phone: clientPhone,
+                        whatsapp: whatsapp,
+                        service: serviceType,
+                        preferred_date: bookingDate || null,
+                        preferred_time: bookingTime || null,
+                        symptoms_or_requirements: projectDesc,
+                        budget: estBudget,
+                        status: 'Confirmed'
                     }]);
                 } catch (_) {}
 

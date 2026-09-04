@@ -34,7 +34,34 @@ CREATE TABLE IF NOT EXISTS public.customers (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Slots / Availability Table
+-- 4. Patients / Clients Table
+CREATE TABLE IF NOT EXISTS public.patients (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    booking_id TEXT,
+    patient_name TEXT NOT NULL,
+    email TEXT,
+    phone TEXT NOT NULL,
+    whatsapp TEXT,
+    service TEXT,
+    preferred_date DATE,
+    preferred_time TEXT,
+    symptoms_or_requirements TEXT,
+    budget TEXT,
+    status TEXT DEFAULT 'Pending',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Users Table
+CREATE TABLE IF NOT EXISTS public.users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    full_name TEXT,
+    email TEXT UNIQUE,
+    phone TEXT,
+    role TEXT DEFAULT 'patient',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Slots / Availability Table
 CREATE TABLE IF NOT EXISTS public.slots (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     slot_date DATE NOT NULL,
@@ -45,7 +72,7 @@ CREATE TABLE IF NOT EXISTS public.slots (
     CONSTRAINT unique_date_time UNIQUE (slot_date, time_slot)
 );
 
--- 5. Bookings Table (Stores Customer Form Submissions)
+-- 7. Bookings Table (Stores Form Submissions)
 CREATE TABLE IF NOT EXISTS public.bookings (
     id TEXT PRIMARY KEY, -- e.g. 'ARNE-2026-849201' or UUID string
     client_name TEXT,
@@ -73,6 +100,7 @@ CREATE TABLE IF NOT EXISTS public.bookings (
     booking_status TEXT DEFAULT 'Confirmed',
     payment_status TEXT DEFAULT 'Pending',
     ref_link TEXT,
+    transaction_id TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -97,12 +125,15 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='bookings' AND column_name='status') THEN
         ALTER TABLE public.bookings ADD COLUMN status TEXT DEFAULT 'confirmed';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='bookings' AND column_name='transaction_id') THEN
+        ALTER TABLE public.bookings ADD COLUMN transaction_id TEXT;
+    END IF;
 END $$;
 
--- 6. Payments Ledger Table
+-- 8. Payments Ledger Table
 CREATE TABLE IF NOT EXISTS public.payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    booking_id TEXT REFERENCES public.bookings(id) ON DELETE CASCADE,
+    booking_id TEXT,
     customer_name TEXT NOT NULL,
     total_amount NUMERIC(10,2) NOT NULL,
     prepaid_amount NUMERIC(10,2) NOT NULL,
@@ -114,7 +145,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
     paid_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. Notifications Log Table
+-- 9. Notifications Log Table
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     type TEXT NOT NULL,
@@ -123,7 +154,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. Contact Form Submissions Table
+-- 10. Contact Form Submissions Table
 CREATE TABLE IF NOT EXISTS public.contact_messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
@@ -132,26 +163,63 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 9. Row Level Security (RLS) Policies (Allows anon insert & select)
+-- 11. Row Level Security (RLS) Policies
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
--- Grant Anon Public Insert and Select Permissions
+-- Idempotent RLS Policy setup
+DROP POLICY IF EXISTS "Allow public select services" ON public.services;
 CREATE POLICY "Allow public select services" ON public.services FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert bookings" ON public.bookings;
 CREATE POLICY "Allow public insert bookings" ON public.bookings FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public select bookings" ON public.bookings;
 CREATE POLICY "Allow public select bookings" ON public.bookings FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public update bookings" ON public.bookings;
+CREATE POLICY "Allow public update bookings" ON public.bookings FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert customers" ON public.customers;
 CREATE POLICY "Allow public insert customers" ON public.customers FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public select customers" ON public.customers FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public select customers" ON public.customers FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert patients" ON public.patients;
+CREATE POLICY "Allow public insert patients" ON public.patients FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public select patients" ON public.patients;
+CREATE POLICY "Allow public select patients" ON public.patients FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert users" ON public.users;
+CREATE POLICY "Allow public insert users" ON public.users FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public select users" ON public.users;
+CREATE POLICY "Allow public select users" ON public.users FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert contact messages" ON public.contact_messages;
 CREATE POLICY "Allow public insert contact messages" ON public.contact_messages FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public select slots" ON public.slots;
 CREATE POLICY "Allow public select slots" ON public.slots FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert slots" ON public.slots;
 CREATE POLICY "Allow public insert slots" ON public.slots FOR INSERT WITH CHECK (true);
 
--- 10. Seed Initial Services & Data
+DROP POLICY IF EXISTS "Allow public insert payments" ON public.payments;
+CREATE POLICY "Allow public insert payments" ON public.payments FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public select payments" ON public.payments;
+CREATE POLICY "Allow public select payments" ON public.payments FOR SELECT USING (true);
+
+-- 12. Seed Initial Services & Data
 INSERT INTO public.services (id, name, category, price, starting_from, active, description) VALUES
 ('srv-1', 'Video Editing', 'Video Production', 1049, false, true, 'Professional 4K video editing, color grading, sound design, and motion titles.'),
 ('srv-2', 'Photo Editing', 'Photography', 599, false, true, 'High-end portrait retouching, skin smoothing, and color correction.'),

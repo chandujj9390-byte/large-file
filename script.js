@@ -12,14 +12,25 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
     let supabaseClient = null;
 
+    function getSupabaseClient() {
+        if (supabaseClient) return supabaseClient;
+        try {
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                return supabaseClient;
+            }
+        } catch (e) {
+            console.warn('[ARNE Supabase Notice] Initialization error:', e);
+        }
+        return null;
+    }
+
     try {
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = getSupabaseClient();
+        if (supabaseClient) {
             console.log('[ARNE Supabase] Connected to project: xrrhzjabhfnbbblfwyko');
         }
-    } catch (e) {
-        console.warn('[ARNE Supabase Notice] Initialization error:', e);
-    }
+    } catch (e) {}
 
     // ----------------------------------------------------------------------
     // LENIS HARDWARE-ACCELERATED SMOOTH SCROLL ENGINE
@@ -1079,8 +1090,10 @@
             sessionStorage.setItem('arne_pending_payment', JSON.stringify(bookingData));
 
             // Direct Supabase Cloud Database Insertion (Stores Patient / Customer Form Data)
-            if (supabaseClient) {
-                const { error: bookingErr } = await supabaseClient.from('bookings').insert([{
+            const sb = getSupabaseClient();
+            if (sb) {
+                // 1. Insert into bookings table
+                const { error: bookingErr } = await sb.from('bookings').insert([{
                     id: bookingId,
                     client_name: fullName,
                     client_email: email,
@@ -1110,20 +1123,47 @@
                 if (bookingErr) {
                     console.error('[ARNE Supabase Booking Insert Error]', bookingErr);
                 } else {
-                    console.log('[ARNE Supabase] Booking & patient form record saved to Supabase:', bookingId);
+                    console.log('[ARNE Supabase] Booking record saved to Supabase:', bookingId);
                 }
 
-                const { error: custErr } = await supabaseClient.from('customers').insert([{
-                    full_name: fullName,
-                    mobile: mobile,
-                    whatsapp: whatsapp,
-                    email: email,
-                    company: company,
-                    location: location
-                }]);
-                if (custErr) {
-                    console.error('[ARNE Supabase Customer Insert Error]', custErr);
+                // 2. Insert into patients table (if exists)
+                try {
+                    const { error: patientErr } = await sb.from('patients').insert([{
+                        booking_id: bookingId,
+                        patient_name: fullName,
+                        email: email,
+                        phone: mobile,
+                        whatsapp: whatsapp,
+                        service: serviceName,
+                        preferred_date: prefDate || null,
+                        preferred_time: prefSlot || null,
+                        symptoms_or_requirements: projectDesc,
+                        budget: `₹${priceNum}`,
+                        status: 'Pending'
+                    }]);
+                    if (patientErr) {
+                        console.warn('[ARNE Supabase Patient Insert Notice]', patientErr.message);
+                    } else {
+                        console.log('[ARNE Supabase] Patient record saved to Supabase:', bookingId);
+                    }
+                } catch (pe) {
+                    console.warn('[ARNE Supabase Patient Table Fallback]', pe);
                 }
+
+                // 3. Insert into customers table
+                try {
+                    const { error: custErr } = await sb.from('customers').insert([{
+                        full_name: fullName,
+                        mobile: mobile,
+                        whatsapp: whatsapp,
+                        email: email,
+                        company: company,
+                        location: location
+                    }]);
+                    if (custErr) {
+                        console.error('[ARNE Supabase Customer Insert Error]', custErr);
+                    }
+                } catch (ce) {}
             }
 
             // 2. Fix API Paths: Relative path call to /api/book-slot endpoint
