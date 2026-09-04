@@ -1267,9 +1267,62 @@
     // ----------------------------------------------------------------------
     // CUSTOMER AUTH & LOGIN MODAL
     // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // SUPABASE CUSTOMER AUTHENTICATION & PHONE OTP FLOW
+    // ----------------------------------------------------------------------
+    let activeAuthSession = null;
+    let authResendInterval = null;
+    let authResendTimer = 0;
+
+    // Initialize Supabase Auth Listener on Load
+    function initSupabaseAuth() {
+        const sb = getSupabaseClient();
+        if (!sb) return;
+
+        // Check active session on initial load
+        sb.auth.getSession().then(({ data: { session } }) => {
+            activeAuthSession = session;
+            updateSupabaseAuthUI(session?.user || null);
+        }).catch(err => {
+            console.warn('[Supabase Auth GetSession Error]', err);
+        });
+
+        // Subscribe to real-time auth changes
+        sb.auth.onAuthStateChange((_event, session) => {
+            activeAuthSession = session;
+            updateSupabaseAuthUI(session?.user || null);
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('user-auth-wrapper');
+            const dropdown = document.getElementById('user-dropdown-menu');
+            if (wrapper && dropdown && !wrapper.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initSupabaseAuth);
+
+    window.handleUserAuthClick = function (e) {
+        if (e) e.stopPropagation();
+        if (activeAuthSession && activeAuthSession.user) {
+            // User is logged in -> Toggle user dropdown menu
+            const dropdown = document.getElementById('user-dropdown-menu');
+            if (dropdown) dropdown.classList.toggle('hidden');
+        } else {
+            // User is logged out -> Open OTP Login Modal
+            openAuthModal();
+        }
+    };
+
     window.openAuthModal = function () {
         const modal = document.getElementById('auth-modal');
         if (modal) {
+            // Reset inputs & steps
+            backToPhoneStep();
+            clearAuthAlert();
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
             if (window.lenis) window.lenis.stop();
@@ -1285,63 +1338,210 @@
         }
     };
 
-    window.loginWithGoogle = function () {
-        currentUser = {
-            name: '',
-            email: '',
-            phone: '',
-            isLoggedIn: true
-        };
-        saveUser();
-        updateUserNavUI();
-        closeAuthModal();
-        openBookingModal();
-        goToStep(3);
+    window.backToPhoneStep = function () {
+        document.getElementById('form-send-otp')?.classList.remove('hidden');
+        document.getElementById('form-verify-otp')?.classList.add('hidden');
+        const badge = document.getElementById('auth-step-badge');
+        if (badge) badge.textContent = '📱';
+        const subtext = document.getElementById('auth-modal-subtext');
+        if (subtext) subtext.textContent = 'Enter your registered mobile number to receive a 6-digit OTP verification code.';
+        clearAuthAlert();
     };
 
-    window.sendPhoneOTP = function () {
-        const phone = document.getElementById('auth-phone').value;
-        if (!phone) {
-            alert('Please enter a valid phone number.');
+    function showAuthAlert(msg) {
+        const alertBox = document.getElementById('auth-alert-box');
+        const alertText = document.getElementById('auth-alert-text');
+        if (alertBox && alertText) {
+            alertText.textContent = msg;
+            alertBox.classList.remove('hidden');
+        }
+    }
+
+    function clearAuthAlert() {
+        const alertBox = document.getElementById('auth-alert-box');
+        if (alertBox) alertBox.classList.add('hidden');
+    }
+
+    function getFormattedPhoneInput() {
+        const phoneInput = document.getElementById('auth-phone');
+        let raw = phoneInput ? phoneInput.value.trim().replace(/\s+/g, '') : '';
+        if (!raw) return '';
+        if (raw.startsWith('+')) return raw;
+        if (raw.length === 10) return `+91${raw}`;
+        return `+${raw}`;
+    }
+
+    // 1. Send OTP to Client Mobile via Supabase Auth
+    window.sendPhoneOTP = async function () {
+        clearAuthAlert();
+        const formattedPhone = getFormattedPhoneInput();
+        if (!formattedPhone || formattedPhone.length < 10) {
+            showAuthAlert('Please enter a valid 10-digit mobile number with country code.');
             return;
         }
-        document.getElementById('phone-input-group').classList.add('hidden');
-        document.getElementById('otp-input-group').classList.remove('hidden');
+
+        const btn = document.getElementById('btn-send-otp');
+        const originalText = btn ? btn.innerHTML : 'SEND VERIFICATION OTP ↗';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block; width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Sending SMS OTP...';
+        }
+
+        const sb = getSupabaseClient();
+        if (!sb) {
+            showAuthAlert('Database client not initialized. Please try again.');
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+            return;
+        }
+
+        try {
+            const { error } = await sb.auth.signInWithOtp({
+                phone: formattedPhone
+            });
+
+            if (error) throw error;
+
+            // Switch to Step 2 (OTP Input)
+            document.getElementById('form-send-otp')?.classList.add('hidden');
+            document.getElementById('form-verify-otp')?.classList.remove('hidden');
+            const badge = document.getElementById('auth-step-badge');
+            if (badge) badge.textContent = '🔒';
+            const subtext = document.getElementById('auth-modal-subtext');
+            if (subtext) subtext.textContent = `Enter the 6-digit verification code sent via SMS to ${formattedPhone}`;
+
+            const otpInput = document.getElementById('auth-otp');
+            if (otpInput) { otpInput.value = ''; otpInput.focus(); }
+
+            // Start Resend Timer (45s cooldown)
+            startAuthResendTimer(45);
+        } catch (err) {
+            console.error('[Supabase signInWithOtp Error]', err);
+            showAuthAlert(err.message || 'Could not send verification SMS. Please verify your mobile number.');
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+        }
     };
 
-    window.verifyOTP = function () {
-        const otp = document.getElementById('auth-otp').value;
-        const phone = document.getElementById('auth-phone').value;
+    function startAuthResendTimer(seconds) {
+        clearInterval(authResendInterval);
+        authResendTimer = seconds;
+        const resendBtn = document.getElementById('btn-resend-otp');
+
+        authResendInterval = setInterval(() => {
+            authResendTimer--;
+            if (resendBtn) {
+                if (authResendTimer > 0) {
+                    resendBtn.textContent = `Resend in ${authResendTimer}s`;
+                    resendBtn.disabled = true;
+                    resendBtn.style.opacity = '0.5';
+                    resendBtn.style.cursor = 'not-allowed';
+                } else {
+                    resendBtn.textContent = 'Resend Code';
+                    resendBtn.disabled = false;
+                    resendBtn.style.opacity = '1';
+                    resendBtn.style.cursor = 'pointer';
+                    clearInterval(authResendInterval);
+                }
+            }
+        }, 1000);
+    }
+
+    // 2. Verify 6-Digit SMS OTP Code
+    window.verifyOTP = async function () {
+        clearAuthAlert();
+        const otpInput = document.getElementById('auth-otp');
+        const otp = otpInput ? otpInput.value.trim() : '';
+        const formattedPhone = getFormattedPhoneInput();
+
         if (otp.length !== 6) {
-            alert('Please enter valid 6-digit OTP (e.g. 123456).');
+            showAuthAlert('Please enter the complete 6-digit OTP code.');
             return;
         }
-        currentUser = {
-            name: '',
-            email: '',
-            phone: phone || '',
-            isLoggedIn: true
-        };
-        saveUser();
-        updateUserNavUI();
-        closeAuthModal();
-        openBookingModal();
-        goToStep(3);
+
+        const btn = document.getElementById('btn-verify-otp-action');
+        const originalText = btn ? btn.innerHTML : 'VERIFY & COMPLETE LOGIN 🔒';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block; width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Verifying Code...';
+        }
+
+        const sb = getSupabaseClient();
+        if (!sb) {
+            showAuthAlert('Database client not initialized. Please try again.');
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+            return;
+        }
+
+        try {
+            const { data, error } = await sb.auth.verifyOtp({
+                phone: formattedPhone,
+                token: otp,
+                type: 'sms'
+            });
+
+            if (error) throw error;
+
+            console.log('[Supabase Auth] Login successful:', data?.user);
+            activeAuthSession = data?.session;
+            updateSupabaseAuthUI(data?.user);
+            closeAuthModal();
+
+            // Show confirmation toast
+            showToast(`Welcome! Signed in as ${data?.user?.phone || formattedPhone}`);
+        } catch (err) {
+            console.error('[Supabase verifyOtp Error]', err);
+            showAuthAlert(err.message || 'Invalid or expired verification code. Please try again.');
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+        }
     };
 
-    function updateUserNavUI() {
-        const userText = document.getElementById('nav-user-text');
+    // 3. Handle Sign Out
+    window.handleSupabaseSignOut = async function () {
+        const dropdown = document.getElementById('user-dropdown-menu');
+        if (dropdown) dropdown.classList.add('hidden');
+
+        const sb = getSupabaseClient();
+        if (sb) {
+            try {
+                await sb.auth.signOut();
+            } catch (err) {
+                console.warn('[Supabase SignOut Warning]', err);
+            }
+        }
+        activeAuthSession = null;
+        updateSupabaseAuthUI(null);
+        showToast('You have been signed out.');
+    };
+
+    // 4. Update Dynamic Navbar Auth Icon & Dropdown State
+    function updateSupabaseAuthUI(user) {
+        const loggedOutIcon = document.getElementById('auth-icon-logged-out');
+        const loggedInAvatar = document.getElementById('auth-avatar-logged-in');
+        const dropdownPhone = document.getElementById('dropdown-user-phone');
         const custAvatar = document.getElementById('cust-avatar');
         const custName = document.getElementById('cust-name-display');
         const custEmail = document.getElementById('cust-email-display');
 
-        if (currentUser && currentUser.isLoggedIn) {
-            if (userText) userText.textContent = currentUser.name.split(' ')[0];
-            if (custAvatar) custAvatar.textContent = currentUser.name.charAt(0);
-            if (custName) custName.textContent = currentUser.name;
-            if (custEmail) custEmail.textContent = currentUser.email;
+        if (user) {
+            // User is Authenticated
+            if (loggedOutIcon) loggedOutIcon.classList.add('hidden');
+            if (loggedInAvatar) {
+                loggedInAvatar.classList.remove('hidden');
+                // Calculate display initials (e.g. last 2 digits of phone or first char of email)
+                const phoneStr = user.phone || '';
+                const displayChar = phoneStr.length >= 2 ? phoneStr.slice(-2) : (user.email ? user.email.charAt(0).toUpperCase() : 'U');
+                loggedInAvatar.textContent = displayChar;
+            }
+            if (dropdownPhone) dropdownPhone.textContent = user.phone || user.email || 'Verified Client';
+            if (custAvatar) custAvatar.textContent = (user.phone ? user.phone.slice(-2) : 'C');
+            if (custName) custName.textContent = user.phone || user.email || 'Client';
+            if (custEmail) custEmail.textContent = user.email || user.phone || '';
         } else {
-            if (userText) userText.textContent = 'Account';
+            // User is Logged Out
+            if (loggedOutIcon) loggedOutIcon.classList.remove('hidden');
+            if (loggedInAvatar) loggedInAvatar.classList.add('hidden');
+            if (dropdownPhone) dropdownPhone.textContent = '+91 ••••• •••••';
         }
     }
 

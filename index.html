@@ -103,6 +103,35 @@
                 <button class="btn-primary btn-sparkle" onclick="openBookingModal()">
                     <span>Book a Slot ↗</span>
                 </button>
+
+                <!-- Top-Right User Profile / Auth State Icon -->
+                <div class="user-auth-wrapper" id="user-auth-wrapper">
+                    <button class="user-auth-btn" id="btn-user-auth" onclick="handleUserAuthClick()" aria-label="Account / Login">
+                        <span class="auth-icon-placeholder" id="auth-icon-logged-out">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span class="auth-btn-label">LOGIN</span>
+                        </span>
+                        <div class="user-avatar-active hidden" id="auth-avatar-logged-in">U</div>
+                    </button>
+
+                    <!-- User Dropdown Menu when Logged In -->
+                    <div class="user-dropdown-menu hidden" id="user-dropdown-menu">
+                        <div class="user-dropdown-header">
+                            <span class="user-dropdown-phone" id="dropdown-user-phone">+91 ••••• •••••</span>
+                            <span class="user-dropdown-status">● Verified Client</span>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <button class="user-dropdown-item" onclick="openCustomerPortal()">
+                            <span>📊 My Bookings</span>
+                        </button>
+                        <button class="user-dropdown-item signout-item" onclick="handleSupabaseSignOut()">
+                            <span>🚪 Sign Out</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -547,36 +576,55 @@
         </div>
     </div>
 
-    <!-- 2. CUSTOMER AUTHENTICATION MODAL -->
+    <!-- 2. CUSTOMER AUTHENTICATION MODAL (SUPABASE MOBILE OTP) -->
     <div class="modal-overlay" id="auth-modal" data-lenis-prevent data-scroll-lock>
         <div class="modal-card auth-modal-card" data-lenis-prevent data-scroll-lock>
             <button class="modal-close" onclick="closeAuthModal()" aria-label="Close modal">✕</button>
 
             <div class="auth-header">
-                <h2>WELCOME TO ARNE</h2>
-                <p>Sign in to manage your bookings, projects & postpaid balances.</p>
+                <div class="auth-icon-badge" id="auth-step-badge">📱</div>
+                <h2>CLIENT ACCESS PORTAL</h2>
+                <p id="auth-modal-subtext">Enter your registered mobile number to receive a 6-digit OTP verification code.</p>
+            </div>
+
+            <div class="booking-alert-error hidden" id="auth-alert-box" style="margin-bottom: 16px;">
+                <span class="alert-icon">⚠️</span>
+                <span id="auth-alert-text">Authentication Error</span>
             </div>
 
             <div class="auth-options">
-                <button class="btn-auth btn-google" onclick="loginWithGoogle()">
-                    <span class="g-icon">G</span>
-                    <span>Continue with Google</span>
-                </button>
-
-                <div class="auth-divider"><span>OR PHONE OTP</span></div>
-
                 <div class="phone-auth-box">
-                    <div class="form-group" id="phone-input-group">
-                        <label>Phone Number</label>
-                        <input type="tel" id="auth-phone" placeholder="+91 98765 43210" inputmode="tel" autocomplete="tel">
-                        <button class="btn-outline btn-full" onclick="sendPhoneOTP()">SEND OTP</button>
-                    </div>
+                    <!-- Step 1: Mobile Number Input Form -->
+                    <form id="form-send-otp" onsubmit="event.preventDefault(); sendPhoneOTP(); return false;">
+                        <div class="form-group" id="phone-input-group">
+                            <label>Registered Mobile Number *</label>
+                            <input type="tel" id="auth-phone" placeholder="+91 98765 43210" inputmode="tel" autocomplete="tel" required>
+                            <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Include country code (e.g. +91 for India)</span>
+                            <button type="submit" class="btn-primary btn-full" id="btn-send-otp" style="margin-top: 12px;">
+                                <span>SEND VERIFICATION OTP ↗</span>
+                            </button>
+                        </div>
+                    </form>
 
-                    <div class="form-group hidden" id="otp-input-group">
-                        <label>Enter 6-Digit OTP</label>
-                        <input type="text" id="auth-otp" placeholder="123456" maxlength="6" inputmode="numeric">
-                        <button class="btn-primary btn-full" onclick="verifyOTP()">VERIFY OTP & LOGIN</button>
-                    </div>
+                    <!-- Step 2: 6-Digit OTP Verification Form -->
+                    <form id="form-verify-otp" class="hidden" onsubmit="event.preventDefault(); verifyOTP(); return false;">
+                        <div class="form-group" id="otp-input-group">
+                            <label>Enter 6-Digit SMS Code *</label>
+                            <input type="text" id="auth-otp" placeholder="••••••" maxlength="6" inputmode="numeric" style="text-align:center; font-size: 20px; letter-spacing: 6px; font-family: monospace;" required>
+                            <button type="submit" class="btn-primary btn-full" id="btn-verify-otp-action" style="margin-top: 12px;">
+                                <span>VERIFY & COMPLETE LOGIN 🔒</span>
+                            </button>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 14px; font-size: 12px;">
+                                <button type="button" onclick="backToPhoneStep()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer;">
+                                    ← Change Number
+                                </button>
+                                <button type="button" id="btn-resend-otp" onclick="sendPhoneOTP()" style="background:none; border:none; color:var(--primary-emerald); cursor:pointer; font-weight:700;">
+                                    Resend Code
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
