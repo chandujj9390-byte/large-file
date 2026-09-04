@@ -1498,20 +1498,11 @@
                 }
             }
 
-            // If Supabase has no third-party SMS provider configured, dispatch via Live Serverless OTP Service
+            // Route via Live Serverless OTP Service
             if (!sent) {
-                try {
-                    const res = await fetch('/api/send-otp', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phone: formattedPhone, digits: 6 })
-                    });
-                    const resData = await res.json();
-                    if (resData && resData.success) {
-                        sent = true;
-                    }
-                } catch (apiErr) {
-                    console.warn('[Serverless OTP Gateway Notice]:', apiErr.message);
+                const resData = await safeFetchJSON('/api/send-otp', { phone: formattedPhone, digits: 6 });
+                if (resData && resData.success) {
+                    sent = true;
                 }
             }
 
@@ -1612,12 +1603,7 @@
 
             // B. If not verified via Supabase direct, verify via Live Serverless API
             if (!verifiedUser) {
-                const res = await fetch('/api/verify-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: formattedPhone, otp: otp })
-                });
-                const data = await res.json();
+                const data = await safeFetchJSON('/api/verify-otp', { phone: formattedPhone, otp: otp });
                 if (data && data.success) {
                     verifiedUser = data.user || {
                         id: `client_${formattedPhone.replace(/\D/g, '').slice(-10)}`,
@@ -1656,7 +1642,7 @@
                 }
             }, 300);
         } catch (err) {
-            console.error('[Supabase verifyOtp Error]', err);
+            console.error('[Verify OTP Error]', err);
             showAuthAlert(err.message || 'Invalid or expired verification code. Please try again.');
         } finally {
             if (btn) {

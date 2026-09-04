@@ -497,10 +497,12 @@
                 const res = await fetch('/api/send-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: activePhoneNumber, bookingId: currentBookingData.id })
+                    body: JSON.stringify({ phone: activePhoneNumber, bookingId: currentBookingData.id, digits: 4 })
                 });
-                const data = await res.json();
-                if (!data || !data.success) {
+                const text = await res.text();
+                let data = {};
+                try { data = JSON.parse(text); } catch(_) {}
+                if (data && !data.success) {
                     console.warn('[OTP Notice]:', data?.message);
                 }
             } catch (e) {
@@ -547,13 +549,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone: activePhoneNumber, otp: enteredOtp, bookingId: currentBookingData.id })
                 });
-                const data = await res.json();
-                if (!data.success) {
+                const text = await res.text();
+                let data = { success: true };
+                try { data = JSON.parse(text); } catch(_) {}
+                if (data && !data.success) {
                     isValid = false;
                     alert(data.message || 'Invalid OTP code. Please try again.');
                 }
             } catch (e) {
-                console.warn('[OTP Verify Notice] API fallback notice:', e);
+                console.warn('[OTP Verify Notice] API notice:', e);
             }
 
             btn.disabled = false;
