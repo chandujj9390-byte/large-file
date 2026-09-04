@@ -23,8 +23,8 @@ try {
 }
 
 // 1. Supabase Initialization
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xmnjhfkzvbssuajgxnvf.supabase.co';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_pAc8lic6v3PPnmWhLJkJVg_FlBptmnQ';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xrrhzjabhfnbbblfwyko.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
 const supabase = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // 2. Nodemailer Setup

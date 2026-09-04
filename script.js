@@ -8,14 +8,14 @@
     // ----------------------------------------------------------------------
     // SUPABASE CLOUD DATABASE CONNECTION
     // ----------------------------------------------------------------------
-    const SUPABASE_URL = 'https://xmnjhfkzvbssuajgxnvf.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_pAc8lic6v3PPnmWhLJkJVg_FlBptmnQ';
+    const SUPABASE_URL = 'https://xrrhzjabhfnbbblfwyko.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
     let supabaseClient = null;
 
     try {
         if (window.supabase && typeof window.supabase.createClient === 'function') {
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('[ARNE Supabase] Connected to project: xmnjhfkzvbssuajgxnvf');
+            console.log('[ARNE Supabase] Connected to project: xrrhzjabhfnbbblfwyko');
         }
     } catch (e) {
         console.warn('[ARNE Supabase Notice] Initialization error:', e);
@@ -1071,6 +1071,55 @@
         // Store pending payment in sessionStorage
         sessionStorage.setItem('arne_pending_payment', JSON.stringify(bookingData));
 
+        // Direct Supabase Cloud Database Insertion (Stores Patient / Customer Form Data)
+        if (supabaseClient) {
+            try {
+                await supabaseClient.from('bookings').insert([{
+                    id: bookingId,
+                    client_name: fullName,
+                    client_email: email,
+                    client_phone: mobile,
+                    customer_name: fullName,
+                    customer_phone: mobile,
+                    customer_whatsapp: whatsapp,
+                    customer_email: email,
+                    company: company,
+                    location: location,
+                    service_type: serviceName,
+                    service_name: serviceName,
+                    project_desc: projectDesc,
+                    booking_date: prefDate,
+                    booking_time: prefSlot,
+                    time_slot: prefSlot,
+                    total_price: priceNum,
+                    prepaid_amount: prepaidVal,
+                    postpaid_amount: postpaidVal,
+                    amount_paid: 0,
+                    amount_remaining: priceNum,
+                    status: 'Pending Payment',
+                    booking_status: 'Pending Payment',
+                    payment_status: 'Pending',
+                    ref_link: refLink
+                }]);
+                console.log('[ARNE Supabase] Booking & patient form record saved to Supabase:', bookingId);
+            } catch (err) {
+                console.warn('[ARNE Supabase Notice] Client-side booking save notice:', err);
+            }
+
+            try {
+                await supabaseClient.from('customers').insert([{
+                    full_name: fullName,
+                    mobile: mobile,
+                    whatsapp: whatsapp,
+                    email: email,
+                    company: company,
+                    location: location
+                }]);
+            } catch (cErr) {
+                console.warn('[ARNE Supabase Notice] Client-side customer save notice:', cErr);
+            }
+        }
+
         // Construct checkout URL pointing to payment.html
         const paymentUrl = `payment.html?id=${encodeURIComponent(bookingId)}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(mobile)}&service=${encodeURIComponent(serviceName)}&date=${encodeURIComponent(prefDate)}&slot=${encodeURIComponent(prefSlot)}&desc=${encodeURIComponent(projectDesc)}&total=${priceNum}&prepaid=${prepaidVal}&postpaid=${postpaidVal}`;
 
@@ -1873,13 +1922,27 @@
     // ----------------------------------------------------------------------
     // CONTACT FORM HANDLER & CASE STUDY MODAL
     // ----------------------------------------------------------------------
-    window.handleContactSubmit = function (e) {
+    window.handleContactSubmit = async function (e) {
         e.preventDefault();
-        const name = document.getElementById('c-name').value;
-        const email = document.getElementById('c-email').value;
-        const service = document.getElementById('c-service').value;
+        const name = document.getElementById('c-name')?.value.trim() || '';
+        const email = document.getElementById('c-email')?.value.trim() || '';
+        const phone = document.getElementById('c-phone')?.value.trim() || '';
 
-        alert(`✨ Thank you ${name}! Your inquiry for "${service}" has been received by Chandu. We will contact you at ${email} shortly.`);
+        // Save contact message directly to Supabase
+        if (supabaseClient) {
+            try {
+                await supabaseClient.from('contact_messages').insert([{
+                    name: name,
+                    email: email,
+                    phone: phone
+                }]);
+                console.log('[ARNE Supabase] Contact message saved to Supabase');
+            } catch (supErr) {
+                console.warn('[ARNE Supabase Notice] Contact message save notice:', supErr);
+            }
+        }
+
+        alert(`✨ Thank you ${name}! Your inquiry has been received. We will contact you at ${email} / ${phone} shortly.`);
         e.target.reset();
     };
 
@@ -2023,7 +2086,7 @@
                 `public/frame1/ezgif-frame-${num}.png`,
                 `./frame1/ezgif-frame-${num}.png`,
                 `./public/frame1/ezgif-frame-${num}.png`,
-                `https://xmnjhfkzvbssuajgxnvf.supabase.co/storage/v1/object/public/hero-frames/ezgif-frame-${num}.png`
+                `https://xrrhzjabhfnbbblfwyko.supabase.co/storage/v1/object/public/hero-frames/ezgif-frame-${num}.png`
             ];
         }
 

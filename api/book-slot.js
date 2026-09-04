@@ -157,8 +157,8 @@ async function handleBookSlotRequest(reqData) {
 
         // 2. Supabase Server-Side Database Insertion
         let supabaseClient = null;
-        const supabaseUrl = process.env.SUPABASE_URL || 'https://xmnjhfkzvbssuajgxnvf.supabase.co';
-        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_pAc8lic6v3PPnmWhLJkJVg_FlBptmnQ';
+        const supabaseUrl = process.env.SUPABASE_URL || 'https://xrrhzjabhfnbbblfwyko.supabase.co';
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
 
         try {
             const { createClient } = require('@supabase/supabase-js');
