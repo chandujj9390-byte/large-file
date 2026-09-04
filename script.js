@@ -1509,16 +1509,20 @@
             // Attempt Supabase Direct OTP
             if (sb) {
                 try {
+                    const formattedPhoneNumber = formattedPhone;
+                    console.log("SENDING TO:", formattedPhoneNumber);
                     const { data, error } = await sb.auth.signInWithOtp({
-                        phone: formattedPhone
+                        phone: formattedPhoneNumber
                     });
-                    if (!error) {
+                    if (error) {
+                        console.error("SUPABASE OTP ERROR:", error.message, error.status);
+                        alert(error.message);
+                    } else {
                         sent = true;
-                    } else if (!error.message.toLowerCase().includes('unsupported phone provider')) {
-                        console.warn('[Supabase OTP Provider Notice]:', error.message);
                     }
                 } catch (sbErr) {
-                    console.warn('[Supabase Direct OTP Error]:', sbErr.message);
+                    console.error("SUPABASE OTP ERROR:", sbErr.message, sbErr.status);
+                    alert(sbErr.message);
                 }
             }
 

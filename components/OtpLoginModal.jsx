@@ -75,15 +75,21 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
     try {
       let sent = false;
       try {
+        const formattedPhoneNumber = formatted;
+        console.log("SENDING TO:", formattedPhoneNumber);
         const { data, error } = await supabase.auth.signInWithOtp({
-          phone: formatted
+          phone: formattedPhoneNumber
         });
-        if (!error) {
+        if (error) {
+          console.error("SUPABASE OTP ERROR:", error.message, error.status);
+          alert(error.message);
+        } else {
           sent = true;
-        } else if (!error.message.toLowerCase().includes('unsupported phone provider')) {
-          console.warn('[Supabase Direct OTP Notice]:', error.message);
         }
-      } catch (_) {}
+      } catch (sbErr) {
+        console.error("SUPABASE OTP ERROR:", sbErr.message, sbErr.status);
+        alert(sbErr.message);
+      }
 
       if (!sent) {
         const res = await fetch('/api/send-otp', {
