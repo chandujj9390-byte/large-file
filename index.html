@@ -597,10 +597,13 @@
                     <!-- Step 1: Mobile Number Input Form -->
                     <form id="form-send-otp" onsubmit="event.preventDefault(); sendPhoneOTP(); return false;">
                         <div class="form-group" id="phone-input-group">
-                            <label>Registered Mobile Number *</label>
-                            <input type="tel" id="auth-phone" placeholder="+91 98765 43210" inputmode="tel" autocomplete="tel" required>
-                            <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Include country code (e.g. +91 for India)</span>
-                            <button type="submit" class="btn-primary btn-full" id="btn-send-otp" style="margin-top: 12px;">
+                            <label style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">Registered Mobile Number *</label>
+                            <div class="phone-input-combo">
+                                <span class="country-prefix">🇮🇳 +91</span>
+                                <input type="tel" id="auth-phone" placeholder="93906 62637" inputmode="numeric" maxlength="15" autocomplete="tel" required>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted); margin-top: 6px; display: block;">Instant secure SMS verification code</span>
+                            <button type="submit" class="btn-primary btn-full" id="btn-send-otp" style="margin-top: 14px; padding: 13px;">
                                 <span>SEND VERIFICATION OTP ↗</span>
                             </button>
                         </div>
@@ -609,14 +612,14 @@
                     <!-- Step 2: 6-Digit OTP Verification Form -->
                     <form id="form-verify-otp" class="hidden" onsubmit="event.preventDefault(); verifyOTP(); return false;">
                         <div class="form-group" id="otp-input-group">
-                            <label>Enter 6-Digit SMS Code *</label>
-                            <input type="text" id="auth-otp" placeholder="••••••" maxlength="6" inputmode="numeric" style="text-align:center; font-size: 20px; letter-spacing: 6px; font-family: monospace;" required>
-                            <button type="submit" class="btn-primary btn-full" id="btn-verify-otp-action" style="margin-top: 12px;">
+                            <label style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">Enter 6-Digit SMS Code *</label>
+                            <input type="text" id="auth-otp" placeholder="••••••" maxlength="6" inputmode="numeric" style="text-align:center; font-size: 22px; letter-spacing: 8px; font-family: monospace; font-weight: 800;" required>
+                            <button type="submit" class="btn-primary btn-full" id="btn-verify-otp-action" style="margin-top: 14px; padding: 13px;">
                                 <span>VERIFY & COMPLETE LOGIN 🔒</span>
                             </button>
 
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 14px; font-size: 12px;">
-                                <button type="button" onclick="backToPhoneStep()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 16px; font-size: 12px;">
+                                <button type="button" onclick="backToPhoneStep()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-weight: 600;">
                                     ← Change Number
                                 </button>
                                 <button type="button" id="btn-resend-otp" onclick="sendPhoneOTP()" style="background:none; border:none; color:var(--primary-emerald); cursor:pointer; font-weight:700;">
