@@ -764,12 +764,14 @@
 
         updateBookingSummaryLive();
         modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
         if (window.lenis) window.lenis.stop();
     };
 
     window.closeBookingModal = function () {
         const modal = document.getElementById('booking-modal');
         if (modal) modal.classList.remove('active');
+        document.body.style.overflow = '';
         if (window.lenis) window.lenis.start();
     };
 
@@ -1141,11 +1143,21 @@
     // CUSTOMER AUTH & LOGIN MODAL
     // ----------------------------------------------------------------------
     window.openAuthModal = function () {
-        document.getElementById('auth-modal').classList.add('active');
+        const modal = document.getElementById('auth-modal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (window.lenis) window.lenis.stop();
+        }
     };
 
     window.closeAuthModal = function () {
-        document.getElementById('auth-modal').classList.remove('active');
+        const modal = document.getElementById('auth-modal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            if (window.lenis) window.lenis.start();
+        }
     };
 
     window.loginWithGoogle = function () {
@@ -1356,11 +1368,21 @@
             return;
         }
         renderCustomerDashboard();
-        document.getElementById('customer-modal').classList.add('active');
+        const modal = document.getElementById('customer-modal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (window.lenis) window.lenis.stop();
+        }
     };
 
     window.closeCustomerPortal = function () {
-        document.getElementById('customer-modal').classList.remove('active');
+        const modal = document.getElementById('customer-modal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            if (window.lenis) window.lenis.start();
+        }
     };
 
     window.logoutCustomer = function () {
@@ -1945,6 +1967,7 @@
                 <button class="btn-primary btn-full" onclick="startBookingService('srv-1'); closeCaseStudyModal();">BOOK SIMILAR PROJECT ↗</button>
             `;
             modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
             if (window.lenis) window.lenis.stop();
         }
     };
@@ -1952,6 +1975,7 @@
     window.closeCaseStudyModal = function () {
         const modal = document.getElementById('case-study-modal');
         if (modal) modal.classList.remove('active');
+        document.body.style.overflow = '';
         if (window.lenis) window.lenis.start();
     };
 
@@ -1965,6 +1989,17 @@
                 if (window.lenis) window.lenis.start();
             }
         }
+    });
+
+    // Close modal when clicking on the overlay backdrop
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                if (window.lenis) window.lenis.start();
+            }
+        });
     });
 
     // ----------------------------------------------------------------------

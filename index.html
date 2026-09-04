@@ -359,9 +359,9 @@
     <!-- ========================================== -->
 
     <!-- 1. PROFESSIONAL CUSTOMER DETAILS & SERVICE BOOKING FORM MODAL -->
-    <div class="modal-overlay" id="booking-modal">
-        <div class="modal-card booking-modal-card">
-            <button class="modal-close" onclick="closeBookingModal()">✕</button>
+    <div class="modal-overlay" id="booking-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card booking-modal-card" data-lenis-prevent data-scroll-lock>
+            <button class="modal-close" onclick="closeBookingModal()" aria-label="Close modal">✕</button>
 
             <!-- Header Title -->
             <div class="booking-modal-header">
@@ -378,9 +378,9 @@
             </div>
 
             <!-- Form Content Layout (Split into Main Form + Live Summary Sidebar) -->
-            <div class="booking-form-wrapper" id="booking-form-content">
+            <div class="booking-form-wrapper" id="booking-form-content" data-lenis-prevent>
                 <form class="booking-main-form" id="arne-booking-form" onsubmit="handleBookingFormSubmit(event)"
-                    novalidate>
+                    novalidate data-lenis-prevent>
 
                     <!-- SECTION 1: CUSTOMER DETAILS -->
                     <div class="booking-section-card">
@@ -391,20 +391,20 @@
                         <div class="form-grid-2">
                             <div class="form-group">
                                 <label for="cust-full-name">Full Name <span class="req-star">*</span></label>
-                                <input type="text" id="cust-full-name" placeholder="" required
+                                <input type="text" id="cust-full-name" placeholder="" required autocomplete="name"
                                     oninput="updateBookingSummaryLive()">
                                 <span class="field-error-msg" id="err-full-name">Full Name is required</span>
                             </div>
                             <div class="form-group">
                                 <label for="cust-mobile">Mobile Number <span class="req-star">*</span></label>
-                                <input type="tel" id="cust-mobile" placeholder="" required
+                                <input type="tel" id="cust-mobile" placeholder="" required inputmode="tel" autocomplete="tel"
                                     oninput="updateBookingSummaryLive()">
                                 <span class="field-error-msg" id="err-mobile">Enter a valid 10-digit mobile
                                     number</span>
                             </div>
                             <div class="form-group full-width">
                                 <label for="cust-email">Email Address <span class="req-star">*</span></label>
-                                <input type="email" id="cust-email" placeholder="" required
+                                <input type="email" id="cust-email" placeholder="" required inputmode="email" autocomplete="email"
                                     oninput="updateBookingSummaryLive()">
                                 <span class="field-error-msg" id="err-email">Valid Email Address is required</span>
                             </div>
@@ -522,95 +522,96 @@
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- 2. CUSTOMER AUTHENTICATION MODAL -->
-        <div class="modal-overlay" id="auth-modal">
-            <div class="modal-card auth-modal-card">
-                <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <!-- 2. CUSTOMER AUTHENTICATION MODAL -->
+    <div class="modal-overlay" id="auth-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card auth-modal-card" data-lenis-prevent data-scroll-lock>
+            <button class="modal-close" onclick="closeAuthModal()" aria-label="Close modal">✕</button>
 
-                <div class="auth-header">
-                    <h2>WELCOME TO ARNE</h2>
-                    <p>Sign in to manage your bookings, projects & postpaid balances.</p>
-                </div>
+            <div class="auth-header">
+                <h2>WELCOME TO ARNE</h2>
+                <p>Sign in to manage your bookings, projects & postpaid balances.</p>
+            </div>
 
-                <div class="auth-options">
-                    <button class="btn-auth btn-google" onclick="loginWithGoogle()">
-                        <span class="g-icon">G</span>
-                        <span>Continue with Google</span>
-                    </button>
+            <div class="auth-options">
+                <button class="btn-auth btn-google" onclick="loginWithGoogle()">
+                    <span class="g-icon">G</span>
+                    <span>Continue with Google</span>
+                </button>
 
-                    <div class="auth-divider"><span>OR PHONE OTP</span></div>
+                <div class="auth-divider"><span>OR PHONE OTP</span></div>
 
-                    <div class="phone-auth-box">
-                        <div class="form-group" id="phone-input-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="auth-phone" placeholder="+91 98765 43210">
-                            <button class="btn-outline btn-full" onclick="sendPhoneOTP()">SEND OTP</button>
-                        </div>
+                <div class="phone-auth-box">
+                    <div class="form-group" id="phone-input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="auth-phone" placeholder="+91 98765 43210" inputmode="tel" autocomplete="tel">
+                        <button class="btn-outline btn-full" onclick="sendPhoneOTP()">SEND OTP</button>
+                    </div>
 
-                        <div class="form-group hidden" id="otp-input-group">
-                            <label>Enter 6-Digit OTP</label>
-                            <input type="text" id="auth-otp" placeholder="123456" maxlength="6">
-                            <button class="btn-primary btn-full" onclick="verifyOTP()">VERIFY OTP & LOGIN</button>
-                        </div>
+                    <div class="form-group hidden" id="otp-input-group">
+                        <label>Enter 6-Digit OTP</label>
+                        <input type="text" id="auth-otp" placeholder="123456" maxlength="6" inputmode="numeric">
+                        <button class="btn-primary btn-full" onclick="verifyOTP()">VERIFY OTP & LOGIN</button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 4. CUSTOMER PORTAL & DASHBOARD DRAWER -->
-        <div class="modal-overlay" id="customer-modal">
-            <div class="modal-card drawer-modal-card">
-                <button class="modal-close" onclick="closeCustomerPortal()">✕</button>
+    <!-- 4. CUSTOMER PORTAL & DASHBOARD DRAWER -->
+    <div class="modal-overlay" id="customer-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card drawer-modal-card" data-lenis-prevent data-scroll-lock>
+            <button class="modal-close" onclick="closeCustomerPortal()" aria-label="Close modal">✕</button>
 
-                <div class="dashboard-header">
-                    <div class="dh-profile">
-                        <div class="dh-avatar" id="cust-avatar">C</div>
-                        <div>
-                            <h3 id="cust-name-display">Chandu</h3>
-                            <span id="cust-email-display">arneworks26@gmail.com</span>
-                        </div>
-                    </div>
-                    <button class="btn-outline btn-sm" onclick="logoutCustomer()">Logout</button>
-                </div>
-
-                <div class="dashboard-stats-grid">
-                    <div class="d-stat-card">
-                        <span class="d-num" id="d-total-bookings">0</span>
-                        <span class="d-lbl">Total Bookings</span>
-                    </div>
-                    <div class="d-stat-card">
-                        <span class="d-num" id="d-active-projects">0</span>
-                        <span class="d-lbl">Active Projects</span>
-                    </div>
-                    <div class="d-stat-card">
-                        <span class="d-num" id="d-pending-postpaid">₹0</span>
-                        <span class="d-lbl">Pending 50% Postpaid</span>
+            <div class="dashboard-header">
+                <div class="dh-profile">
+                    <div class="dh-avatar" id="cust-avatar">C</div>
+                    <div>
+                        <h3 id="cust-name-display">Chandu</h3>
+                        <span id="cust-email-display">arneworks26@gmail.com</span>
                     </div>
                 </div>
+                <button class="btn-outline btn-sm" onclick="logoutCustomer()">Logout</button>
+            </div>
 
-                <div class="dashboard-section">
-                    <h4>My Bookings & Projects</h4>
-                    <div class="bookings-list" id="customer-bookings-list">
-                        <!-- Populated dynamically -->
-                    </div>
+            <div class="dashboard-stats-grid">
+                <div class="d-stat-card">
+                    <span class="d-num" id="d-total-bookings">0</span>
+                    <span class="d-lbl">Total Bookings</span>
+                </div>
+                <div class="d-stat-card">
+                    <span class="d-num" id="d-active-projects">0</span>
+                    <span class="d-lbl">Active Projects</span>
+                </div>
+                <div class="d-stat-card">
+                    <span class="d-num" id="d-pending-postpaid">₹0</span>
+                    <span class="d-lbl">Pending 50% Postpaid</span>
                 </div>
             </div>
-        </div>
 
-        <!-- PORTFOLIO CASE STUDY DETAIL MODAL -->
-        <div class="modal-overlay" id="case-study-modal">
-            <div class="modal-card case-study-modal-card">
-                <button class="modal-close" onclick="closeCaseStudyModal()">✕</button>
-                <div id="case-study-content">
+            <div class="dashboard-section">
+                <h4>My Bookings & Projects</h4>
+                <div class="bookings-list" id="customer-bookings-list">
                     <!-- Populated dynamically -->
                 </div>
             </div>
         </div>
+    </div>
 
-        <script src="js/asset-loader.js"></script>
-        <script src="js/three-scene.js"></script>
-        <script src="script.js"></script>
+    <!-- PORTFOLIO CASE STUDY DETAIL MODAL -->
+    <div class="modal-overlay" id="case-study-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card case-study-modal-card" data-lenis-prevent data-scroll-lock>
+            <button class="modal-close" onclick="closeCaseStudyModal()" aria-label="Close modal">✕</button>
+            <div id="case-study-content">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/asset-loader.js"></script>
+    <script src="js/three-scene.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
