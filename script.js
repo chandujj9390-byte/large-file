@@ -32,6 +32,30 @@
         }
     } catch (e) {}
 
+    // Global Safe API Fetch Helper to prevent 'Unexpected end of JSON input' errors
+    window.safeFetchJSON = async function (url, payload) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const text = await res.text();
+            if (!text || !text.trim()) {
+                return { success: res.ok, status: res.status };
+            }
+            try {
+                return JSON.parse(text);
+            } catch (_) {
+                return { success: res.ok, status: res.status };
+            }
+        } catch (err) {
+            console.warn(`[SafeFetch Warning for ${url}]:`, err.message);
+            return { success: false, error: err.message };
+        }
+    };
+    const safeFetchJSON = window.safeFetchJSON;
+
     // ----------------------------------------------------------------------
     // LENIS HARDWARE-ACCELERATED SMOOTH SCROLL ENGINE
     // ----------------------------------------------------------------------
