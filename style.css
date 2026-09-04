@@ -30,6 +30,7 @@
 
     --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-headline: 'Syne', 'Plus Jakarta Sans', sans-serif;
+    --font-signature: 'Great Vibes', 'Alex Brush', 'Caveat', cursive;
     --announcement-height: 36px;
 
     /* Background Scroll-Sequence & Hero Canvas Blur & Contrast Tuning */
@@ -1973,7 +1974,7 @@ html.lenis body {
     z-index: 10;
 }
 
-/* Trustpilot TrustBox Footer Stacking */
+/* Trustpilot & Signature Thank You Footer Card */
 .trustbox-footer-container {
     margin-bottom: 36px;
     display: flex;
@@ -1985,20 +1986,49 @@ html.lenis body {
     width: min(100%, 720px);
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 16px 24px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 20px 32px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 255, 136, 0.06);
 }
 
 .trustbox-wrapper-card:hover {
-    border-color: rgba(0, 255, 136, 0.3);
-    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.35);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(0, 255, 136, 0.15);
+    transform: translateY(-2px);
+}
+
+.thank-you-signature-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.thank-you-text {
+    font-family: var(--font-signature, 'Great Vibes', 'Alex Brush', 'Caveat', cursive);
+    font-size: clamp(38px, 6vw, 56px);
+    font-weight: 400;
+    color: #ffffff;
+    letter-spacing: 2px;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #ffffff 0%, #00ff88 55%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(0, 255, 136, 0.35);
+    user-select: none;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.thank-you-card:hover .thank-you-text {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.6));
 }
 
 .trustbox-wrapper-card .trustpilot-widget {
