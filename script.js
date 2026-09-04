@@ -1348,6 +1348,75 @@
         clearAuthAlert();
     };
 
+    // Global Toast Notification Helper
+    window.showToast = function (msg, duration = 3500) {
+        if (!msg) return;
+        let container = document.getElementById('arne-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'arne-toast-container';
+            container.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 999999;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                pointer-events: none;
+                align-items: center;
+            `;
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: rgba(18, 18, 18, 0.94);
+            color: #f3f3f3;
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.15);
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            opacity: 0;
+            transform: translateY(16px) scale(0.96);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 90vw;
+            text-align: center;
+        `;
+        toast.textContent = msg;
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0) scale(1)';
+        });
+
+        // Auto dismiss
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px) scale(0.96)';
+            setTimeout(() => {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 400);
+        }, duration);
+    };
+
+    function showToast(msg, duration) {
+        window.showToast(msg, duration);
+    }
+
     function showAuthAlert(msg) {
         const alertBox = document.getElementById('auth-alert-box');
         const alertText = document.getElementById('auth-alert-text');
