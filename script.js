@@ -1380,17 +1380,28 @@
     }
 
     // 1. Send OTP to Client Mobile via Supabase Auth
-    window.sendPhoneOTP = async function () {
+    window.sendPhoneOTP = async function (e) {
+        // 1. Prevent Default Behavior as absolute first step
+        if (e && typeof e.preventDefault === 'function') {
+            e.preventDefault();
+        }
+
         clearAuthAlert();
+        const btn = document.getElementById('btn-send-otp');
+        const originalText = btn ? btn.innerHTML : 'SEND VERIFICATION OTP ↗';
+
+        // 2. Enforce Country Code (+91 default)
         const formattedPhone = getFormattedPhoneInput();
-        if (!formattedPhone || formattedPhone.length < 10) {
+        const numericDigits = formattedPhone.replace(/\D/g, '');
+
+        if (!formattedPhone || numericDigits.length < 10) {
             showAuthAlert('Please enter a valid 10-digit mobile number.');
             return;
         }
 
         pendingAuthPhone = formattedPhone;
-        const btn = document.getElementById('btn-send-otp');
-        const originalText = btn ? btn.innerHTML : 'SEND VERIFICATION OTP ↗';
+
+        // Set Loading State
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = '<span style="display:inline-block; width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Sending OTP...';
@@ -1399,8 +1410,9 @@
         const sb = getSupabaseClient();
         let otpSentViaSupabase = false;
 
-        if (sb) {
-            try {
+        // 3. Strict Try/Catch Block
+        try {
+            if (sb) {
                 const { data, error } = await sb.auth.signInWithOtp({
                     phone: formattedPhone
                 });
@@ -1410,39 +1422,44 @@
                 } else {
                     console.warn('[Supabase signInWithOtp Provider Notice]:', error.message);
                 }
-            } catch (err) {
-                console.warn('[Supabase signInWithOtp Exception]:', err.message);
+            }
+
+            // Generate instant secure fallback code if SMS provider is not yet activated on Supabase Dashboard
+            if (!otpSentViaSupabase) {
+                const random6 = Math.floor(100000 + Math.random() * 900000).toString();
+                pendingVerificationCode = random6;
+                console.log(`[ARNE Client Access] Verification OTP for ${formattedPhone}: ${random6}`);
+                showToast(`🔐 Verification Code: ${random6}`);
+            } else {
+                pendingVerificationCode = '';
+            }
+
+            // Switch cleanly to Step 2 (OTP Input)
+            document.getElementById('form-send-otp')?.classList.add('hidden');
+            document.getElementById('form-verify-otp')?.classList.remove('hidden');
+            const badge = document.getElementById('auth-step-badge');
+            if (badge) badge.textContent = '🔒';
+            const subtext = document.getElementById('auth-modal-subtext');
+            if (subtext) subtext.textContent = `Enter the 6-digit verification code sent to ${formattedPhone}`;
+
+            const otpInput = document.getElementById('auth-otp');
+            if (otpInput) { 
+                otpInput.value = ''; 
+                setTimeout(() => otpInput.focus(), 150); 
+            }
+
+            // Start Resend Timer (45s cooldown)
+            startAuthResendTimer(45);
+        } catch (err) {
+            console.error('[Supabase OTP Submission Error]:', err);
+            showAuthAlert(err.message || 'Failed to send OTP verification SMS. Please check your phone number.');
+        } finally {
+            // 4. Guaranteed Loading State Reset (Never hangs in loading state)
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
-
-        // Generate instant secure fallback code if SMS provider is not yet activated on Supabase Dashboard
-        if (!otpSentViaSupabase) {
-            const random6 = Math.floor(100000 + Math.random() * 900000).toString();
-            pendingVerificationCode = random6;
-            console.log(`[ARNE Client Access] Verification OTP for ${formattedPhone}: ${random6}`);
-            showToast(`🔐 Verification Code: ${random6}`);
-        } else {
-            pendingVerificationCode = '';
-        }
-
-        // Switch cleanly to Step 2 (OTP Input)
-        document.getElementById('form-send-otp')?.classList.add('hidden');
-        document.getElementById('form-verify-otp')?.classList.remove('hidden');
-        const badge = document.getElementById('auth-step-badge');
-        if (badge) badge.textContent = '🔒';
-        const subtext = document.getElementById('auth-modal-subtext');
-        if (subtext) subtext.textContent = `Enter the 6-digit verification code sent to ${formattedPhone}`;
-
-        const otpInput = document.getElementById('auth-otp');
-        if (otpInput) { 
-            otpInput.value = ''; 
-            setTimeout(() => otpInput.focus(), 150); 
-        }
-
-        // Start Resend Timer (45s cooldown)
-        startAuthResendTimer(45);
-
-        if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
     };
 
     function startAuthResendTimer(seconds) {
@@ -1470,7 +1487,12 @@
     }
 
     // 2. Verify 6-Digit SMS OTP Code
-    window.verifyOTP = async function () {
+    window.verifyOTP = async function (e) {
+        // 1. Prevent Default Behavior as absolute first step
+        if (e && typeof e.preventDefault === 'function') {
+            e.preventDefault();
+        }
+
         clearAuthAlert();
         const otpInput = document.getElementById('auth-otp');
         const otp = otpInput ? otpInput.value.trim() : '';
@@ -1491,16 +1513,16 @@
         const sb = getSupabaseClient();
         let verifiedUser = null;
 
-        // A. If fallback code was generated, verify match
-        if (pendingVerificationCode && (otp === pendingVerificationCode || otp === '123456')) {
-            verifiedUser = {
-                id: `client_${Date.now()}`,
-                phone: formattedPhone,
-                role: 'authenticated'
-            };
-        } else if (sb) {
-            // B. Verify via Supabase API
-            try {
+        try {
+            // A. If fallback code was generated, verify match
+            if (pendingVerificationCode && (otp === pendingVerificationCode || otp === '123456')) {
+                verifiedUser = {
+                    id: `client_${Date.now()}`,
+                    phone: formattedPhone,
+                    role: 'authenticated'
+                };
+            } else if (sb) {
+                // B. Verify via Supabase API
                 const { data, error } = await sb.auth.verifyOtp({
                     phone: formattedPhone,
                     token: otp,
@@ -1508,7 +1530,6 @@
                 });
 
                 if (error) {
-                    // Check if test code was entered
                     if (otp === '123456' || (pendingVerificationCode && otp === pendingVerificationCode)) {
                         verifiedUser = { id: `client_${Date.now()}`, phone: formattedPhone, role: 'authenticated' };
                     } else {
@@ -1518,46 +1539,42 @@
                     verifiedUser = data?.user;
                     activeAuthSession = data?.session;
                 }
-            } catch (err) {
-                if (otp === '123456' || (pendingVerificationCode && otp === pendingVerificationCode)) {
-                    verifiedUser = { id: `client_${Date.now()}`, phone: formattedPhone, role: 'authenticated' };
-                } else {
-                    console.error('[Supabase verifyOtp Error]', err);
-                    showAuthAlert(err.message || 'Invalid or expired verification code. Please try again.');
-                    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-                    return;
-                }
+            } else if (otp === '123456' || otp === pendingVerificationCode) {
+                verifiedUser = { id: `client_${Date.now()}`, phone: formattedPhone, role: 'authenticated' };
             }
-        } else if (otp === '123456' || otp === pendingVerificationCode) {
-            verifiedUser = { id: `client_${Date.now()}`, phone: formattedPhone, role: 'authenticated' };
+
+            if (!verifiedUser) {
+                throw new Error('Invalid 6-digit code. Please enter the correct code.');
+            }
+
+            // Store client record into Supabase Customers table
+            if (sb) {
+                try {
+                    await sb.from('customers').insert([{
+                        full_name: `Client (${formattedPhone.slice(-4)})`,
+                        mobile: formattedPhone,
+                        whatsapp: formattedPhone,
+                        email: `client.${formattedPhone.replace(/\D/g, '')}@arnestories.com`
+                    }]);
+                } catch (_) {}
+            }
+
+            activeAuthSession = { user: verifiedUser };
+            sessionStorage.setItem('arne_client_session', JSON.stringify(verifiedUser));
+
+            updateSupabaseAuthUI(verifiedUser);
+            closeAuthModal();
+
+            showToast(`✓ Welcome! Verified access granted for ${formattedPhone}`);
+        } catch (err) {
+            console.error('[Supabase verifyOtp Error]', err);
+            showAuthAlert(err.message || 'Invalid or expired verification code. Please try again.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
         }
-
-        if (!verifiedUser) {
-            showAuthAlert('Invalid 6-digit code. Please enter the correct code.');
-            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-            return;
-        }
-
-        // Store client record into Supabase Customers table
-        if (sb) {
-            try {
-                await sb.from('customers').insert([{
-                    full_name: `Client (${formattedPhone.slice(-4)})`,
-                    mobile: formattedPhone,
-                    whatsapp: formattedPhone,
-                    email: `client.${formattedPhone.replace(/\D/g, '')}@arnestories.com`
-                }]);
-            } catch (_) {}
-        }
-
-        activeAuthSession = { user: verifiedUser };
-        sessionStorage.setItem('arne_client_session', JSON.stringify(verifiedUser));
-
-        updateSupabaseAuthUI(verifiedUser);
-        closeAuthModal();
-
-        showToast(`✓ Welcome! Verified access granted for ${formattedPhone}`);
-        if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
     };
 
     // 3. Handle Sign Out

@@ -44,52 +44,66 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
 
   if (!isOpen) return null;
 
-  const getFormattedPhone = () => {
-    const raw = phoneNumber.trim().replace(/\D/g, '');
+  // Format phone with mandatory international country code (+91)
+  const getFormattedPhone = (inputPhone) => {
+    const raw = (inputPhone || phoneNumber || '').trim().replace(/[\s\-()]/g, '');
     if (!raw) return '';
+    if (raw.startsWith('+')) return raw;
     if (raw.length === 10) return `+91${raw}`;
     if (raw.length === 12 && raw.startsWith('91')) return `+${raw}`;
-    return `+${raw}`;
+    return `+91${raw}`;
   };
 
-  // Step 1: Send OTP
+  // Step 1: Send OTP to Client Mobile Number
   const handleSendOtp = async (e) => {
-    e?.preventDefault();
+    // 1. Prevent Default Behavior as absolute first step
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     setErrorMsg('');
 
-    const formatted = getFormattedPhone();
-    if (!formatted || formatted.length < 10) {
+    // 2. Enforce Country Code (+91 default)
+    const formatted = getFormattedPhone(phoneNumber);
+    const numericOnly = formatted.replace(/\D/g, '');
+    if (!formatted || numericOnly.length < 10) {
       setErrorMsg('Please enter a valid 10-digit mobile number.');
+      setLoading(false);
       return;
     }
 
     setLoading(true);
-    let sentSuccessfully = false;
 
+    // 3. Strict Try/Catch Block around Supabase Authentication
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
         phone: formatted
       });
 
-      if (!error) {
-        sentSuccessfully = true;
-      } else {
-        console.warn('[Supabase signInWithOtp Provider Notice]:', error.message);
+      if (error) {
+        throw error;
       }
-    } catch (err) {
-      console.warn('[Supabase signInWithOtp Error]:', err.message);
-    }
 
-    if (!sentSuccessfully) {
-      const demoCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setFallbackCode(demoCode);
-    } else {
       setFallbackCode('');
+      setStep('otp');
+      setResendTimer(45);
+    } catch (err) {
+      console.error('[Supabase signInWithOtp Error]:', err);
+      
+      // If Twilio provider is pending on Supabase dashboard, provide instant demo fallback code
+      const isProviderError = err.message && err.message.toLowerCase().includes('phone provider');
+      if (isProviderError) {
+        const demoCode = Math.floor(100000 + Math.random() * 900000).toString();
+        setFallbackCode(demoCode);
+        setStep('otp');
+        setResendTimer(45);
+        setErrorMsg('');
+      } else {
+        setErrorMsg(err.message || 'Failed to send OTP verification SMS. Please verify your phone number.');
+      }
+    } finally {
+      // 4. Guaranteed Loading State Reset (Never hangs in loading state)
+      setLoading(false);
     }
-
-    setStep('otp');
-    setResendTimer(45);
-    setLoading(false);
   };
 
   // Step 2: Verify OTP
