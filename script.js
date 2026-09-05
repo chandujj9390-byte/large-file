@@ -1042,7 +1042,7 @@
             if (window.observeScrollElement) window.observeScrollElement(card);
         });
 
-        // 2. Hardware-accelerated 3D Curved Amphitheater Stage Engine
+        // 2. Hardware-accelerated 360° 3D Revolving Cylinder Engine
         function updateReels3DTransforms() {
             const containerRect = container.getBoundingClientRect();
             const containerCenter = containerRect.left + containerRect.width / 2;
@@ -1054,14 +1054,14 @@
                 const distNormalized = (cardCenter - containerCenter) / (cardRect.width * 1.05 || halfWidth);
                 const absDist = Math.abs(distNormalized);
 
-                // Amphitheater inward curve angles matching reference screen
-                const rotY = Math.max(-36, Math.min(36, -distNormalized * 18));
-                const rotZ = Math.max(-5, Math.min(5, -distNormalized * 2.2));
-                const transZ = -Math.pow(absDist, 1.35) * 45;
+                // Full 360° 3D cylinder rotation transition from left entrance to right exit
+                const rotY = Math.max(-180, Math.min(180, -distNormalized * 65));
+                const rotZ = Math.max(-15, Math.min(15, -distNormalized * 4));
+                const transZ = -Math.pow(absDist, 1.4) * 75;
                 const translateY = Math.pow(absDist, 1.5) * 8;
-                const scale = Math.max(0.85, 1.06 - absDist * 0.08);
-                const brightness = Math.max(0.75, 1.02 - absDist * 0.12);
-                const zIndex = Math.max(1, Math.round(50 - absDist * 10));
+                const scale = Math.max(0.82, 1.08 - absDist * 0.1);
+                const brightness = Math.max(0.68, 1.02 - absDist * 0.15);
+                const zIndex = Math.max(1, Math.round(100 - absDist * 15));
 
                 card.style.transform = `perspective(1400px) translateY(${translateY}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translateZ(${transZ}px) scale(${scale})`;
                 card.style.filter = `brightness(${brightness})`;
