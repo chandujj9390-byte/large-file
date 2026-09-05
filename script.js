@@ -30,7 +30,7 @@
         if (supabaseClient) {
             console.log('[ARNE Supabase] Connected to project: xrrhzjabhfnbbblfwyko');
         }
-    } catch (e) {}
+    } catch (e) { }
 
     // Global Safe API Fetch Helper to prevent 'Unexpected end of JSON input' errors
     window.safeFetchJSON = async function (url, payload) {
@@ -126,7 +126,7 @@
         document.documentElement.setAttribute('data-glass-theme', themeName);
         try {
             localStorage.setItem('arne_glass_theme', themeName);
-        } catch (e) {}
+        } catch (e) { }
 
         const buttons = document.querySelectorAll('.tint-dot-btn');
         buttons.forEach(btn => {
@@ -142,7 +142,7 @@
         let savedTheme = 'emerald';
         try {
             savedTheme = localStorage.getItem('arne_glass_theme') || 'emerald';
-        } catch (e) {}
+        } catch (e) { }
         window.setGlassTheme(savedTheme);
     }
 
@@ -216,7 +216,7 @@
         { name: 'Social Media Creatives', price: 499 },
         { name: 'Product Editing', price: 699 },
         { name: 'Business Web Dev', price: 7999 },
-        { name: 'Landing Page Design', price: 3999 },
+        { name: 'Landing Page Design', price: 4999 },
         { name: 'Brand Design System', price: 2499 },
         { name: '3D Website Development', price: 14999 }
     ];
@@ -1187,7 +1187,7 @@
                     if (custErr) {
                         console.error('[ARNE Supabase Customer Insert Error]', custErr);
                     }
-                } catch (ce) {}
+                } catch (ce) { }
             }
 
             // 2. Fix API Paths: Relative path call to /api/book-slot endpoint
@@ -1556,9 +1556,9 @@
             if (subtext) subtext.textContent = `Enter the 6-digit verification code sent via SMS to ${formattedPhone}`;
 
             const otpInput = document.getElementById('auth-otp');
-            if (otpInput) { 
-                otpInput.value = ''; 
-                setTimeout(() => otpInput.focus(), 150); 
+            if (otpInput) {
+                otpInput.value = '';
+                setTimeout(() => otpInput.focus(), 150);
             }
 
             // Start Resend Timer (45s cooldown)
@@ -1640,7 +1640,7 @@
                         verifiedUser = data.user;
                         activeAuthSession = data.session;
                     }
-                } catch (_) {}
+                } catch (_) { }
             }
 
             // B. If not verified via Supabase direct, verify via Live Serverless API
@@ -1672,7 +1672,7 @@
                         whatsapp: formattedPhone,
                         email: clientEmail
                     }]);
-                } catch (_) {}
+                } catch (_) { }
             }
 
             activeAuthSession = { user: verifiedUser };
@@ -1959,14 +1959,14 @@
         try {
             const raw = localStorage.getItem('arne_bookings');
             if (raw) localBookings = JSON.parse(raw);
-        } catch (_) {}
+        } catch (_) { }
 
         // Filter local bookings for current user
         let userBookings = localBookings.filter(b => {
             const bPhone = (b.customerPhone || b.phone || '').replace(/\D/g, '');
             const bEmail = (b.customerEmail || b.email || '').toLowerCase().trim();
             return (userPhone && bPhone && (bPhone.includes(userPhone.slice(-10)) || userPhone.includes(bPhone.slice(-10)))) ||
-                   (userEmail && bEmail && bEmail === userEmail);
+                (userEmail && bEmail && bEmail === userEmail);
         });
 
         // 2. Fetch remote bookings from Supabase 'bookings' table
@@ -2064,19 +2064,19 @@
     function saveBookings() {
         try {
             localStorage.setItem('arne_bookings', JSON.stringify(bookingsStore));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     function saveBlockedSlots() {
         try {
             localStorage.setItem('arne_blocked_slots', JSON.stringify(blockedSlotsStore));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     function saveServices() {
         try {
             localStorage.setItem('arne_services', JSON.stringify(servicesStore));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     // ----------------------------------------------------------------------
@@ -2119,7 +2119,7 @@
             try {
                 localStorage.setItem('arne_admin_active', 'true');
                 localStorage.setItem('arne_admin_email', ADMIN_CREDENTIALS.email);
-            } catch (err) {}
+            } catch (err) { }
 
             closeAdminLoginModal();
             window.openAdminPortal();
@@ -2147,7 +2147,7 @@
         try {
             localStorage.setItem('arne_admin_active', 'false');
             localStorage.removeItem('arne_admin_email');
-        } catch (e) {}
+        } catch (e) { }
         closeAdminPortal();
     };
 
