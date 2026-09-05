@@ -4134,3 +4134,161 @@ html.lenis body {
     align-items: center;
     gap: 5px;
 }
+
+/* ==========================================================================
+   ULTRA-SMOOTH HARDWARE-ACCELERATED SCROLL REVEAL & STAGGER ENGINE
+   ========================================================================== */
+
+/* Base Scroll Reveal Items */
+.scroll-reveal,
+.reveal-item,
+[data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0);
+    filter: blur(4px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--stagger-delay, 0ms);
+    will-change: opacity, transform, filter;
+}
+
+.scroll-reveal.in-view,
+.reveal-item.in-view,
+[data-reveal].in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+}
+
+/* Scale & Depth Reveal (Cards, Images, Video Showcases) */
+.reveal-scale,
+[data-reveal="scale"] {
+    opacity: 0;
+    transform: scale(0.93) translate3d(0, 28px, 0);
+    filter: blur(5px);
+    transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--stagger-delay, 0ms);
+    will-change: opacity, transform, filter;
+}
+
+.reveal-scale.in-view,
+[data-reveal="scale"].in-view {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: blur(0);
+}
+
+/* Directional Left/Right Reveals */
+.reveal-left,
+[data-reveal="left"] {
+    opacity: 0;
+    transform: translate3d(-40px, 0, 0);
+    filter: blur(4px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--stagger-delay, 0ms);
+}
+
+.reveal-left.in-view,
+[data-reveal="left"].in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+}
+
+.reveal-right,
+[data-reveal="right"] {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+    filter: blur(4px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--stagger-delay, 0ms);
+}
+
+.reveal-right.in-view,
+[data-reveal="right"].in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+}
+
+/* Stagger calculation helper */
+[data-stagger-group] > * {
+    --stagger-delay: calc(var(--stagger-idx, 0) * 100ms);
+}
+
+/* Words / Typography Smooth Reveal */
+.reveal-word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    margin-right: 0.28em;
+}
+
+.reveal-word-inner {
+    display: inline-block;
+    opacity: 0;
+    transform: translate3d(0, 110%, 0);
+    transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--word-idx, 0) * 55ms);
+    will-change: transform, opacity;
+}
+
+.in-view .reveal-word-inner,
+.reveal-word-inner.in-view {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+/* Card Transitions Harmonization */
+.service-card {
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.portfolio-card {
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.add-service-item {
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.25s ease,
+                border-color 0.25s ease;
+}
+
+.aerial-video-player-card,
+.thank-you-card {
+    transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s ease,
+                border-color 0.4s ease;
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-reveal,
+    .reveal-item,
+    .reveal-scale,
+    .reveal-left,
+    .reveal-right,
+    .reveal-word-inner,
+    [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+    }
+}

@@ -374,10 +374,215 @@
     }
 
     // ----------------------------------------------------------------------
+    // HARDWARE-ACCELERATED SCROLL REVEAL & ONE-BY-ONE STAGGER SYSTEM
+    // ----------------------------------------------------------------------
+    let scrollRevealObserver = null;
+
+    function initScrollRevealEngine() {
+        if ('IntersectionObserver' in window) {
+            scrollRevealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '0px 0px -40px 0px',
+                threshold: 0.06
+            });
+        }
+
+        window.observeScrollElement = function(el) {
+            if (!el) return;
+            if (scrollRevealObserver) {
+                scrollRevealObserver.observe(el);
+            } else {
+                el.classList.add('in-view');
+            }
+        };
+
+        // 1. Hero Section Stagger
+        const heroBadge = document.querySelector('.hero-header-badge');
+        if (heroBadge) {
+            heroBadge.classList.add('reveal-item');
+            heroBadge.style.setProperty('--stagger-delay', '100ms');
+            window.observeScrollElement(heroBadge);
+        }
+
+        const heroTitleSpans = document.querySelectorAll('.hero-main-title > span');
+        heroTitleSpans.forEach((span, idx) => {
+            span.classList.add('reveal-item');
+            span.style.setProperty('--stagger-delay', `${200 + idx * 140}ms`);
+            window.observeScrollElement(span);
+        });
+
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle) {
+            heroSubtitle.classList.add('reveal-item');
+            heroSubtitle.style.setProperty('--stagger-delay', '620ms');
+            window.observeScrollElement(heroSubtitle);
+        }
+
+        const heroCta = document.querySelector('.hero-cta-group');
+        if (heroCta) {
+            heroCta.classList.add('reveal-item');
+            heroCta.style.setProperty('--stagger-delay', '740ms');
+            window.observeScrollElement(heroCta);
+        }
+
+        const statPills = document.querySelectorAll('.hero-stats-bar .stat-pill');
+        statPills.forEach((pill, idx) => {
+            pill.classList.add('reveal-scale');
+            pill.style.setProperty('--stagger-delay', `${860 + idx * 120}ms`);
+            window.observeScrollElement(pill);
+        });
+
+        // 2. Section Headers (Services, Works, About, Contact)
+        document.querySelectorAll('.section-header').forEach(header => {
+            const tag = header.querySelector('.section-tag');
+            const title = header.querySelector('.section-title, .editorial-headline, h2');
+            const desc = header.querySelector('.section-desc, p');
+
+            if (tag) {
+                tag.classList.add('reveal-item');
+                tag.style.setProperty('--stagger-delay', '50ms');
+                window.observeScrollElement(tag);
+            }
+            if (title) {
+                title.classList.add('reveal-item');
+                title.style.setProperty('--stagger-delay', '150ms');
+                window.observeScrollElement(title);
+            }
+            if (desc) {
+                desc.classList.add('reveal-item');
+                desc.style.setProperty('--stagger-delay', '250ms');
+                window.observeScrollElement(desc);
+            }
+        });
+
+        // 3. Expandable Additional Services Header
+        const expandHeader = document.querySelector('.expand-header');
+        if (expandHeader) {
+            expandHeader.classList.add('reveal-item');
+            expandHeader.style.setProperty('--stagger-delay', '100ms');
+            window.observeScrollElement(expandHeader);
+        }
+
+        // 4. Portfolio Tabs
+        const portfolioTabs = document.querySelectorAll('.portfolio-tabs .tab-btn');
+        portfolioTabs.forEach((btn, idx) => {
+            btn.classList.add('reveal-item');
+            btn.style.setProperty('--stagger-delay', `${idx * 60}ms`);
+            window.observeScrollElement(btn);
+        });
+
+        // 5. About Section Elements (Split Text & Aerial Video Showcase)
+        const aboutTag = document.querySelector('.split-text .section-tag');
+        if (aboutTag) {
+            aboutTag.classList.add('reveal-item');
+            aboutTag.style.setProperty('--stagger-delay', '50ms');
+            window.observeScrollElement(aboutTag);
+        }
+
+        const aboutHeadline = document.querySelector('.split-text .editorial-headline');
+        if (aboutHeadline) {
+            aboutHeadline.classList.add('reveal-item');
+            aboutHeadline.style.setProperty('--stagger-delay', '120ms');
+            window.observeScrollElement(aboutHeadline);
+        }
+
+        const aboutSub = document.querySelector('.split-text .editorial-subheadline');
+        if (aboutSub) {
+            aboutSub.classList.add('reveal-item');
+            aboutSub.style.setProperty('--stagger-delay', '200ms');
+            window.observeScrollElement(aboutSub);
+        }
+
+        const bioParagraphs = document.querySelectorAll('.editorial-full-bio p');
+        bioParagraphs.forEach((p, idx) => {
+            p.classList.add('reveal-item');
+            p.style.setProperty('--stagger-delay', `${280 + idx * 100}ms`);
+            window.observeScrollElement(p);
+        });
+
+        const founderBadge = document.querySelector('.founder-badge');
+        if (founderBadge) {
+            founderBadge.classList.add('reveal-scale');
+            founderBadge.style.setProperty('--stagger-delay', '480ms');
+            window.observeScrollElement(founderBadge);
+        }
+
+        const aerialVideoCard = document.querySelector('.aerial-video-player-card');
+        if (aerialVideoCard) {
+            aerialVideoCard.classList.add('reveal-scale');
+            aerialVideoCard.style.setProperty('--stagger-delay', '200ms');
+            window.observeScrollElement(aerialVideoCard);
+        }
+
+        // 6. Contact Section Elements
+        const contactTag = document.querySelector('.contact-left .section-tag');
+        if (contactTag) {
+            contactTag.classList.add('reveal-item');
+            contactTag.style.setProperty('--stagger-delay', '50ms');
+            window.observeScrollElement(contactTag);
+        }
+        const contactTitle = document.querySelector('.contact-left .contact-title');
+        if (contactTitle) {
+            contactTitle.classList.add('reveal-item');
+            contactTitle.style.setProperty('--stagger-delay', '120ms');
+            window.observeScrollElement(contactTitle);
+        }
+        const contactDesc = document.querySelector('.contact-left .contact-desc');
+        if (contactDesc) {
+            contactDesc.classList.add('reveal-item');
+            contactDesc.style.setProperty('--stagger-delay', '200ms');
+            window.observeScrollElement(contactDesc);
+        }
+
+        const contactLinks = document.querySelectorAll('.contact-links .c-link');
+        contactLinks.forEach((link, idx) => {
+            link.classList.add('reveal-item');
+            link.style.setProperty('--stagger-delay', `${260 + idx * 90}ms`);
+            window.observeScrollElement(link);
+        });
+
+        const contactFormGroups = document.querySelectorAll('.contact-form .form-group, .contact-form button');
+        contactFormGroups.forEach((fg, idx) => {
+            fg.classList.add('reveal-item');
+            fg.style.setProperty('--stagger-delay', `${150 + idx * 90}ms`);
+            window.observeScrollElement(fg);
+        });
+
+        // 7. Footer Thank You Signature Card & Links
+        const thankYouCard = document.querySelector('.trustbox-footer-container .thank-you-card');
+        if (thankYouCard) {
+            thankYouCard.classList.add('reveal-scale');
+            thankYouCard.style.setProperty('--stagger-delay', '120ms');
+            window.observeScrollElement(thankYouCard);
+        }
+
+        const footerLeft = document.querySelector('.footer-left');
+        if (footerLeft) {
+            footerLeft.classList.add('reveal-item');
+            footerLeft.style.setProperty('--stagger-delay', '100ms');
+            window.observeScrollElement(footerLeft);
+        }
+
+        const footerRight = document.querySelector('.footer-right');
+        if (footerRight) {
+            footerRight.classList.add('reveal-item');
+            footerRight.style.setProperty('--stagger-delay', '200ms');
+            window.observeScrollElement(footerRight);
+        }
+    }
+
+    // ----------------------------------------------------------------------
     // UI INITIALIZATION & RENDERERS
     // ----------------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
         initGlassTheme();
+        initScrollRevealEngine();
         renderCoreServices();
         renderAdditionalServices();
         renderPortfolioGrid(PORTFOLIO_ITEMS);
@@ -500,6 +705,14 @@
                 </div>
             `;
         }).join('');
+
+        // Apply staggered entrance & observe for each card
+        const cards = grid.querySelectorAll('.service-card');
+        cards.forEach((card, idx) => {
+            card.classList.add('reveal-scale');
+            card.style.setProperty('--stagger-delay', `${idx * 110}ms`);
+            if (window.observeScrollElement) window.observeScrollElement(card);
+        });
     }
 
     // RENDER ADDITIONAL SERVICES
@@ -513,6 +726,14 @@
                 <button class="add-service-btn" onclick="startCustomBooking('${as.name}', ${as.price})">₹${as.price} +</button>
             </div>
         `).join('');
+
+        // Apply staggered entrance for add-ons
+        const items = grid.querySelectorAll('.add-service-item');
+        items.forEach((item, idx) => {
+            item.classList.add('reveal-item');
+            item.style.setProperty('--stagger-delay', `${(idx % 4) * 80}ms`);
+            if (window.observeScrollElement) window.observeScrollElement(item);
+        });
     }
 
     function getPortfolioComponentHTML(id) {
@@ -632,6 +853,14 @@
                 </div>
             </div>
         `).join('');
+
+        // Apply staggered entrance & observe for each portfolio card
+        const cards = grid.querySelectorAll('.portfolio-card');
+        cards.forEach((card, idx) => {
+            card.classList.add('reveal-scale');
+            card.style.setProperty('--stagger-delay', `${idx * 110}ms`);
+            if (window.observeScrollElement) window.observeScrollElement(card);
+        });
     }
 
     // ----------------------------------------------------------------------
