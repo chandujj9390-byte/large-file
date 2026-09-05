@@ -3837,6 +3837,61 @@ html.lenis body {
    MOBILE RESPONSIVENESS (< 768px) — MODALS & BOOKING FORM OPTIMIZATION
    ========================================================================== */
 @media (max-width: 768px) {
+    /* 0. Navbar & Top-Right Toggles Optimization */
+    .navbar {
+        padding: 12px 0 !important;
+    }
+
+    .navbar.scrolled {
+        padding: 9px 0 !important;
+    }
+
+    .nav-container {
+        padding: 0 16px !important;
+    }
+
+    .nav-links {
+        display: none !important;
+    }
+
+    .nav-actions {
+        gap: 8px !important;
+    }
+
+    .nav-actions .btn-primary,
+    .nav-actions .btn-sparkle {
+        padding: 8px 14px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px !important;
+        min-height: 36px !important;
+        height: auto !important;
+        border-radius: 999px !important;
+        box-shadow: 0 4px 14px rgba(0, 255, 136, 0.22) !important;
+    }
+
+    .user-auth-btn {
+        padding: 7px 12px !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.8px !important;
+        gap: 5px !important;
+        min-height: 36px !important;
+        height: auto !important;
+        border-radius: 999px !important;
+    }
+
+    .auth-icon-placeholder svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .user-avatar-active {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 11px !important;
+    }
+
     /* 1. Stack Layout: Single vertical column */
     .form-grid-2 {
         grid-template-columns: 1fr !important;
@@ -3943,6 +3998,61 @@ html.lenis body {
     .drag-drop-zone {
         padding: 16px 12px !important;
         min-height: 48px !important;
+    }
+}
+
+/* ==========================================================================
+   EXTRA-COMPACT MOBILE RESPONSIVENESS (< 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 10px 0 !important;
+    }
+
+    .navbar.scrolled {
+        padding: 7px 0 !important;
+    }
+
+    .nav-container {
+        padding: 0 12px !important;
+    }
+
+    .nav-logo {
+        font-size: 17px !important;
+        letter-spacing: 1.2px !important;
+    }
+
+    .nav-actions {
+        gap: 6px !important;
+    }
+
+    .nav-actions .btn-primary,
+    .nav-actions .btn-sparkle {
+        padding: 6px 11px !important;
+        font-size: 9.5px !important;
+        letter-spacing: 0.3px !important;
+        min-height: 32px !important;
+        border-radius: 999px !important;
+    }
+
+    .user-auth-btn {
+        padding: 5px 9px !important;
+        font-size: 9px !important;
+        letter-spacing: 0.5px !important;
+        gap: 4px !important;
+        min-height: 32px !important;
+        border-radius: 999px !important;
+    }
+
+    .auth-icon-placeholder svg {
+        width: 13px !important;
+        height: 13px !important;
+    }
+
+    .user-avatar-active {
+        width: 25px !important;
+        height: 25px !important;
+        font-size: 9.5px !important;
     }
 }
 
