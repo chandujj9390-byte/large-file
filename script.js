@@ -264,11 +264,11 @@
         },
         {
             id: 'work-6',
-            title: 'BRAND DESIGN SYSTEM',
-            category: 'website',
-            catLabel: 'WORK 6',
-            desc: 'We can create a unique identity for your brand like logo, visiting cards, posters, Banners etc',
-            visual: '🌐'
+            title: 'APP DEVELOPMENT',
+            category: 'app',
+            catLabel: 'WORK 6 • UPCOMING',
+            desc: 'Custom mobile application development for both Android & iOS platforms with sleek UI/UX, smooth animations, and high performance.',
+            visual: '📱'
         },
     ];
 
@@ -606,7 +606,7 @@
                     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,7,6,0.1) 0%, rgba(5,7,6,0.85) 100%);"></div>
                     <div style="position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:10px; font-weight:800; color:var(--primary-emerald); letter-spacing:2px; background:rgba(0,0,0,0.7); padding:4px 10px; border-radius:999px; border:1px solid rgba(0,255,136,0.3);">BRAND DESIGN SYSTEM</span>
+                            <span style="font-size:10px; font-weight:800; color:var(--primary-emerald); letter-spacing:2px; background:rgba(0,0,0,0.7); padding:4px 10px; border-radius:999px; border:1px solid rgba(0,255,136,0.3);">UPCOMING • ANDROID & IOS</span>
                         </div>
                     </div>
                 </div>
@@ -2591,11 +2591,13 @@
                 </div>`;
             } else if (item.id === 'work-6') {
                 visualHtml = `<div style="height:320px; border-radius:20px; background: url('images/brand-design-system.jpg') center/cover no-repeat; margin-bottom:24px; border:1px solid var(--border-card); position:relative; overflow:hidden;">
-                    <span style="position:absolute; bottom:16px; left:16px; font-size:11px; font-weight:800; color:var(--primary-emerald); letter-spacing:2px; background:rgba(0,0,0,0.6); padding:4px 12px; border-radius:999px; border:1px solid rgba(0,255,136,0.3);">BRAND DESIGN SYSTEM • YOUR BRAND DESERVES BETTER</span>
+                    <span style="position:absolute; bottom:16px; left:16px; font-size:11px; font-weight:800; color:var(--primary-emerald); letter-spacing:2px; background:rgba(0,0,0,0.6); padding:4px 12px; border-radius:999px; border:1px solid rgba(0,255,136,0.3);">UPCOMING • ANDROID & IOS APP DEVELOPMENT</span>
                 </div>`;
             } else {
                 visualHtml = `<div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-card); padding:32px; border-radius:24px; text-align:center; font-size:64px; margin-bottom:24px;">${item.visual}</div>`;
             }
+
+            const isUpcoming = item.id === 'work-6';
 
             content.innerHTML = `
                 <span class="section-tag">${item.catLabel}</span>
@@ -2604,19 +2606,19 @@
                 ${visualHtml}
                 <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px; font-size:12px;">
                     <div style="background:rgba(255,255,255,0.04); padding:12px; border-radius:12px;">
-                        <span style="color:var(--text-muted); display:block;">Director</span>
+                        <span style="color:var(--text-muted); display:block;">Lead Developer</span>
                         <strong>Chandu</strong>
                     </div>
                     <div style="background:rgba(255,255,255,0.04); padding:12px; border-radius:12px;">
-                        <span style="color:var(--text-muted); display:block;">Resolution</span>
-                        <strong>4K DCI</strong>
+                        <span style="color:var(--text-muted); display:block;">Platform</span>
+                        <strong>${isUpcoming ? 'Android & iOS' : '4K DCI'}</strong>
                     </div>
                     <div style="background:rgba(255,255,255,0.04); padding:12px; border-radius:12px;">
-                        <span style="color:var(--text-muted); display:block;">Client Status</span>
-                        <strong style="color:var(--primary-emerald);">Completed ✓</strong>
+                        <span style="color:var(--text-muted); display:block;">Service Status</span>
+                        <strong style="color:var(--primary-emerald);">${isUpcoming ? 'Upcoming / Coming Soon 🚀' : 'Completed ✓'}</strong>
                     </div>
                 </div>
-                <button class="btn-primary btn-full" onclick="startBookingService('srv-1'); closeCaseStudyModal();">BOOK SIMILAR PROJECT ↗</button>
+                <button class="btn-primary btn-full" onclick="${isUpcoming ? "startBookingService('srv-6');" : "startBookingService('srv-1');"} closeCaseStudyModal();">${isUpcoming ? 'INQUIRE ABOUT APP DEVELOPMENT ↗' : 'BOOK SIMILAR PROJECT ↗'}</button>
             `;
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
