@@ -1034,7 +1034,7 @@
             if (window.observeScrollElement) window.observeScrollElement(card);
         });
 
-        // 2. Hardware-accelerated 360° 3D cylindrical rotation & perspective transition engine
+        // 2. Hardware-accelerated 3D Curved Amphitheater Stage Engine
         function updateReels3DTransforms() {
             const containerRect = container.getBoundingClientRect();
             const containerCenter = containerRect.left + containerRect.width / 2;
@@ -1043,17 +1043,21 @@
             reelCards.forEach(card => {
                 const cardRect = card.getBoundingClientRect();
                 const cardCenter = cardRect.left + cardRect.width / 2;
-                const distNormalized = (cardCenter - containerCenter) / halfWidth;
+                const distNormalized = (cardCenter - containerCenter) / (cardRect.width * 1.05 || halfWidth);
+                const absDist = Math.abs(distNormalized);
 
-                // 3D cylindrical curved rotation with depth and scale
-                const rotY = Math.max(-55, Math.min(55, distNormalized * 38));
-                const rotZ = Math.max(-8, Math.min(8, distNormalized * -3));
-                const transZ = -Math.pow(Math.abs(distNormalized), 1.3) * 75;
-                const scale = Math.max(0.85, 1 - Math.abs(distNormalized) * 0.1);
-                const brightness = Math.max(0.7, 1 - Math.abs(distNormalized) * 0.18);
+                // Amphitheater inward curve angles matching reference screen
+                const rotY = Math.max(-36, Math.min(36, -distNormalized * 18));
+                const rotZ = Math.max(-5, Math.min(5, -distNormalized * 2.2));
+                const transZ = -Math.pow(absDist, 1.35) * 45;
+                const translateY = Math.pow(absDist, 1.5) * 8;
+                const scale = Math.max(0.85, 1.06 - absDist * 0.08);
+                const brightness = Math.max(0.75, 1.02 - absDist * 0.12);
+                const zIndex = Math.max(1, Math.round(50 - absDist * 10));
 
-                card.style.transform = `perspective(1200px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translateZ(${transZ}px) scale(${scale})`;
+                card.style.transform = `perspective(1400px) translateY(${translateY}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translateZ(${transZ}px) scale(${scale})`;
                 card.style.filter = `brightness(${brightness})`;
+                card.style.zIndex = zIndex;
             });
         }
 
