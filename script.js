@@ -990,66 +990,60 @@
     };
 
     // ----------------------------------------------------------------------
-    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER
+    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (LEFT TO RIGHT GLIDE)
     // ----------------------------------------------------------------------
-    window.scrollReelsTrack = function (direction) {
-        const track = document.getElementById('reels-track');
-        if (!track) return;
-        const card = track.querySelector('.reel-card');
-        const scrollAmount = (card ? card.offsetWidth + 18 : 230) * (direction === 'left' ? -1 : 1);
-        track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    };
-
-    window.handleReelClick = function (card) {
-        if (!card) return;
-        const video = card.querySelector('video');
-        const toggleBtn = card.querySelector('.reel-play-toggle');
-        if (!video) return;
-
-        if (video.paused) {
-            // Pause all other reels
-            document.querySelectorAll('.reel-card video').forEach(v => {
-                if (v !== video) {
-                    v.pause();
-                    const otherBtn = v.closest('.reel-card')?.querySelector('.reel-play-toggle');
-                    if (otherBtn) otherBtn.textContent = '▶';
-                }
-            });
-            video.play().catch(() => {});
-            if (toggleBtn) toggleBtn.textContent = '⏸';
-        } else {
-            video.pause();
-            if (toggleBtn) toggleBtn.textContent = '▶';
-        }
-    };
+    let reelsScrollAnimFrame = null;
+    let isReelsPaused = false;
+    let reelsScrollSpeed = 0.85; // Silky smooth sub-pixel gliding speed
+    let isDraggingReels = false;
+    let reelsResumeTimeout = null;
 
     function initReelsShowcase() {
         const track = document.getElementById('reels-track');
         if (!track) return;
 
-        // Auto-pause / hover play handlers & staggered observe
+        // Ensure all videos are strictly MUTED (no sound/music) and autoplays smoothly
         const reelCards = track.querySelectorAll('.reel-card');
         reelCards.forEach((card, idx) => {
             const video = card.querySelector('video');
-            const toggleBtn = card.querySelector('.reel-play-toggle');
+            if (video) {
+                video.muted = true;
+                video.volume = 0;
+                video.play().catch(() => {});
+            }
 
-            card.style.setProperty('--stagger-delay', `${idx * 80}ms`);
+            card.style.setProperty('--stagger-delay', `${idx * 70}ms`);
             if (window.observeScrollElement) window.observeScrollElement(card);
-
-            card.addEventListener('mouseenter', () => {
-                if (video && video.paused) {
-                    video.play().catch(() => {});
-                    if (toggleBtn) toggleBtn.textContent = '⏸';
-                }
-            });
-
-            card.addEventListener('mouseleave', () => {
-                if (video && !video.paused) {
-                    video.pause();
-                    if (toggleBtn) toggleBtn.textContent = '▶';
-                }
-            });
         });
+
+        // Silky smooth infinite left-to-right gliding loop
+        function autoScrollReelsLoop() {
+            if (track && !isReelsPaused && !isDraggingReels) {
+                track.scrollLeft += reelsScrollSpeed;
+                const maxScroll = track.scrollWidth - track.clientWidth;
+
+                if (track.scrollLeft >= maxScroll - 2) {
+                    track.scrollLeft = 0;
+                }
+            }
+            reelsScrollAnimFrame = requestAnimationFrame(autoScrollReelsLoop);
+        }
+
+        if (!reelsScrollAnimFrame) {
+            reelsScrollAnimFrame = requestAnimationFrame(autoScrollReelsLoop);
+        }
+
+        // Hover & touch pause handlers
+        track.addEventListener('mouseenter', () => { isReelsPaused = true; });
+        track.addEventListener('mouseleave', () => {
+            if (!isDraggingReels) isReelsPaused = false;
+        });
+
+        track.addEventListener('touchstart', () => { isReelsPaused = true; }, { passive: true });
+        track.addEventListener('touchend', () => {
+            if (reelsResumeTimeout) clearTimeout(reelsResumeTimeout);
+            reelsResumeTimeout = setTimeout(() => { isReelsPaused = false; }, 1500);
+        }, { passive: true });
 
         // Mouse drag smooth scrolling for reels track
         let isDown = false;
@@ -1058,19 +1052,26 @@
 
         track.addEventListener('mousedown', (e) => {
             isDown = true;
+            isDraggingReels = true;
+            isReelsPaused = true;
             startX = e.pageX - track.offsetLeft;
             scrollLeftPos = track.scrollLeft;
         });
 
         window.addEventListener('mouseup', () => {
-            isDown = false;
+            if (isDown) {
+                isDown = false;
+                isDraggingReels = false;
+                if (reelsResumeTimeout) clearTimeout(reelsResumeTimeout);
+                reelsResumeTimeout = setTimeout(() => { isReelsPaused = false; }, 2000);
+            }
         });
 
         track.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
             const x = e.pageX - track.offsetLeft;
-            const walk = (x - startX) * 1.4;
+            const walk = (x - startX) * 1.5;
             track.scrollLeft = scrollLeftPos - walk;
         });
     }

@@ -192,155 +192,66 @@
                     </div>
                 </div>
 
-                <!-- 9:16 VERTICAL CINEMATIC SHOWCASE REELS (SMOOTH HORIZONTAL PATH) -->
+                <!-- 9:16 VERTICAL CINEMATIC SHOWCASE REELS (SMOOTH LEFT-TO-RIGHT HORIZONTAL PATH) -->
                 <div class="vertical-reels-container" id="reels-showcase">
-                    <div class="reels-header">
-                        <span class="reels-tag">● 9:16 CINEMATIC REELS</span>
-                        <span class="reels-hint">Swipe or Scroll ↔</span>
-                    </div>
-
                     <div class="reels-track-wrapper">
-                        <button class="reels-arrow reels-arrow-left" onclick="scrollReelsTrack('left')" aria-label="Previous Reels">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"></polyline>
-                            </svg>
-                        </button>
-
                         <div class="reels-horizontal-track" id="reels-track">
                             <!-- Video 1 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/1.mov" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">01</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">CINEMATIC REEL</span>
-                                    </div>
+                                    <video src="videos/1.mov" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 2 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/M%20CONVENTION%20OF%20JAGA%20ANNA.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">02</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">M CONVENTION</span>
-                                    </div>
+                                    <video src="videos/M%20CONVENTION%20OF%20JAGA%20ANNA.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 3 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/SS%20CONVENTION%20KALAHASTRI.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">03</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">SS CONVENTION</span>
-                                    </div>
+                                    <video src="videos/SS%20CONVENTION%20KALAHASTRI.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 4 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/raghul%20food%20items%20video%20oof%20RC.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">04</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">FOOD CINEMATIC</span>
-                                    </div>
+                                    <video src="videos/raghul%20food%20items%20video%20oof%20RC.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 5 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/raghul%20convention%20of%20RC%201.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">05</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">RAGHUL CONVENTION</span>
-                                    </div>
+                                    <video src="videos/raghul%20convention%20of%20RC%201.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 6 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/farm%20house%20video.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">06</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">FARM HOUSE TOUR</span>
-                                    </div>
+                                    <video src="videos/farm%20house%20video.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 7 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/cs%20convention%20of%20jaga%20anna.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">07</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">CS CONVENTION</span>
-                                    </div>
+                                    <video src="videos/cs%20convention%20of%20jaga%20anna.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
 
                             <!-- Video 8 -->
-                            <div class="reel-card reveal-scale" onclick="handleReelClick(this)">
+                            <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/august%2015%20reel.mp4" playsinline muted loop preload="metadata"></video>
-                                    <div class="reel-overlay"></div>
-                                    <div class="reel-badge-top">
-                                        <span class="reel-tag-num">08</span>
-                                        <span class="reel-ratio">9:16 4K</span>
-                                    </div>
-                                    <div class="reel-info-bottom">
-                                        <button class="reel-play-toggle" aria-label="Play video">▶</button>
-                                        <span class="reel-label">AUGUST 15 REEL</span>
-                                    </div>
+                                    <video src="videos/august%2015%20reel.mp4" autoplay loop muted playsinline preload="auto"></video>
                                 </div>
                             </div>
                         </div>
-
-                        <button class="reels-arrow reels-arrow-right" onclick="scrollReelsTrack('right')" aria-label="Next Reels">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
