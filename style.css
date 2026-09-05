@@ -4435,10 +4435,12 @@ html.lenis body {
 .reels-track-wrapper {
     position: relative;
     width: 100%;
-    max-width: 1300px;
+    max-width: 1400px;
     perspective: 1400px;
     perspective-origin: 50% 50%;
-    overflow: visible;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
     z-index: 1;
 }
 

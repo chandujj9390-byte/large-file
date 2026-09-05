@@ -990,11 +990,11 @@
     };
 
     // ----------------------------------------------------------------------
-    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (360° 3D ROTATION & 10s LIMITER)
+    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (LEFT TO RIGHT FLOW)
     // ----------------------------------------------------------------------
     let reelsScrollAnimFrame = null;
     let isReelsPaused = false;
-    let reelsScrollSpeed = 0.85; // Silky smooth sub-pixel gliding speed
+    let reelsScrollSpeed = 0.9; // Smooth sub-pixel gliding speed
     let isDraggingReels = false;
     let reelsResumeTimeout = null;
 
@@ -1003,10 +1003,19 @@
         const container = document.getElementById('reels-showcase');
         if (!track || !container) return;
 
-        const reelCards = Array.from(track.querySelectorAll('.reel-card'));
+        // Clone cards for seamless infinite left-to-right loop
+        const originalCards = Array.from(track.querySelectorAll('.reel-card'));
+        if (originalCards.length === 8) {
+            originalCards.forEach(card => {
+                const clone = card.cloneNode(true);
+                track.appendChild(clone);
+            });
+        }
 
-        // 1. Ensure all videos are strictly MUTED (no sound/music) and loop only the starting 10 SECONDS
-        reelCards.forEach((card, idx) => {
+        const allReelCards = Array.from(track.querySelectorAll('.reel-card'));
+
+        // 1. Setup all videos: muted, 10-second playback loop, playsinline
+        allReelCards.forEach((card, idx) => {
             const video = card.querySelector('video');
             if (video) {
                 video.muted = true;
@@ -1023,14 +1032,13 @@
                     }
                 });
 
-                // In case ended fires before 10s
                 video.addEventListener('ended', () => {
                     video.currentTime = 0;
                     video.play().catch(() => {});
                 });
             }
 
-            card.style.setProperty('--stagger-delay', `${idx * 70}ms`);
+            card.style.setProperty('--stagger-delay', `${(idx % 8) * 70}ms`);
             if (window.observeScrollElement) window.observeScrollElement(card);
         });
 
@@ -1040,7 +1048,7 @@
             const containerCenter = containerRect.left + containerRect.width / 2;
             const halfWidth = containerRect.width / 2 || 1;
 
-            reelCards.forEach(card => {
+            allReelCards.forEach(card => {
                 const cardRect = card.getBoundingClientRect();
                 const cardCenter = cardRect.left + cardRect.width / 2;
                 const distNormalized = (cardCenter - containerCenter) / (cardRect.width * 1.05 || halfWidth);
@@ -1061,14 +1069,19 @@
             });
         }
 
-        // 3. Silky smooth infinite left-to-right gliding loop with 3D updates
+        // Set initial scroll offset so moving left-to-right (decreasing scrollLeft) is immediately continuous
+        const singleSetWidth = track.scrollWidth / 2;
+        track.scrollLeft = singleSetWidth / 2;
+
+        // 3. Smooth continuous LEFT TO RIGHT gliding loop
         function autoScrollReelsLoop() {
             if (track && !isReelsPaused && !isDraggingReels) {
-                track.scrollLeft += reelsScrollSpeed;
-                const maxScroll = track.scrollWidth - track.clientWidth;
+                // Decreasing scrollLeft moves cards from LEFT side to RIGHT side inside display
+                track.scrollLeft -= reelsScrollSpeed;
 
-                if (track.scrollLeft >= maxScroll - 2) {
-                    track.scrollLeft = 0;
+                const singleSetWidth = track.scrollWidth / 2;
+                if (track.scrollLeft <= 5) {
+                    track.scrollLeft += singleSetWidth;
                 }
             }
             updateReels3DTransforms();
