@@ -586,6 +586,7 @@
         renderCoreServices();
         renderAdditionalServices();
         renderPortfolioGrid(PORTFOLIO_ITEMS);
+        initReelsShowcase();
         updateUserNavUI();
         initHeroCanvas();
         setupPortfolioAutoScrollListeners();
@@ -987,6 +988,92 @@
         }
         pausePortfolioGlide(2000);
     };
+
+    // ----------------------------------------------------------------------
+    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER
+    // ----------------------------------------------------------------------
+    window.scrollReelsTrack = function (direction) {
+        const track = document.getElementById('reels-track');
+        if (!track) return;
+        const card = track.querySelector('.reel-card');
+        const scrollAmount = (card ? card.offsetWidth + 18 : 230) * (direction === 'left' ? -1 : 1);
+        track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    };
+
+    window.handleReelClick = function (card) {
+        if (!card) return;
+        const video = card.querySelector('video');
+        const toggleBtn = card.querySelector('.reel-play-toggle');
+        if (!video) return;
+
+        if (video.paused) {
+            // Pause all other reels
+            document.querySelectorAll('.reel-card video').forEach(v => {
+                if (v !== video) {
+                    v.pause();
+                    const otherBtn = v.closest('.reel-card')?.querySelector('.reel-play-toggle');
+                    if (otherBtn) otherBtn.textContent = '▶';
+                }
+            });
+            video.play().catch(() => {});
+            if (toggleBtn) toggleBtn.textContent = '⏸';
+        } else {
+            video.pause();
+            if (toggleBtn) toggleBtn.textContent = '▶';
+        }
+    };
+
+    function initReelsShowcase() {
+        const track = document.getElementById('reels-track');
+        if (!track) return;
+
+        // Auto-pause / hover play handlers & staggered observe
+        const reelCards = track.querySelectorAll('.reel-card');
+        reelCards.forEach((card, idx) => {
+            const video = card.querySelector('video');
+            const toggleBtn = card.querySelector('.reel-play-toggle');
+
+            card.style.setProperty('--stagger-delay', `${idx * 80}ms`);
+            if (window.observeScrollElement) window.observeScrollElement(card);
+
+            card.addEventListener('mouseenter', () => {
+                if (video && video.paused) {
+                    video.play().catch(() => {});
+                    if (toggleBtn) toggleBtn.textContent = '⏸';
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                if (video && !video.paused) {
+                    video.pause();
+                    if (toggleBtn) toggleBtn.textContent = '▶';
+                }
+            });
+        });
+
+        // Mouse drag smooth scrolling for reels track
+        let isDown = false;
+        let startX = 0;
+        let scrollLeftPos = 0;
+
+        track.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - track.offsetLeft;
+            scrollLeftPos = track.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+
+        track.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - track.offsetLeft;
+            const walk = (x - startX) * 1.4;
+            track.scrollLeft = scrollLeftPos - walk;
+        });
+    }
 
     // ----------------------------------------------------------------------
     // BOOKING SYSTEM FLOW (STEP 01, 02, 03)
