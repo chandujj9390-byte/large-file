@@ -4404,33 +4404,37 @@ html.lenis body {
 }
 
 /* ==========================================================================
-   9:16 VERTICAL CINEMATIC SHOWCASE REELS (SMOOTH LEFT-TO-RIGHT GLIDE)
+   9:16 VERTICAL CINEMATIC SHOWCASE REELS (360° 3D ROTATION & SMOOTH GLIDE)
    ========================================================================== */
 .vertical-reels-container {
     width: 100%;
     margin-top: 36px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     position: relative;
     z-index: 5;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .reels-track-wrapper {
     position: relative;
     width: 100%;
-    overflow: hidden;
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
+    overflow: visible;
 }
 
 .reels-horizontal-track {
     display: flex;
-    gap: 20px;
+    gap: 22px;
     overflow-x: auto;
     scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 12px 6px 20px 6px;
+    padding: 20px 10px 30px 10px;
     scrollbar-width: none;
     cursor: grab;
     width: 100%;
+    transform-style: preserve-3d;
+    will-change: scroll-position;
 }
 
 .reels-horizontal-track:active {
@@ -4451,17 +4455,17 @@ html.lenis body {
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: #050706;
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 255, 136, 0.06);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.4s ease,
-                border-color 0.35s ease;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, filter, opacity;
+    transition: box-shadow 0.4s ease, border-color 0.35s ease;
     cursor: pointer;
     user-select: none;
 }
 
 .reel-card:hover {
-    transform: translateY(-8px) scale(1.03);
     border-color: var(--primary-emerald);
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 255, 136, 0.3);
+    box-shadow: 0 24px 55px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 255, 136, 0.35);
 }
 
 .reel-video-box {
@@ -4470,6 +4474,7 @@ html.lenis body {
     position: relative;
     overflow: hidden;
     border-radius: inherit;
+    background: #000;
 }
 
 .reel-video-box video {

@@ -990,7 +990,7 @@
     };
 
     // ----------------------------------------------------------------------
-    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (LEFT TO RIGHT GLIDE)
+    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (360° 3D ROTATION & 10s LIMITER)
     // ----------------------------------------------------------------------
     let reelsScrollAnimFrame = null;
     let isReelsPaused = false;
@@ -1000,23 +1000,64 @@
 
     function initReelsShowcase() {
         const track = document.getElementById('reels-track');
-        if (!track) return;
+        const container = document.getElementById('reels-showcase');
+        if (!track || !container) return;
 
-        // Ensure all videos are strictly MUTED (no sound/music) and autoplays smoothly
-        const reelCards = track.querySelectorAll('.reel-card');
+        const reelCards = Array.from(track.querySelectorAll('.reel-card'));
+
+        // 1. Ensure all videos are strictly MUTED (no sound/music) and loop only the starting 10 SECONDS
         reelCards.forEach((card, idx) => {
             const video = card.querySelector('video');
             if (video) {
                 video.muted = true;
                 video.volume = 0;
+                video.playsInline = true;
+                video.currentTime = 0;
                 video.play().catch(() => {});
+
+                // Cap playback strictly to the starting 10 seconds
+                video.addEventListener('timeupdate', () => {
+                    if (video.currentTime >= 10) {
+                        video.currentTime = 0;
+                        video.play().catch(() => {});
+                    }
+                });
+
+                // In case ended fires before 10s
+                video.addEventListener('ended', () => {
+                    video.currentTime = 0;
+                    video.play().catch(() => {});
+                });
             }
 
             card.style.setProperty('--stagger-delay', `${idx * 70}ms`);
             if (window.observeScrollElement) window.observeScrollElement(card);
         });
 
-        // Silky smooth infinite left-to-right gliding loop
+        // 2. Hardware-accelerated 360° 3D cylindrical rotation & perspective transition engine
+        function updateReels3DTransforms() {
+            const containerRect = container.getBoundingClientRect();
+            const containerCenter = containerRect.left + containerRect.width / 2;
+            const halfWidth = containerRect.width / 2 || 1;
+
+            reelCards.forEach(card => {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const distNormalized = (cardCenter - containerCenter) / halfWidth;
+
+                // 3D cylindrical curved rotation with depth and scale
+                const rotY = Math.max(-55, Math.min(55, distNormalized * 38));
+                const rotZ = Math.max(-8, Math.min(8, distNormalized * -3));
+                const transZ = -Math.pow(Math.abs(distNormalized), 1.3) * 75;
+                const scale = Math.max(0.85, 1 - Math.abs(distNormalized) * 0.1);
+                const brightness = Math.max(0.7, 1 - Math.abs(distNormalized) * 0.18);
+
+                card.style.transform = `perspective(1200px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translateZ(${transZ}px) scale(${scale})`;
+                card.style.filter = `brightness(${brightness})`;
+            });
+        }
+
+        // 3. Silky smooth infinite left-to-right gliding loop with 3D updates
         function autoScrollReelsLoop() {
             if (track && !isReelsPaused && !isDraggingReels) {
                 track.scrollLeft += reelsScrollSpeed;
@@ -1026,12 +1067,22 @@
                     track.scrollLeft = 0;
                 }
             }
+            updateReels3DTransforms();
             reelsScrollAnimFrame = requestAnimationFrame(autoScrollReelsLoop);
         }
 
         if (!reelsScrollAnimFrame) {
             reelsScrollAnimFrame = requestAnimationFrame(autoScrollReelsLoop);
         }
+
+        // Track scroll event for manual scrolling / touch gestures
+        track.addEventListener('scroll', () => {
+            updateReels3DTransforms();
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            updateReels3DTransforms();
+        }, { passive: true });
 
         // Hover & touch pause handlers
         track.addEventListener('mouseenter', () => { isReelsPaused = true; });
@@ -1073,7 +1124,11 @@
             const x = e.pageX - track.offsetLeft;
             const walk = (x - startX) * 1.5;
             track.scrollLeft = scrollLeftPos - walk;
+            updateReels3DTransforms();
         });
+
+        // Initial 3D transform computation
+        setTimeout(updateReels3DTransforms, 100);
     }
 
     // ----------------------------------------------------------------------
