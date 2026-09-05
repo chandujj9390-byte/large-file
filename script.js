@@ -990,11 +990,11 @@
     };
 
     // ----------------------------------------------------------------------
-    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (LEFT TO RIGHT FLOW)
+    // 9:16 VERTICAL CINEMATIC SHOWCASE REELS CONTROLLER (SMOOTH ONE-LINE SLIDE)
     // ----------------------------------------------------------------------
     let reelsScrollAnimFrame = null;
     let isReelsPaused = false;
-    let reelsScrollSpeed = 0.9; // Smooth sub-pixel gliding speed
+    let reelsScrollSpeed = 0.95; // Buttery smooth sub-pixel gliding speed
     let isDraggingReels = false;
     let reelsResumeTimeout = null;
 
@@ -1003,7 +1003,7 @@
         const container = document.getElementById('reels-showcase');
         if (!track || !container) return;
 
-        // Clone cards for seamless infinite left-to-right loop
+        // Clone cards for seamless infinite loop
         const originalCards = Array.from(track.querySelectorAll('.reel-card'));
         if (originalCards.length === 8) {
             originalCards.forEach(card => {
@@ -1042,64 +1042,27 @@
             if (window.observeScrollElement) window.observeScrollElement(card);
         });
 
-        // 2. Hardware-accelerated 360° 3D Revolving Cylinder Engine
-        function updateReels3DTransforms() {
-            const containerRect = container.getBoundingClientRect();
-            const containerCenter = containerRect.left + containerRect.width / 2;
-            const halfWidth = containerRect.width / 2 || 1;
-
-            allReelCards.forEach(card => {
-                const cardRect = card.getBoundingClientRect();
-                const cardCenter = cardRect.left + cardRect.width / 2;
-                const distNormalized = (cardCenter - containerCenter) / (cardRect.width * 1.05 || halfWidth);
-                const absDist = Math.abs(distNormalized);
-
-                // Full 360° 3D cylinder rotation transition from left entrance to right exit
-                const rotY = Math.max(-180, Math.min(180, -distNormalized * 65));
-                const rotZ = Math.max(-15, Math.min(15, -distNormalized * 4));
-                const transZ = -Math.pow(absDist, 1.4) * 75;
-                const translateY = Math.pow(absDist, 1.5) * 8;
-                const scale = Math.max(0.82, 1.08 - absDist * 0.1);
-                const brightness = Math.max(0.68, 1.02 - absDist * 0.15);
-                const zIndex = Math.max(1, Math.round(100 - absDist * 15));
-
-                card.style.transform = `perspective(1400px) translateY(${translateY}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translateZ(${transZ}px) scale(${scale})`;
-                card.style.filter = `brightness(${brightness})`;
-                card.style.zIndex = zIndex;
-            });
-        }
-
-        // Set initial scroll offset so moving left-to-right (decreasing scrollLeft) is immediately continuous
+        // Set initial scroll offset so moving left-to-right (decreasing scrollLeft) is continuous
         const singleSetWidth = track.scrollWidth / 2;
         track.scrollLeft = singleSetWidth / 2;
 
-        // 3. Smooth continuous LEFT TO RIGHT gliding loop
+        // 2. Smooth continuous ONE-LINE LEFT TO RIGHT sliding loop
         function autoScrollReelsLoop() {
             if (track && !isReelsPaused && !isDraggingReels) {
-                // Decreasing scrollLeft moves cards from LEFT side to RIGHT side inside display
+                // Decreasing scrollLeft smoothly moves cards in one line from LEFT to RIGHT
                 track.scrollLeft -= reelsScrollSpeed;
 
-                const singleSetWidth = track.scrollWidth / 2;
+                const halfWidth = track.scrollWidth / 2;
                 if (track.scrollLeft <= 5) {
-                    track.scrollLeft += singleSetWidth;
+                    track.scrollLeft += halfWidth;
                 }
             }
-            updateReels3DTransforms();
             reelsScrollAnimFrame = requestAnimationFrame(autoScrollReelsLoop);
         }
 
         if (!reelsScrollAnimFrame) {
             reelsScrollAnimFrame = requestAnimationFrame(autoScrollReelsLoop);
         }
-
-        // Track scroll event for manual scrolling / touch gestures
-        track.addEventListener('scroll', () => {
-            updateReels3DTransforms();
-        }, { passive: true });
-
-        window.addEventListener('resize', () => {
-            updateReels3DTransforms();
-        }, { passive: true });
 
         // Hover & touch pause handlers
         track.addEventListener('mouseenter', () => { isReelsPaused = true; });
@@ -1141,11 +1104,7 @@
             const x = e.pageX - track.offsetLeft;
             const walk = (x - startX) * 1.5;
             track.scrollLeft = scrollLeftPos - walk;
-            updateReels3DTransforms();
         });
-
-        // Initial 3D transform computation
-        setTimeout(updateReels3DTransforms, 100);
     }
 
     // ----------------------------------------------------------------------
