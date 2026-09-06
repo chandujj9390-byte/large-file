@@ -4597,19 +4597,37 @@ html.lenis body {
 }
 
 /* ==========================================================================
-   9:16 VERTICAL CINEMATIC SHOWCASE REELS (SMOOTH ONE-LINE SLIDE CAROUSEL)
+   9:16 VERTICAL CINEMATIC SHOWCASE REELS (SMOOTH RAINBOW ARC CURVE)
    ========================================================================== */
 .vertical-reels-container {
+    position: relative;
+    margin-top: 40px;
     width: 100%;
     max-width: 100%;
-    margin-top: 36px;
-    margin-bottom: 24px;
-    position: relative;
-    z-index: 5;
+    perspective: 1200px;
     overflow: hidden;
+    padding: 24px 0 40px 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 5;
+}
+
+/* Luminous Rainbow Ambient Arc Beam */
+.vertical-reels-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 1000px;
+    height: 140px;
+    background: radial-gradient(ellipse 65% 50% at 50% 15%, rgba(0, 255, 136, 0.22), rgba(0, 210, 255, 0.18), rgba(168, 85, 247, 0.16), rgba(245, 158, 11, 0.12), transparent 75%);
+    filter: blur(40px);
+    pointer-events-none;
+    z-index: 0;
+    border-radius: 50%;
 }
 
 .reels-track-wrapper {
@@ -4617,8 +4635,8 @@ html.lenis body {
     width: 100%;
     max-width: 1440px;
     overflow: hidden;
-    mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
     z-index: 1;
 }
 
@@ -4626,12 +4644,12 @@ html.lenis body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 20px;
+    gap: 22px;
     overflow-x: auto;
     scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
-    padding: 16px 12px 24px 12px;
+    padding: 30px 16px 44px 16px;
     scrollbar-width: none;
     cursor: grab;
     width: 100%;
@@ -4654,20 +4672,41 @@ html.lenis body {
     border-radius: 24px;
     overflow: hidden;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     background: #060907;
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 136, 0.05);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        border-color 0.35s ease,
-        box-shadow 0.35s ease;
     cursor: pointer;
     user-select: none;
+    will-change: transform, opacity, box-shadow;
+    transform-origin: center center;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* Holographic Rainbow Arc Edge Glow */
+.reel-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 210, 255, 0.6), rgba(168, 85, 247, 0.6), rgba(255, 154, 0, 0.6), rgba(0, 255, 136, 0.7));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events-none;
+    opacity: 0.4;
+    transition: opacity 0.35s ease, filter 0.35s ease;
+    z-index: 2;
+}
+
+.reel-card:hover::before {
+    opacity: 1;
+    filter: brightness(1.25);
 }
 
 .reel-card:hover {
-    transform: translateY(-6px) scale(1.03);
     border-color: var(--primary-emerald);
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.95), 0 0 30px rgba(0, 255, 136, 0.35);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 255, 136, 0.4), 0 0 50px rgba(0, 210, 255, 0.25);
 }
 
 .reel-video-box {
@@ -4704,7 +4743,8 @@ html.lenis body {
     }
 
     .vertical-reels-container {
-        margin-top: 24px;
+        margin-top: 20px;
+        padding: 16px 0 30px 0;
     }
 }
 
@@ -4715,3 +4755,267 @@ html.lenis body {
         border-radius: 16px;
     }
 }
+
+/* ==========================================================================
+   THE STUDIO ADVANTAGE / COMPARISON MATRIX SECTION (MINIMAL & TRANSPARENT)
+   ========================================================================== */
+.advantage-section {
+    position: relative;
+    background: transparent;
+    padding-top: 60px;
+    padding-bottom: 90px;
+}
+
+.comparison-matrix-wrapper {
+    margin-top: 36px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 4px 16px 4px;
+}
+
+.comparison-table {
+    min-width: 860px;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.comp-row {
+    display: grid;
+    grid-template-columns: 2.2fr 2.6fr 1.8fr 1.8fr;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease;
+}
+
+.comp-row:last-child {
+    border-bottom: none;
+}
+
+.comp-row:not(.comp-header-row):not(.comp-footer-row):hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.comp-col {
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.comp-col-feature {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    background: transparent;
+}
+
+.feature-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    letter-spacing: -0.2px;
+}
+
+.feature-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+/* Highlight Column - ARNE STORIES (Minimal Glowing Glass) */
+.comp-col-arne.highlight-col {
+    background: rgba(0, 255, 136, 0.02);
+    border-left: 1px solid rgba(0, 255, 136, 0.22);
+    border-right: 1px solid rgba(0, 255, 136, 0.22);
+    position: relative;
+}
+
+.comp-header-row .comp-col-arne.highlight-col {
+    background: rgba(0, 255, 136, 0.035);
+    padding-top: 24px;
+}
+
+.comp-badge {
+    position: absolute;
+    top: 6px;
+    right: 16px;
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--primary-emerald);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+.comp-brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.comp-brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0, 255, 136, 0.15);
+    border: 1px solid rgba(0, 255, 136, 0.4);
+    color: var(--primary-emerald);
+    font-weight: 900;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comp-brand-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.comp-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary-emerald);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
+}
+
+.comp-brand-sub {
+    font-size: 11px;
+    color: var(--primary-emerald);
+    font-weight: 500;
+}
+
+.comp-col-alt {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.comp-col-alt:last-child {
+    border-right: none;
+}
+
+.comp-header-row .comp-col-alt {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.comp-col-tag {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+}
+
+.comp-col-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-top: 2px;
+}
+
+.comp-col-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Status Pills & Indicators - Minimal Design */
+.status-pill {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    font-weight: 700;
+}
+
+.status-trophy {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-check {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.35);
+    color: var(--primary-emerald);
+}
+
+.status-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+.status-cross {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.status-text {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.4;
+    font-weight: 400;
+}
+
+.status-text.arne-text {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Table Footer / CTA */
+.comp-footer-row {
+    background: transparent;
+}
+
+.footer-note {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.comp-cta-btn {
+    width: 100%;
+    text-align: center;
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--primary-emerald);
+    border: 1px solid rgba(0, 255, 136, 0.4);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    display: inline-block;
+}
+
+.comp-cta-btn:hover {
+    background: var(--primary-emerald);
+    color: #000000;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    transform: translateY(-1px);
+}
+
+.comp-footer-text {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}

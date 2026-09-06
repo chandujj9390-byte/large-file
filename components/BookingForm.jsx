@@ -8,26 +8,20 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xrrhzjabhf
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Arne Stories Curated Production Services
+// Arne Stories Curated Production Services & Pricing
 const ARNE_SERVICES = [
-  { id: 'video-editing', name: 'Video Editing (4K / Cinematic)', price: '₹1,049' },
-  { id: 'photo-editing', name: 'Photo Retouching & Color Grading', price: '₹599' },
-  { id: 'reels-editing', name: 'Reels & Shorts Viral Editing', price: '₹799' },
-  { id: 'poster-design', name: 'Poster & Title Card Designing', price: '₹529' },
-  { id: 'album-design', name: 'Cinematic Photo Album Layout', price: '₹1,299' },
-  { id: 'color-grading', name: 'DaVinci Resolve Color Grading', price: '₹599' },
-  { id: 'cinematic-shoot', name: 'Cinematic Production Shoot', price: '₹4,999' },
-  { id: 'web-design', name: 'Website Designing & Development', price: '₹4,999' }
+  { id: 'video-editing', name: 'Video Editing (4K / Cinematic)', priceNum: 1049, price: '₹1,049' },
+  { id: 'photo-editing', name: 'Photo Retouching & Color Grading', priceNum: 599, price: '₹599' },
+  { id: 'reels-editing', name: 'Reels & Shorts Viral Editing', priceNum: 799, price: '₹799' },
+  { id: 'poster-design', name: 'Poster & Title Card Designing', priceNum: 529, price: '₹529' },
+  { id: 'album-design', name: 'Cinematic Photo Album Layout', priceNum: 1299, price: '₹1,299' },
+  { id: 'color-grading', name: 'DaVinci Resolve Color Grading', priceNum: 599, price: '₹599' },
+  { id: 'web-design', name: 'Website Designing & Development', priceNum: 4999, price: '₹4,999' },
+  { id: 'other', name: 'Other', priceNum: 0, price: '₹0' }
 ];
 
 /**
  * Arne Stories — Premium Cinematic Booking Form Component
- * 
- * Features:
- * - 1-Hour Review & Slot Confirmation Flow (No 50% advance / Razorpay required)
- * - Direct Supabase & /api/complete-booking submission with status: 'Pending Review'
- * - Instant Twilio SMS acknowledgment & Admin Nodemailer alert
- * - Dark frosted glass aesthetic with emerald accents
  */
 export default function BookingForm({ onSlotRequested, className = '' }) {
   const [formData, setFormData] = useState({
@@ -43,7 +37,13 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [requestSubmitted, setRequestSubmitted] = useState(false);
-  const [bookingRef, setBookingRef] = useState('');
+  const [bookingDetails, setBookingDetails] = useState(null);
+
+  const isOther = formData.service === 'Other' || formData.service?.toLowerCase() === 'other';
+  const selectedServiceObj = ARNE_SERVICES.find(s => s.name === formData.service);
+  const totalPrice = isOther ? 0 : (selectedServiceObj ? selectedServiceObj.priceNum : 0);
+  const prepaidAmount = Math.round(totalPrice * 0.5);
+  const postpaidAmount = totalPrice - prepaidAmount;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -120,26 +120,45 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
         booking_time: prefSlot || 'Flexible',
         time_slot: prefSlot || 'Flexible',
         project_desc: projectDesc || 'No additional requirements.',
-        status: 'Pending Review',
-        booking_status: 'Pending Review',
-        payment_status: 'Review Pending',
+        total_price: totalPrice,
+        prepaid_amount: prepaidAmount,
+        postpaid_amount: postpaidAmount,
+        amount_paid: prepaidAmount,
+        amount_remaining: postpaidAmount,
+        status: 'Confirmed',
+        booking_status: 'Confirmed',
+        payment_status: '50% Prepaid Paid',
+        payment_method: 'UPI / Razorpay (50% Advance)',
         created_at: new Date().toISOString()
       };
 
       // 1. Direct Supabase Insert
       try {
-        await supabase.from('bookings').insert([bookingPayload]);
+        await supabase.from('bookings').upsert([bookingPayload]);
         await supabase.from('customers').insert([{
           full_name: fullName.trim(),
           mobile: formattedPhoneNumber,
           whatsapp: formattedPhoneNumber,
-          email: cleanEmail
+          email: cleanEmail,
+          total_spent: prepaidAmount,
+          pending_amount: postpaidAmount
+        }]);
+        await supabase.from('payments').insert([{
+          booking_id: bookingId,
+          customer_name: fullName.trim(),
+          total_amount: totalPrice,
+          prepaid_amount: prepaidAmount,
+          postpaid_amount: postpaidAmount,
+          amount_paid: prepaidAmount,
+          amount_remaining: postpaidAmount,
+          payment_method: 'UPI / Razorpay',
+          status: '50% Prepaid Deposit Confirmed'
         }]);
       } catch (sbErr) {
         console.warn('[Supabase Direct Notice]:', sbErr.message);
       }
 
-      // 2. Dispatch to Backend API for Twilio SMS & Nodemailer Admin Alert
+      // 2. Dispatch to Backend API for Twilio WhatsApp (9390662637) & Nodemailer Gmail Alert (arneworks26@gmail.com)
       try {
         await fetch('/api/complete-booking', {
           method: 'POST',
@@ -150,7 +169,7 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
         console.warn('[Backend API Notice]:', apiErr.message);
       }
 
-      setBookingRef(bookingId);
+      setBookingDetails(bookingPayload);
       setRequestSubmitted(true);
 
       if (typeof onSlotRequested === 'function') {
@@ -164,7 +183,7 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
     }
   };
 
-  if (requestSubmitted) {
+  if (requestSubmitted && bookingDetails) {
     return (
       <div className={`relative w-full max-w-lg mx-auto ${className}`}>
         <div className="relative rounded-3xl bg-black/85 backdrop-blur-2xl border border-[#00ff88]/30 p-8 sm:p-10 shadow-[0_25px_70px_rgba(0,0,0,0.9),0_0_35px_rgba(0,255,136,0.15)] text-center animate-in fade-in">
@@ -172,36 +191,44 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
             ✓
           </div>
           <span className="inline-block px-3 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-[#00ff88] text-[11px] font-bold tracking-widest uppercase mb-2">
-            Request Logged • Ref #{bookingRef}
+            Booking Confirmed • Ref #{bookingDetails.booking_id}
           </span>
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1">
-            SLOT REQUEST SUBMITTED!
+            BOOKING CONFIRMED! 🔒
           </h2>
           <p className="text-sm text-gray-300 mt-3 leading-relaxed max-w-md mx-auto">
-            We will review schedule availability and <strong className="text-[#00ff88]">confirm your slot via SMS within 1 hour</strong>.
+            Thank you! Your slot is locked. 50% advance payment has been confirmed, and WhatsApp & Email alerts have been dispatched.
           </p>
 
           <div className="mt-6 p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left space-y-2 text-xs">
             <div className="flex justify-between text-gray-400">
               <span>Client Name:</span>
-              <span className="text-white font-semibold">{formData.fullName}</span>
+              <span className="text-white font-semibold">{bookingDetails.client_name}</span>
             </div>
             <div className="flex justify-between text-gray-400">
               <span>Service:</span>
-              <span className="text-white font-semibold">{formData.service}</span>
+              <span className="text-white font-semibold">{bookingDetails.service_type}</span>
             </div>
             <div className="flex justify-between text-gray-400">
-              <span>SMS Contact:</span>
-              <span className="text-[#00ff88] font-mono font-semibold">+91 {formData.mobile}</span>
+              <span>Contact Number:</span>
+              <span className="text-[#00ff88] font-mono font-semibold">{bookingDetails.client_phone}</span>
+            </div>
+            <div className="border-t border-white/10 pt-2 flex justify-between text-gray-400">
+              <span>50% Prepaid (Advance):</span>
+              <span className="text-[#00ff88] font-mono font-semibold">Paid (₹{bookingDetails.prepaid_amount?.toLocaleString('en-IN')})</span>
+            </div>
+            <div className="flex justify-between text-gray-400">
+              <span>50% Postpaid (Remaining):</span>
+              <span className="text-[#ffd166] font-mono font-semibold">Due on Delivery (₹{bookingDetails.postpaid_amount?.toLocaleString('en-IN')})</span>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => { setRequestSubmitted(false); setBookingRef(''); }}
+            onClick={() => { setRequestSubmitted(false); setBookingDetails(null); }}
             className="mt-6 w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-all cursor-pointer"
           >
-            ← Submit Another Request
+            ← Submit Another Booking
           </button>
         </div>
       </div>
@@ -216,13 +243,13 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-[#00ff88] text-[11px] font-bold tracking-widest uppercase mb-3">
-            <span>⚡</span> 1-Hour Slot Confirmation
+            <span>⚡</span> Priority Booking
           </div>
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            REQUEST YOUR SLOT
+            BOOK YOUR SLOT
           </h2>
           <p className="text-xs sm:text-sm text-gray-400 mt-1.5 leading-relaxed">
-            Fill in your details below. Our production team will review schedule availability and confirm your slot via SMS within 1 hour.
+            Fill in your details below. Our team will review your requirements and get in touch with you shortly.
           </p>
         </div>
 
@@ -292,7 +319,7 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
               />
             </div>
             <span className="block text-[10px] text-gray-500 mt-1">
-              Your 1-hour slot confirmation will be sent directly via SMS
+              Your booking updates will be sent directly via WhatsApp and SMS
             </span>
           </div>
 
@@ -341,6 +368,26 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
             />
           </div>
 
+          {/* 50% Prepaid & 50% Postpaid Structure Card */}
+          <div className="p-3.5 rounded-xl bg-[#00ff88]/[0.04] border border-[#00ff88]/20 text-xs">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-bold text-white text-[11px] uppercase tracking-wider">Payment Structure</span>
+              <span className="text-[10px] text-[#00ff88] font-bold">50% ADVANCE • 50% ON DELIVERY</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="p-2.5 rounded-lg bg-[#00ff88]/10 border border-[#00ff88]/30">
+                <div className="text-[10px] uppercase font-bold text-[#00ff88]">50% Prepaid</div>
+                <div className="text-base font-black text-white font-mono">₹{prepaidAmount.toLocaleString('en-IN')}</div>
+                <div className="text-[9px] text-gray-400">Lock Slot Deposit</div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-white/[0.03] border border-white/10">
+                <div className="text-[10px] uppercase font-bold text-gray-300">50% Postpaid</div>
+                <div className="text-base font-black text-white font-mono">₹{postpaidAmount.toLocaleString('en-IN')}</div>
+                <div className="text-[9px] text-gray-400">Due on Delivery</div>
+              </div>
+            </div>
+          </div>
+
           {/* Submit CTA Button */}
           <button
             type="submit"
@@ -350,11 +397,11 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
             {loading ? (
               <>
                 <span className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
-                <span>Submitting Request...</span>
+                <span>Booking Now...</span>
               </>
             ) : (
               <>
-                <span>REQUEST SLOT</span>
+                <span>BOOK NOW</span>
                 <span className="text-base leading-none">→</span>
               </>
             )}
@@ -364,10 +411,10 @@ export default function BookingForm({ onSlotRequested, className = '' }) {
         {/* Trust Badges Footer */}
         <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] text-gray-400">
           <span className="flex items-center gap-1.5">
-            <span className="text-[#00ff88]">⚡</span> Rapid 1-Hour Review Window
+            <span className="text-[#00ff88]">⚡</span> Rapid Response
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="text-[#00ff88]">💬</span> Direct Twilio SMS Confirmation
+            <span className="text-[#00ff88]">💬</span> Direct WhatsApp Confirmation
           </span>
         </div>
       </div>

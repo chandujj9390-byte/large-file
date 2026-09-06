@@ -14,6 +14,8 @@
         rel="stylesheet">
     <!-- Supabase JS Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Razorpay Checkout SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- Lenis Hardware-Accelerated Smooth Scroll -->
     <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
     <!-- Trustpilot Official Widget Bootstrap Script -->
@@ -135,7 +137,7 @@
             <div class="container hero-content-container">
                 <div class="hero-header-badge">
                     <span class="badge-dot"></span>
-                    <span>CREATIVE STUDIO & PRODUCTION HOUSE</span>
+                    <span>HIGH-END VIDEO EDITING, DESIGN & WEB STUDIO</span>
                 </div>
 
                 <h1 class="hero-main-title">
@@ -245,7 +247,7 @@
                 <div class="section-header">
                     <span class="section-tag">SERVICES BUILT FOR YOUR NEXT IDEA</span>
                     <h2 class="section-title">Crafted with Cinematic Precision</h2>
-                    <p class="section-desc">Transparent pricing with our rapid <strong>1-Hour Slot Review & Confirmation</strong> model.</p>
+                    <p class="section-desc">Transparent pricing with flexible 50% advance booking and full satisfaction guarantee.</p>
                 </div>
 
                 <!-- Core 5 Services Grid -->
@@ -266,43 +268,181 @@
             </div>
         </section>
 
-        <!-- PORTFOLIO / WORK SECTION -->
-        <section id="work" class="section-padding work-section">
+        <!-- WHY CHOOSE US / THE STUDIO ADVANTAGE COMPARISON SECTION -->
+        <section id="advantage" class="section-padding advantage-section">
             <div class="container">
                 <div class="section-header text-center">
-                    <span class="section-tag">SELECTED WORKS</span>
-                    <h2 class="section-title">WORK THAT SPEAKS WITHOUT WORDS</h2>
+                    <span class="section-tag">COMPETITIVE MATRIX</span>
+                    <h2 class="section-title">WHY ARNEWORKS?</h2>
                 </div>
 
-                <!-- Filter Tabs -->
-                <div class="portfolio-tabs">
-                    <button class="tab-btn active" onclick="filterPortfolio('all')">All</button>
-                    <button class="tab-btn" onclick="filterPortfolio('cinematic')">Cinematic Films</button>
-                    <button class="tab-btn" onclick="filterPortfolio('editing')">Video Editing</button>
-                    <button class="tab-btn" onclick="filterPortfolio('poster')">Poster Design</button>
-                    <button class="tab-btn" onclick="filterPortfolio('grading')">Color Grading</button>
-                    <button class="tab-btn" onclick="filterPortfolio('app')">App Development (Upcoming)</button>
-                    <button class="tab-btn" onclick="filterPortfolio('website')">Website Design</button>
-                </div>
+                <!-- Desktop / Tablet 4-Column Comparison Matrix -->
+                <div class="comparison-matrix-wrapper">
+                    <div class="comparison-table">
+                        <!-- Table Header -->
+                        <div class="comp-row comp-header-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="comp-col-tag">CORE DELIVERABLES</span>
+                                <h3 class="comp-col-title">Feature Comparison</h3>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <div class="comp-badge">★ STUDIO STANDARD</div>
+                                <div class="comp-brand-header">
+                                    <div class="comp-brand-logo">A</div>
+                                    <div>
+                                        <h3 class="comp-brand-name">ARNE STORIES <span class="comp-live-dot"></span></h3>
+                                        <p class="comp-brand-sub">Dedicated Creative Direction</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="comp-col-tag">ALTERNATIVE</span>
+                                <h3 class="comp-col-title">Other Freelancers</h3>
+                                <p class="comp-col-sub">Marketplace hires</p>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="comp-col-tag">TRADITIONAL</span>
+                                <h3 class="comp-col-title">Low-Budget Agencies</h3>
+                                <p class="comp-col-sub">Volume-based outsourcing</p>
+                            </div>
+                        </div>
 
-                <!-- Portfolio Carousel Container with Navigation Arrows & Custom Scrollbar -->
-                <div class="portfolio-carousel-wrapper">
-                    <button class="carousel-arrow carousel-arrow-left" id="portfolio-prev-btn" onclick="scrollPortfolio('left')" aria-label="Previous Works">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
+                        <!-- Row 1: Experience -->
+                        <div class="comp-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="feature-name">Experience</span>
+                                <span class="feature-desc">Proven hands-on editing & design track record</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <span class="status-pill status-trophy">🏆</span>
+                                <span class="status-text arne-text">4 Years Editing & Designing Expertise</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-warning">⚠️</span>
+                                <span class="status-text">Varies Widely / Unverified</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-warning">⚠️</span>
+                                <span class="status-text">Junior Talent / High Turnover</span>
+                            </div>
+                        </div>
 
-                    <!-- Single Row Horizontal Scrolling Container -->
-                    <div class="portfolio-grid portfolio-horizontal-track" id="portfolio-grid">
-                        <!-- Populated dynamically -->
+                        <!-- Row 2: Delivery Speed -->
+                        <div class="comp-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="feature-name">Delivery Speed</span>
+                                <span class="feature-desc">Guaranteed turnaround with zero delays</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <span class="status-pill status-check">✓</span>
+                                <span class="status-text arne-text">Guaranteed On-Time Delivery (No Delays)</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Prone to Delays & Ghosting</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Slow Turnarounds / Bureaucracy</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Team Workflow -->
+                        <div class="comp-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="feature-name">Team Workflow</span>
+                                <span class="feature-desc">Dedicated creative talent & sync</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <span class="status-pill status-check">✓</span>
+                                <span class="status-text arne-text">Dedicated & Cohesive Team Workflow</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Solo / Overwhelmed Capacity</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Disconnected Sub-contractors</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Pricing Strategy -->
+                        <div class="comp-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="feature-name">Pricing Strategy</span>
+                                <span class="feature-desc">Clear milestones with no hidden fees</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <span class="status-pill status-check">✓</span>
+                                <span class="status-text arne-text">Budget-Friendly & Transparent Pricing</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-warning">⚠️</span>
+                                <span class="status-text">Hidden Revisions Fees</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Expensive Retainers / Overpriced</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Creative Approach -->
+                        <div class="comp-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="feature-name">Creative Approach</span>
+                                <span class="feature-desc">Original, tailor-made visual identities</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <span class="status-pill status-check">✓</span>
+                                <span class="status-text arne-text">Highly Creative & Custom Output</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Basic Presets & Templates</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Factory-Line / Mass-Produced</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Watermark Policy -->
+                        <div class="comp-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="feature-name">Watermark Policy</span>
+                                <span class="feature-desc">Clean delivery with full creative ownership</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <span class="status-pill status-check">✓</span>
+                                <span class="status-text arne-text">100% Watermark-Free Final Delivery & Clean Masters</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Obtrusive Watermarks / Extra Removal Fees</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="status-pill status-cross">✕</span>
+                                <span class="status-text">Agency Branding Tagged / Restrictive Licensing</span>
+                            </div>
+                        </div>
+
+                        <!-- Table Footer / CTA -->
+                        <div class="comp-row comp-footer-row">
+                            <div class="comp-col comp-col-feature">
+                                <span class="footer-note">Strictly limited client slots per calendar month.</span>
+                            </div>
+                            <div class="comp-col comp-col-arne highlight-col">
+                                <a href="#booking" class="comp-cta-btn">SECURE YOUR SLOT →</a>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="comp-footer-text">No guarantees</span>
+                            </div>
+                            <div class="comp-col comp-col-alt">
+                                <span class="comp-footer-text">Long lock-in contracts</span>
+                            </div>
+                        </div>
                     </div>
-
-                    <button class="carousel-arrow carousel-arrow-right" id="portfolio-next-btn" onclick="scrollPortfolio('right')" aria-label="Next Works">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
                 </div>
             </div>
         </section>
@@ -508,14 +648,11 @@
                                 <option value="">-- Choose Service --</option>
                                 <option value="Video Editing">Video Editing</option>
                                 <option value="Photo Editing">Photo Editing</option>
-                                <option value="Indoor or Outdoor Shooting">Indoor or Outdoor Shooting</option>
                                 <option value="Website Design">Website Design</option>
-                                <option value="Shooting + Editing">Shooting + Editing</option>
                                 <option value="Reel / Shorts Editing">Reel / Shorts Editing</option>
                                 <option value="Poster Designing">Poster Designing</option>
                                 <option value="Album Designing">Album Designing</option>
                                 <option value="Color Grading">Color Grading</option>
-                                <option value="Cinematic Shoot">Cinematic Shoot</option>
                                 <option value="Other">Other</option>
                             </select>
                             <span class="field-error-msg" id="err-service">Please select a service</span>
@@ -578,11 +715,40 @@
                         </div>
                     </div>
 
+                    <!-- SECTION 3: 50% PREPAID & 50% POSTPAID PAYMENT STRUCTURE -->
+                    <div class="booking-section-card" style="background: rgba(0, 255, 136, 0.03); border: 1px solid rgba(0, 255, 136, 0.2);">
+                        <div class="booking-section-header" style="margin-bottom: 12px;">
+                            <span class="sec-num" style="background: rgba(0,255,136,0.15); color: #00ff88; border-color: rgba(0,255,136,0.3);">03</span>
+                            <div>
+                                <h3 style="color: #fff; margin-bottom: 2px;">50% Advance & 50% Postpaid Policy</h3>
+                                <p style="font-size: 11px; color: #8fa397; margin: 0;">50% advance to confirm your slot, 50% remaining due on final delivery.</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-split-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; background: rgba(0,0,0,0.35); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+                            <div style="padding: 10px; background: rgba(0, 255, 136, 0.07); border: 1px solid rgba(0, 255, 136, 0.25); border-radius: 8px;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #00ff88; font-weight: 800; margin-bottom: 4px;">50% Prepaid (Due Now)</div>
+                                <div id="display-prepaid-amount" style="font-size: 18px; font-weight: 900; color: #ffffff; font-family: monospace;">₹525</div>
+                                <div style="font-size: 10px; color: #8fa397; margin-top: 2px;">Slot Confirmation Deposit</div>
+                            </div>
+                            <div style="padding: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #e2e8f0; font-weight: 800; margin-bottom: 4px;">50% Postpaid (On Delivery)</div>
+                                <div id="display-postpaid-amount" style="font-size: 18px; font-weight: 900; color: #ffffff; font-family: monospace;">₹524</div>
+                                <div style="font-size: 10px; color: #8fa397; margin-top: 2px;">Pay after Project Approval</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px;">
+                            <span style="color: #8fa397;">Total Service Value:</span>
+                            <strong style="color: #00ff88; font-family: monospace; font-size: 14px;" id="display-total-amount">₹1,049</strong>
+                        </div>
+                    </div>
+
                     <!-- ACTION BUTTONS ROW -->
                     <div class="booking-actions-row" style="margin-top: 20px;">
                         <button type="button" onclick="handleBookingFormSubmit(event)" class="btn-primary btn-large btn-sparkle" id="btn-book-slot-primary"
                             style="width:100%; cursor:pointer;">
-                            <span id="btn-book-text">REQUEST SLOT ↗</span>
+                            <span id="btn-book-text">BOOK NOW ↗</span>
                         </button>
                         <p class="terms-agreement-note"
                             style="font-size: 12px; color: rgba(255, 255, 255, 0.6); text-align: center; margin-top: 12px;">
@@ -598,41 +764,136 @@
         </div>
     </div>
 
-    <!-- 1B. 1-HOUR SLOT CONFIRMATION MODAL -->
-    <div class="modal-overlay" id="slot-confirm-modal" data-lenis-prevent data-scroll-lock>
-        <div class="modal-card" style="max-width: 460px; text-align: center; padding: 36px 28px; background: rgba(10, 15, 12, 0.95); border: 1px solid rgba(0, 255, 136, 0.35); border-radius: 24px; box-shadow: 0 25px 70px rgba(0,0,0,0.9), 0 0 35px rgba(0,255,136,0.15);">
-            <button class="modal-close" onclick="closeSlotConfirmModal()" aria-label="Close modal">✕</button>
-            <div style="width: 60px; height: 60px; border-radius: 18px; background: rgba(0, 255, 136, 0.12); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; font-size: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 0 25px rgba(0, 255, 136, 0.2);">
-                ✓
+    <!-- 1B. SECURE 50% ADVANCE CHECKOUT MODAL -->
+    <div class="modal-overlay" id="secure-payment-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card" style="max-width: 480px; text-align: left; padding: 32px 26px; background: rgba(10, 15, 12, 0.98); border: 1px solid rgba(0, 255, 136, 0.35); border-radius: 24px; box-shadow: 0 25px 70px rgba(0,0,0,0.9), 0 0 35px rgba(0,255,136,0.15);">
+            <button class="modal-close" onclick="closeSecurePaymentModal()" aria-label="Close modal">✕</button>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(0, 255, 136, 0.12); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; font-size: 18px; display: flex; align-items: center; justify-content: center;">
+                    🔒
+                </div>
+                <div>
+                    <span style="font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #00ff88; text-transform: uppercase;">ARNE 256-Bit Secure Checkout</span>
+                    <h3 style="font-size: 18px; font-weight: 900; color: #fff; margin: 0;">Confirm 50% Advance</h3>
+                </div>
             </div>
-            <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
-                Request Logged • <span id="confirm-booking-id">ARNE-2026</span>
-            </span>
-            <h2 style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 8px;">
-                SLOT REQUEST SUBMITTED!
-            </h2>
-            <p style="font-size: 13px; color: #a1b0a6; line-height: 1.6; margin-bottom: 20px;">
-                We will review schedule availability and <strong style="color: #00ff88;">confirm your slot via SMS within 1 hour</strong>.
+
+            <p style="font-size: 12px; color: #a1b0a6; line-height: 1.5; margin-bottom: 18px;">
+                To confirm and lock in your project slot, please pay the 50% advance deposit. The remaining 50% postpaid balance will be due upon final review and delivery.
             </p>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 18px; text-align: left; font-size: 12px; margin-bottom: 24px;">
-                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #8fa397;">
-                    <span>Client:</span>
-                    <strong style="color: #fff;" id="confirm-client-name">-</strong>
+            <!-- Summary Pill -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 16px; font-size: 12px; margin-bottom: 18px;">
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Booking ID:</span>
+                    <strong style="color: #00ff88; font-family: monospace;" id="checkout-booking-id">-</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #8fa397;">
-                    <span>Service:</span>
-                    <strong style="color: #fff;" id="confirm-service-name">-</strong>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Client Name:</span>
+                    <strong style="color: #fff;" id="checkout-client-name">-</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #8fa397;">
-                    <span>SMS Updates To:</span>
-                    <strong style="color: #00ff88; font-family: monospace;" id="confirm-phone-num">-</strong>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Service Selected:</span>
+                    <strong style="color: #fff;" id="checkout-service-name">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Total Project Value:</span>
+                    <strong style="color: #fff; font-family: monospace;" id="checkout-total-price">₹1,049</strong>
+                </div>
+                <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 8px 0;"></div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px;">
+                    <span style="color: #00ff88; font-weight: 800;">50% Advance Due Now:</span>
+                    <strong style="color: #00ff88; font-family: monospace; font-size: 16px;" id="checkout-prepaid-amount">₹525</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 2px 0; color: #8fa397; font-size: 11px;">
+                    <span>50% Postpaid (Due on Delivery):</span>
+                    <span style="color: #fff; font-family: monospace;" id="checkout-postpaid-amount">₹524</span>
                 </div>
             </div>
 
-            <button type="button" onclick="closeSlotConfirmModal()" class="btn-primary btn-full" style="padding: 12px 24px; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">
-                <span>GOT IT, THANKS!</span>
+            <!-- Error alert banner -->
+            <div class="booking-alert-error hidden" id="checkout-error-banner" style="margin-bottom: 14px;">
+                <span class="alert-icon">⚠️</span>
+                <span id="checkout-error-msg">Payment failed. Please try again.</span>
+            </div>
+
+            <button type="button" onclick="confirmSecureBookingPayment()" class="btn-primary btn-full btn-sparkle" id="btn-confirm-advance-pay" style="padding: 14px 20px; font-size: 13px; font-weight: 900; letter-spacing: 0.5px;">
+                <span id="btn-advance-text">PAY 50% ADVANCE VIA RAZORPAY 🔒</span>
             </button>
+
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; font-size: 10px; color: #8fa397;">
+                <span>🛡️ Razorpay 256-Bit SSL Encrypted</span>
+                <span>•</span>
+                <span>⚡ Instant Confirmation</span>
+                <span>•</span>
+                <span>📲 WhatsApp Alert</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1C. BOOKING CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="slot-confirm-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card" style="max-width: 500px; text-align: center; padding: 32px 24px; background: rgba(10, 15, 12, 0.98); border: 1px solid rgba(0, 255, 136, 0.35); border-radius: 24px; box-shadow: 0 25px 70px rgba(0,0,0,0.9), 0 0 35px rgba(0,255,136,0.15);">
+            <button class="modal-close" onclick="closeSlotConfirmModal()" aria-label="Close modal">✕</button>
+            <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(0, 255, 136, 0.12); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; font-size: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 0 25px rgba(0, 255, 136, 0.2);">
+                ✓
+            </div>
+            <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">
+                BOOKING CONFIRMED • <span id="confirm-booking-id">ARNE-2026</span>
+            </span>
+            <h2 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 6px;">
+                BOOKING CONFIRMED! 🔒
+            </h2>
+            <p style="font-size: 12px; color: #a1b0a6; line-height: 1.5; margin-bottom: 16px;">
+                Thank you! Your slot is locked. 50% advance payment has been confirmed, and WhatsApp & Email alerts have been dispatched.
+            </p>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 16px; text-align: left; font-size: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Transaction ID:</span>
+                    <strong style="color: #00ff88; font-family: monospace; font-size: 11px;" id="confirm-transaction-id">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Booking ID (ID Number):</span>
+                    <strong style="color: #fff; font-family: monospace;" id="confirm-booking-id-val">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Client Name:</span>
+                    <strong style="color: #fff;" id="confirm-client-name">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Selected Service:</span>
+                    <strong style="color: #fff;" id="confirm-service-name">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Mobile Number:</span>
+                    <strong style="color: #00ff88; font-family: monospace;" id="confirm-phone-num">-</strong>
+                </div>
+                <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0;"></div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>50% Prepaid (Advance):</span>
+                    <strong style="color: #00ff88; font-family: monospace;" id="confirm-prepaid-paid">Paid via Razorpay (₹0)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>50% Postpaid (Remaining):</span>
+                    <strong style="color: #ffd166; font-family: monospace;" id="confirm-postpaid-due">Due on Delivery (₹0)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 3px 0; color: #8fa397;">
+                    <span>Booking Status:</span>
+                    <strong style="color: #00ff88; font-weight: 800;">CONFIRMED 🔒</strong>
+                </div>
+            </div>
+
+            <!-- Action Buttons: Print Receipt & Return to Home -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" onclick="printBookingReceipt()" class="btn-outline" style="padding: 12px 14px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border-color: rgba(0,255,136,0.4); color: #fff;">
+                    <span>🖨️ PRINT RECEIPT</span>
+                </button>
+                <button type="button" onclick="returnToHomeFromConfirm()" class="btn-primary btn-sparkle" style="padding: 12px 14px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
+                    <span>🏠 RETURN TO HOME</span>
+                </button>
+            </div>
         </div>
     </div>
 

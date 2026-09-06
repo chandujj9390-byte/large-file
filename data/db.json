@@ -18,7 +18,6 @@
     { "id": "srv-4", "name": "Poster Designing", "category": "Graphic Design", "price": 529, "startingFrom": false, "active": true, "description": "Cinematic poster art, movie key art, and promotional graphics." },
     { "id": "srv-5", "name": "Album Designing", "category": "Graphic Design", "price": 1299, "startingFrom": true, "active": true, "description": "Premium photo album layout design for weddings, events, and brand portfolios." },
     { "id": "srv-6", "name": "Color Grading", "category": "Post Production", "price": 599, "startingFrom": false, "active": true, "description": "LUT development, DaVinci Resolve color matching, and cinematic film looks." },
-    { "id": "srv-7", "name": "Cinematic Shoot", "category": "Videography", "price": 4999, "startingFrom": true, "active": true, "description": "Full 4K cinema camera production shoot with gimbal lighting and director." },
     { "id": "srv-8", "name": "Website Designing", "category": "Web Development", "price": 4999, "startingFrom": true, "active": true, "description": "Custom high-speed responsive website design with glassmorphism UI." }
   ],
   "slots": [
