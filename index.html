@@ -263,8 +263,7 @@
                 <div class="section-header">
                     <span class="section-tag">SERVICES BUILT FOR YOUR NEXT IDEA</span>
                     <h2 class="section-title">Crafted with Cinematic Precision</h2>
-                    <p class="section-desc">Transparent pricing with our <strong>50% Prepaid + 50% Postpaid</strong>
-                        flexible booking model.</p>
+                    <p class="section-desc">Transparent pricing with our rapid <strong>1-Hour Slot Review & Confirmation</strong> model.</p>
                 </div>
 
                 <!-- Core 5 Services Grid -->
@@ -541,11 +540,10 @@
                         </div>
 
                         <div class="form-group full-width">
-                            <label for="project-description">Project Requirements <span class="req-star"></span></label>
-                            <textarea id="project-description" rows="4"
-                                placeholder="Describe your project vision, key deliverables, style references, timeline requirements..."
-                                required oninput="updateBookingSummaryLive()"></textarea>
-                            <span class="field-error-msg" id="err-description">Project Requirements is required</span>
+                            <label for="project-description">Project Requirements / Notes</label>
+                            <textarea id="project-description" rows="3"
+                                placeholder="Describe your project vision, timeline, deliverables, or style references (optional)..."
+                                oninput="updateBookingSummaryLive()"></textarea>
                         </div>
 
                         <!-- Anti-spam Honeypot Field -->
@@ -554,36 +552,29 @@
 
                         <div class="form-grid-2">
                             <div class="form-group">
-                                <label for="pref-date">Preferred Date <span class="req-star">*</span></label>
-                                <input type="date" id="pref-date" required onchange="updateBookingSummaryLive()">
-                                <span class="field-error-msg" id="err-date">Preferred Date is required</span>
+                                <label for="pref-date">Preferred Date</label>
+                                <input type="date" id="pref-date" onchange="updateBookingSummaryLive()">
                             </div>
                             <div class="form-group">
-                                <label for="pref-slot">Preferred Time / Slot <span class="req-star">*</span></label>
-                                <select id="pref-slot" class="form-select" required
-                                    onchange="updateBookingSummaryLive()">
-                                    <option value="">-- Choose Time Slot --</option>
+                                <label for="pref-slot">Preferred Time / Slot</label>
+                                <select id="pref-slot" class="form-select" onchange="updateBookingSummaryLive()">
+                                    <option value="Flexible Slot" selected>Flexible Slot (Recommended)</option>
                                     <option value="Morning (10:00 AM - 01:00 PM)">Morning (10:00 AM - 01:00 PM)</option>
-                                    <option value="Afternoon (02:00 PM - 05:00 PM)">Afternoon (02:00 PM - 05:00 PM)
-                                    </option>
+                                    <option value="Afternoon (02:00 PM - 05:00 PM)">Afternoon (02:00 PM - 05:00 PM)</option>
                                     <option value="Evening (06:00 PM - 09:00 PM)">Evening (06:00 PM - 09:00 PM)</option>
-                                    <option value="Flexible">Flexible Slot</option>
                                 </select>
-                                <span class="field-error-msg" id="err-slot">Preferred Time Slot is required</span>
                             </div>
 
                             <div class="form-group">
-                                <label for="est-budget">Estimated Budget <span class="req-star">*</span></label>
-                                <input type="text" id="est-budget" placeholder="e.g. ₹5,000 - ₹15,000 / Flexible"
-                                    required oninput="updateBookingSummaryLive()">
-                                <span class="field-error-msg" id="err-budget">Estimated Budget is required</span>
+                                <label for="est-budget">Estimated Budget</label>
+                                <input type="text" id="est-budget" placeholder="e.g. Standard / Flexible"
+                                    oninput="updateBookingSummaryLive()">
                             </div>
 
                             <div class="form-group">
                                 <label for="ref-link">Reference Link</label>
                                 <input type="url" id="ref-link" placeholder="https://youtube.com/... or Drive Link">
-                                <span class="field-error-msg" id="err-link">Enter a valid URL starting with http:// or
-                                    https://</span>
+                                <span class="field-error-msg" id="err-link">Enter a valid URL starting with http:// or https://</span>
                             </div>
                         </div>
 
@@ -607,9 +598,9 @@
 
                     <!-- ACTION BUTTONS ROW -->
                     <div class="booking-actions-row" style="margin-top: 20px;">
-                        <button type="submit" class="btn-primary btn-large btn-sparkle" id="btn-book-slot-primary"
-                            style="width:100%;">
-                            <span id="btn-book-text">PROCEED TO SECURE PAYMENT ↗</span>
+                        <button type="button" onclick="handleBookingFormSubmit(event)" class="btn-primary btn-large btn-sparkle" id="btn-book-slot-primary"
+                            style="width:100%; cursor:pointer;">
+                            <span id="btn-book-text">REQUEST SLOT ↗</span>
                         </button>
                         <p class="terms-agreement-note"
                             style="font-size: 12px; color: rgba(255, 255, 255, 0.6); text-align: center; margin-top: 12px;">
@@ -622,6 +613,44 @@
 
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- 1B. 1-HOUR SLOT CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="slot-confirm-modal" data-lenis-prevent data-scroll-lock>
+        <div class="modal-card" style="max-width: 460px; text-align: center; padding: 36px 28px; background: rgba(10, 15, 12, 0.95); border: 1px solid rgba(0, 255, 136, 0.35); border-radius: 24px; box-shadow: 0 25px 70px rgba(0,0,0,0.9), 0 0 35px rgba(0,255,136,0.15);">
+            <button class="modal-close" onclick="closeSlotConfirmModal()" aria-label="Close modal">✕</button>
+            <div style="width: 60px; height: 60px; border-radius: 18px; background: rgba(0, 255, 136, 0.12); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; font-size: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 0 25px rgba(0, 255, 136, 0.2);">
+                ✓
+            </div>
+            <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.25); color: #00ff88; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
+                Request Logged • <span id="confirm-booking-id">ARNE-2026</span>
+            </span>
+            <h2 style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 8px;">
+                SLOT REQUEST SUBMITTED!
+            </h2>
+            <p style="font-size: 13px; color: #a1b0a6; line-height: 1.6; margin-bottom: 20px;">
+                We will review schedule availability and <strong style="color: #00ff88;">confirm your slot via SMS within 1 hour</strong>.
+            </p>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 18px; text-align: left; font-size: 12px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #8fa397;">
+                    <span>Client:</span>
+                    <strong style="color: #fff;" id="confirm-client-name">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #8fa397;">
+                    <span>Service:</span>
+                    <strong style="color: #fff;" id="confirm-service-name">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #8fa397;">
+                    <span>SMS Updates To:</span>
+                    <strong style="color: #00ff88; font-family: monospace;" id="confirm-phone-num">-</strong>
+                </div>
+            </div>
+
+            <button type="button" onclick="closeSlotConfirmModal()" class="btn-primary btn-full" style="padding: 12px 24px; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">
+                <span>GOT IT, THANKS!</span>
+            </button>
         </div>
     </div>
 

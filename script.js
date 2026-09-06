@@ -679,9 +679,6 @@
                 `;
             }
 
-            const prepaid = calcPrepaid(s.price);
-            const postpaid = calcPostpaid(s.price);
-
             return `
                 <div class="service-card">
                     <div>
@@ -695,12 +692,11 @@
                     </div>
 
                     <div>
-                        <div class="service-payment-split">
-                            <span class="split-prepaid">50% Prepaid: ₹${prepaid}</span>
-                            <span class="split-postpaid">50% Postpaid: ₹${postpaid}</span>
+                        <div class="service-payment-split" style="background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; padding: 6px 12px; text-align: center; margin-bottom: 12px;">
+                            <span style="color: var(--primary-emerald); font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">⚡ 1-HOUR SLOT REVIEW & CONFIRMATION</span>
                         </div>
                         <button class="btn-primary btn-full" onclick="startBookingService('${s.id}')">
-                            <span>BOOK ${s.name.toUpperCase()} →</span>
+                            <span>REQUEST SLOT →</span>
                         </button>
                     </div>
                 </div>
@@ -1287,38 +1283,39 @@
     function clearFormErrors() {
         document.querySelectorAll('.form-group.has-error').forEach(el => el.classList.remove('has-error'));
         document.querySelectorAll('.field-error-msg').forEach(el => el.style.display = 'none');
-    }
-
-    // Validation Engine
-    function clearFormErrors() {
-        document.querySelectorAll('.form-group.has-error').forEach(el => el.classList.remove('has-error'));
-        document.querySelectorAll('.field-error-msg').forEach(el => el.style.display = 'none');
+        const alertEl = document.getElementById('booking-form-alert');
+        if (alertEl) alertEl.classList.add('hidden');
     }
 
     function validateBookingForm() {
         clearFormErrors();
         let isValid = true;
+        let firstInvalidField = null;
 
         // Full Name Validation *
         const fullName = document.getElementById('cust-full-name')?.value.trim();
         if (!fullName) {
             showFieldError('cust-full-name', 'err-full-name');
             isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-full-name');
         }
 
-        // Mobile Number Validation *
+        // Mobile Number Validation * (Accepts 10 digits or with +91)
         const mobile = document.getElementById('cust-mobile')?.value.trim();
-        const phoneRegex = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]{8,15}$/;
-        if (!mobile || !phoneRegex.test(mobile.replace(/\s+/g, ''))) {
+        const digitsOnly = mobile ? mobile.replace(/\D/g, '') : '';
+        const clean10 = digitsOnly.startsWith('91') && digitsOnly.length === 12 ? digitsOnly.slice(2) : digitsOnly.slice(-10);
+        if (!mobile || clean10.length !== 10) {
             showFieldError('cust-mobile', 'err-mobile');
             isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-mobile');
         }
 
-        // Email Address Validation * (Required)
+        // Email Address Validation *
         const email = document.getElementById('cust-email')?.value.trim();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             showFieldError('cust-email', 'err-email');
             isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-email');
         }
 
         // Service Select Validation *
@@ -1326,50 +1323,20 @@
         if (!service) {
             showFieldError('service-select', 'err-service');
             isValid = false;
-        }
-
-        // Preferred Date Validation *
-        const prefDate = document.getElementById('pref-date')?.value;
-        if (!prefDate) {
-            showFieldError('pref-date', 'err-date');
-            isValid = false;
-        }
-
-        // Preferred Time / Slot Validation *
-        const prefSlot = document.getElementById('pref-slot')?.value;
-        if (!prefSlot) {
-            showFieldError('pref-slot', 'err-slot');
-            isValid = false;
-        }
-
-        // Project Requirements Validation * (Required per Antigravity Prompt)
-        const projectDesc = document.getElementById('project-description')?.value.trim();
-        if (!projectDesc) {
-            showFieldError('project-description', 'err-description');
-            isValid = false;
-        }
-
-        // Estimated Budget Validation *
-        const estBudget = document.getElementById('est-budget')?.value.trim();
-        if (!estBudget) {
-            showFieldError('est-budget', 'err-budget');
-            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('service-select');
         }
 
         // URL Validation (Optional field)
         const link = document.getElementById('ref-link')?.value.trim();
-        if (link && !/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(link)) {
+        if (link && !/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i.test(link)) {
             showFieldError('ref-link', 'err-link');
             isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('ref-link');
         }
 
-        const alertEl = document.getElementById('booking-form-alert');
-        if (!isValid && alertEl) {
-            const alertMsg = document.getElementById('booking-alert-msg');
-            if (alertMsg) alertMsg.textContent = 'Please fill in all required fields marked with * correctly.';
-            alertEl.classList.remove('hidden');
-        } else if (alertEl) {
-            alertEl.classList.add('hidden');
+        if (!isValid && firstInvalidField) {
+            firstInvalidField.focus();
+            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         return isValid;
@@ -1378,7 +1345,7 @@
     function showFieldError(inputId, errMsgId) {
         const input = document.getElementById(inputId);
         const group = input?.closest('.form-group');
-        const errEl = document.getElementById(errMsgId);
+        const errEl = errMsgId ? document.getElementById(errMsgId) : null;
 
         if (group) group.classList.add('has-error');
         if (errEl) errEl.style.display = 'block';
@@ -1394,26 +1361,23 @@
     };
 
     window.handleBookingFormSubmit = async function (e) {
-        // 1. Prevent Default Behavior: Absolute first line
+        // 1. Prevent Default Behavior
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
 
         const btn = document.getElementById('btn-book-slot-primary');
         const btnText = document.getElementById('btn-book-text');
-        const originalBtnHTML = btnText ? btnText.innerHTML : 'PROCEED TO SECURE PAYMENT ↗';
+        const originalBtnHTML = btnText ? btnText.innerHTML : 'REQUEST SLOT ↗';
 
-        // 3. Add Error Catching: Wrap entire validation, database insertion and payment routing in try/catch block
         try {
             if (!validateBookingForm()) {
-                const card = document.querySelector('.booking-modal-card');
-                if (card) card.scrollTop = 0;
                 return false;
             }
 
-            // 1. Loading State: "Booking Slot..." with Spinner
+            // 1. Loading State
             if (btn) btn.disabled = true;
             if (btnText) {
-                btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Booking Slot & Processing Payment...';
+                btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Submitting Slot Request...';
             }
 
             // Generate Unique Booking ID (e.g. ARNE-2026-849201)
@@ -1421,157 +1385,119 @@
             const bookingId = `ARNE-2026-${randomCode}`;
 
             const fullName = document.getElementById('cust-full-name')?.value.trim() || '';
-            const mobile = document.getElementById('cust-mobile')?.value.trim() || '';
-            const whatsapp = document.getElementById('cust-whatsapp')?.value.trim() || mobile;
-            const email = document.getElementById('cust-email')?.value.trim() || '';
+            const rawMobile = document.getElementById('cust-mobile')?.value.trim() || '';
+            const digitsOnly = rawMobile.replace(/\D/g, '');
+            const clean10 = digitsOnly.startsWith('91') && digitsOnly.length === 12 ? digitsOnly.slice(2) : digitsOnly.slice(-10);
+            const formattedPhone = clean10 ? `+91${clean10}` : rawMobile;
+
+            const email = document.getElementById('cust-email')?.value.trim().toLowerCase() || '';
             const company = document.getElementById('cust-company')?.value.trim() || '';
             const location = document.getElementById('cust-location')?.value.trim() || '';
             const serviceName = document.getElementById('service-select')?.value || 'Creative Service';
             const projectDesc = document.getElementById('project-description')?.value.trim() || 'No additional requirements.';
-            const prefDate = document.getElementById('pref-date')?.value || '';
-            const prefSlot = document.getElementById('pref-slot')?.value || '';
-            const estBudget = document.getElementById('est-budget')?.value.trim() || 'Flexible';
+            const prefDate = document.getElementById('pref-date')?.value || new Date().toISOString().split('T')[0];
+            const prefSlot = document.getElementById('pref-slot')?.value || 'Flexible Slot';
+            const estBudget = document.getElementById('est-budget')?.value.trim() || 'Standard / Flexible';
             const refLink = document.getElementById('ref-link')?.value.trim() || 'None';
-            const paymentPref = document.getElementById('pay-method')?.value || 'UPI / Card';
-
-            // Calculate pricing split (50% Prepaid Deposit + 50% Postpaid)
-            const priceNum = Number((estBudget || '').replace(/\D/g, '')) || 999;
-            const prepaidVal = Math.round(priceNum * 0.5 * 100) / 100;
-            const postpaidVal = Math.round(priceNum * 0.5 * 100) / 100;
 
             const bookingData = {
                 id: bookingId,
-                name: fullName,
-                email: email,
-                phone: mobile,
-                whatsapp: whatsapp,
+                booking_id: bookingId,
+                client_name: fullName,
+                customer_name: fullName,
+                client_email: email,
+                customer_email: email,
+                client_phone: formattedPhone,
+                customer_phone: formattedPhone,
+                customer_whatsapp: formattedPhone,
                 company: company,
                 location: location,
-                service: serviceName,
-                desc: projectDesc,
-                date: prefDate,
-                slot: prefSlot,
-                total: priceNum,
-                prepaid: prepaidVal,
-                postpaid: postpaidVal,
-                refLink: refLink,
-                paymentPref: paymentPref
+                service_type: serviceName,
+                service_name: serviceName,
+                project_desc: projectDesc,
+                booking_date: prefDate,
+                booking_time: prefSlot,
+                time_slot: prefSlot,
+                status: 'Pending Review',
+                booking_status: 'Pending Review',
+                payment_status: 'Review Pending',
+                ref_link: refLink,
+                created_at: new Date().toISOString()
             };
 
-            // Store pending payment in sessionStorage
-            sessionStorage.setItem('arne_pending_payment', JSON.stringify(bookingData));
-
-            // Direct Supabase Cloud Database Insertion (Stores Patient / Customer Form Data)
-            const sb = getSupabaseClient();
-            if (sb) {
-                // 1. Insert into bookings table
-                const { error: bookingErr } = await sb.from('bookings').insert([{
-                    id: bookingId,
-                    client_name: fullName,
-                    client_email: email,
-                    client_phone: mobile,
-                    customer_name: fullName,
-                    customer_phone: mobile,
-                    customer_whatsapp: whatsapp,
-                    customer_email: email,
-                    company: company,
-                    location: location,
-                    service_type: serviceName,
-                    service_name: serviceName,
-                    project_desc: projectDesc,
-                    booking_date: prefDate,
-                    booking_time: prefSlot,
-                    time_slot: prefSlot,
-                    total_price: priceNum,
-                    prepaid_amount: prepaidVal,
-                    postpaid_amount: postpaidVal,
-                    amount_paid: 0,
-                    amount_remaining: priceNum,
-                    status: 'Pending Payment',
-                    booking_status: 'Pending Payment',
-                    payment_status: 'Pending',
-                    ref_link: refLink
-                }]);
-                if (bookingErr) {
-                    console.error('[ARNE Supabase Booking Insert Error]', bookingErr);
-                } else {
-                    console.log('[ARNE Supabase] Booking record saved to Supabase:', bookingId);
-                }
-
-                // 2. Insert into patients table (if exists)
-                try {
-                    const { error: patientErr } = await sb.from('patients').insert([{
-                        booking_id: bookingId,
-                        patient_name: fullName,
-                        email: email,
-                        phone: mobile,
-                        whatsapp: whatsapp,
-                        service: serviceName,
-                        preferred_date: prefDate || null,
-                        preferred_time: prefSlot || null,
-                        symptoms_or_requirements: projectDesc,
-                        budget: `₹${priceNum}`,
-                        status: 'Pending'
-                    }]);
-                    if (patientErr) {
-                        console.warn('[ARNE Supabase Patient Insert Notice]', patientErr.message);
-                    } else {
-                        console.log('[ARNE Supabase] Patient record saved to Supabase:', bookingId);
-                    }
-                } catch (pe) {
-                    console.warn('[ARNE Supabase Patient Table Fallback]', pe);
-                }
-
-                // 3. Insert into customers table
-                try {
-                    const { error: custErr } = await sb.from('customers').insert([{
+            // 1. Direct Supabase Cloud Database Insertion (status: 'Pending Review')
+            try {
+                const sb = getSupabaseClient();
+                if (sb) {
+                    await sb.from('bookings').insert([bookingData]);
+                    await sb.from('customers').insert([{
                         full_name: fullName,
-                        mobile: mobile,
-                        whatsapp: whatsapp,
+                        mobile: formattedPhone,
+                        whatsapp: formattedPhone,
                         email: email,
                         company: company,
                         location: location
                     }]);
-                    if (custErr) {
-                        console.error('[ARNE Supabase Customer Insert Error]', custErr);
-                    }
-                } catch (ce) { }
+                    console.log('[ARNE Supabase] Slot request logged to Supabase with status Pending Review:', bookingId);
+                }
+            } catch (sbErr) {
+                console.warn('[ARNE Supabase Insert Warning]', sbErr.message);
             }
 
-            // 2. Fix API Paths: Relative path call to /api/book-slot endpoint
+            // 2. Dispatch to Backend API for Twilio SMS & Nodemailer Admin Alert
             try {
-                await fetch('/api/book-slot', {
+                fetch('/api/complete-booking', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        booking_id: bookingId,
-                        client_name: fullName,
-                        client_email: email,
-                        client_phone: mobile,
-                        service_type: serviceName,
-                        booking_date: prefDate,
-                        booking_time: prefSlot,
-                        project_desc: projectDesc,
-                        est_budget: `₹${priceNum}`,
-                        payment_status: 'Pending'
-                    })
-                });
+                    body: JSON.stringify(bookingData)
+                }).catch(err => console.warn('[ARNE Backend /api/complete-booking notice]', err.message));
             } catch (apiErr) {
-                console.warn('[ARNE Backend /api/book-slot notice]', apiErr.message);
+                console.warn('[ARNE Backend /api/complete-booking notice]', apiErr.message);
             }
 
-            // Construct checkout URL pointing to payment.html (relative path)
-            const paymentUrl = `payment.html?id=${encodeURIComponent(bookingId)}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(mobile)}&service=${encodeURIComponent(serviceName)}&date=${encodeURIComponent(prefDate)}&slot=${encodeURIComponent(prefSlot)}&desc=${encodeURIComponent(projectDesc)}&total=${priceNum}&prepaid=${prepaidVal}&postpaid=${postpaidVal}`;
+            // 3. Add to local bookings store
+            if (typeof bookingsStore !== 'undefined') {
+                bookingsStore.unshift({
+                    id: bookingId,
+                    customerName: fullName,
+                    customerPhone: formattedPhone,
+                    customerEmail: email,
+                    serviceName: serviceName,
+                    date: prefDate,
+                    timeSlot: prefSlot,
+                    totalPrice: estBudget,
+                    status: 'Pending Review',
+                    createdAt: new Date().toISOString()
+                });
+                if (typeof saveBookings === 'function') saveBookings();
+            }
 
-            // Redirect to the Payment Gateway Checkout page
-            window.location.href = paymentUrl;
+            // 4. Close Booking Modal & Display 1-Hour Confirmation Screen
+            if (typeof closeBookingModal === 'function') closeBookingModal();
+
+            // Populate confirmation modal details
+            const cId = document.getElementById('confirm-booking-id');
+            const cName = document.getElementById('confirm-client-name');
+            const cSrv = document.getElementById('confirm-service-name');
+            const cPhone = document.getElementById('confirm-phone-num');
+
+            if (cId) cId.textContent = bookingId;
+            if (cName) cName.textContent = fullName;
+            if (cSrv) cSrv.textContent = serviceName;
+            if (cPhone) cPhone.textContent = formattedPhone;
+
+            if (typeof openSlotConfirmModal === 'function') {
+                openSlotConfirmModal();
+            }
+
             return false;
         } catch (err) {
             console.error('[ARNE Booking Submission Fatal Error]', err);
-            alert('Booking Submission Error: ' + (err.message || 'An unexpected error occurred. Please try again.'));
+            alert('Booking Notice: ' + (err.message || 'Please check your information and try again.'));
+            return false;
+        } finally {
             if (btn) btn.disabled = false;
             if (btnText) btnText.innerHTML = originalBtnHTML;
-            return false;
         }
     };
 
@@ -2572,31 +2498,21 @@
                 </td>
                 <td><strong style="font-size:14px;">₹${b.totalPrice}</strong></td>
                 <td>
-                    <span style="color:var(--primary-emerald); font-weight:700;">₹${b.prepaid30}</span><br>
-                    <small style="color:var(--primary-emerald); font-size:10px;">✓ Paid</small>
-                </td>
-                <td>
-                    <span>₹${b.postpaid70}</span><br>
-                    <small style="color:${b.postpaidStatus === 'Paid' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:10px;">
-                        ${b.postpaidStatus === 'Paid' ? '✓ Paid' : '⏳ Pending'}
-                    </small>
-                </td>
-                <td>
-                    <select onchange="updateBookingStage('${b.id}', this.value)" style="padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.06); color:#fff; border:1px solid var(--border-card); font-size:12px; outline:none; cursor:pointer;">
-                        <option value="Prepaid Paid" ${b.status === 'Prepaid Paid' ? 'selected' : ''}>Prepaid Paid (50%)</option>
-                        <option value="In Progress" ${b.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                        <option value="Review" ${b.status === 'Review' ? 'selected' : ''}>In Review</option>
-                        <option value="Completed" ${b.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                        <option value="Fully Paid" ${b.status === 'Fully Paid' ? 'selected' : ''}>Fully Paid (100%)</option>
-                        <option value="Cancelled" ${b.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                    </select>
+                    <span style="display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase; ${b.status === 'Confirmed' ? 'background:rgba(16,185,129,0.15); color:#10b981; border:1px solid #10b981;' : (b.status === 'Declined' ? 'background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid #ef4444;' : 'background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid #f59e0b;')}">
+                        ${b.status === 'Pending Review' ? '⏳ 1-Hr Review' : (b.status || 'Pending')}
+                    </span>
                 </td>
                 <td>
                     <div style="display:flex; flex-direction:column; gap:6px;">
-                        <button class="btn-outline btn-sm" onclick="viewBookingDetails('${b.id}')" title="View Full Details">👁️ Details</button>
-                        ${b.postpaidStatus === 'Pending' ? `
-                            <button class="btn-primary btn-sm" onclick="markPostpaidReceived('${b.id}')">Mark 50% Paid</button>
+                        ${(b.status === 'Pending Review' || b.status === 'Pending' || !b.status) ? `
+                            <button class="btn-primary btn-sm" onclick="adminUpdateBookingStatus('${b.id}', 'Confirmed')" style="background:#10b981; color:#000; font-weight:800; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px;" id="btn-approve-${b.id}">
+                                ✓ Approve & Confirm
+                            </button>
+                            <button class="btn-outline btn-sm" onclick="adminUpdateBookingStatus('${b.id}', 'Declined')" style="border:1px solid #ef4444; color:#ef4444; background:rgba(239,68,68,0.08); font-weight:800; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px;" id="btn-decline-${b.id}">
+                                ✕ Decline / Unavailable
+                            </button>
                         ` : ''}
+                        <button class="btn-outline btn-sm" onclick="viewBookingDetails('${b.id}')" title="View Full Details">👁️ Details</button>
                         <button class="btn-outline btn-sm" onclick="deleteAdminBooking('${b.id}')" style="border-color:rgba(239, 68, 68, 0.4); color:#ef4444;" title="Delete Booking">🗑️ Delete</button>
                     </div>
                 </td>
@@ -2605,6 +2521,66 @@
 
         renderAdminStats();
     }
+
+    window.adminUpdateBookingStatus = async function (id, newStatus) {
+        const approveBtn = document.getElementById(`btn-approve-${id}`);
+        const declineBtn = document.getElementById(`btn-decline-${id}`);
+        if (approveBtn) approveBtn.disabled = true;
+        if (declineBtn) declineBtn.disabled = true;
+
+        const b = bookingsStore.find(x => x.id === id);
+        const actionLabel = newStatus === 'Confirmed' ? 'Approving & dispatching Confirmation SMS...' : 'Declining & dispatching SMS...';
+        console.log(`[Admin Action] ${actionLabel}`);
+
+        try {
+            // 1. Call Backend Status Update API
+            const res = await fetch('/api/admin/update-booking-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    bookingId: id,
+                    status: newStatus,
+                    clientName: b?.customerName || b?.client_name,
+                    clientPhone: b?.customerPhone || b?.client_phone,
+                    serviceName: b?.serviceName || b?.service_type
+                })
+            });
+
+            // 2. Direct Supabase Fallback Update
+            const sb = getSupabaseClient();
+            if (sb) {
+                await sb.from('bookings').update({
+                    status: newStatus,
+                    booking_status: newStatus
+                }).eq('id', id);
+            }
+
+            // 3. Update Local Store
+            if (b) {
+                b.status = newStatus;
+                b.booking_status = newStatus;
+                saveBookings();
+                renderAdminBookingsTable();
+            }
+
+            alert(`✓ Booking ${id} marked as ${newStatus.toUpperCase()}! ${newStatus === 'Confirmed' ? 'Confirmation SMS sent to client.' : 'Decline SMS sent.'}`);
+        } catch (err) {
+            console.error('[Admin Status Update Error]:', err);
+            alert(`Status update error: ${err.message || 'Please try again'}`);
+            if (approveBtn) approveBtn.disabled = false;
+            if (declineBtn) declineBtn.disabled = false;
+        }
+    };
+
+    window.openSlotConfirmModal = function () {
+        const modal = document.getElementById('slot-confirm-modal');
+        if (modal) modal.classList.add('active');
+    };
+
+    window.closeSlotConfirmModal = function () {
+        const modal = document.getElementById('slot-confirm-modal');
+        if (modal) modal.classList.remove('active');
+    };
 
     window.filterAdminBookings = function () {
         const query = document.getElementById('admin-search-input').value.toLowerCase().trim();

@@ -8,6 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { handleBookingRequest } = require('./api/booking');
+const { handleCompleteBooking } = require('./api/complete-booking');
+const { handleUpdateBookingStatus } = require('./api/admin/update-booking-status');
 const handleContactForm = require('./api/contact');
 const handlePaymentRequest = require('./api/payment');
 const handleOtpRequest = require('./api/otp');
@@ -183,169 +185,45 @@ const server = http.createServer(async (req, res) => {
         return sendJSON(res, 200, { success: true, services: activeServices });
     }
 
-    // Customer Booking Submit API
-    if (req.method === 'POST' && (pathName === '/api/booking' || pathName === '/api/booking/' || pathName === '/api/book-slot' || pathName === '/api/book-slot/')) {
+    // Customer Booking Submit API (1-Hour Slot Review Workflow)
+    if (req.method === 'POST' && (pathName === '/api/complete-booking' || pathName === '/api/complete-booking/' || pathName === '/api/booking' || pathName === '/api/booking/' || pathName === '/api/book-slot' || pathName === '/api/book-slot/')) {
         try {
             const payload = await parseJSON(req);
-            const db = readDB();
-            db.bookings = db.bookings || [];
-            db.customers = db.customers || [];
-            db.slots = db.slots || [];
-            db.notifications = db.notifications || [];
+            const result = await handleCompleteBooking(payload);
 
-            // 1. Double Booking Check on Selected Slot
-            const slotMatch = db.slots.find(s => s.date === payload.prefDate && s.time === payload.prefSlot);
-            if (slotMatch && slotMatch.status === 'BLOCKED') {
-                return sendJSON(res, 400, { success: false, message: 'Selected date and time slot is unavailable. Please select another slot.' });
-            }
-
-            // 2. Lock Slot
-            if (slotMatch) {
-                slotMatch.status = 'BOOKED';
-            } else if (payload.prefDate && payload.prefSlot) {
-                db.slots.push({
-                    id: 's-' + Date.now(),
-                    date: payload.prefDate,
-                    time: payload.prefSlot,
-                    status: 'BOOKED',
-                    maxBookings: 1
-                });
-            }
-
-            // 3. Dynamic Payment Calculation (Default 50% Prepaid / 50% Postpaid)
-            const serviceObj = (db.services || []).find(s => s.name === payload.serviceName);
-            const basePrice = serviceObj ? serviceObj.price : (Number((payload.estBudget || '').replace(/\D/g, '')) || 999);
-            const prepaidPct = (db.settings && db.settings.paymentConfig) ? db.settings.paymentConfig.prepaidPercentage : 50;
-            const postpaidPct = 100 - prepaidPct;
-
-            const prepaidAmount = Math.round(basePrice * (prepaidPct / 100) * 100) / 100;
-            const postpaidAmount = Math.round(basePrice * (postpaidPct / 100) * 100) / 100;
-
-            const bookingId = payload.bookingId || `ARNE-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-
-            const newBooking = {
-                id: bookingId,
-                customerName: payload.fullName,
-                customerPhone: payload.mobile,
-                customerWhatsapp: payload.whatsapp || 'N/A',
-                customerEmail: payload.email,
-                company: payload.company || 'N/A',
-                location: payload.location || 'N/A',
-                serviceName: payload.serviceName,
-                projectDesc: payload.projectDesc || 'N/A',
-                date: payload.prefDate,
-                timeSlot: payload.prefSlot,
-                totalPrice: basePrice,
-                prepaid30: prepaidAmount,
-                postpaid70: postpaidAmount,
-                amountPaid: prepaidAmount,
-                amountRemaining: postpaidAmount,
-                status: 'Confirmed',
-                paymentStatus: 'Prepaid Paid',
-                createdAt: new Date().toISOString()
-            };
-
-            db.bookings.unshift(newBooking);
-
-            // 4. Update / Insert Customer Record
-            let cust = db.customers.find(c => c.email === payload.email || c.mobile === payload.mobile);
-            if (!cust) {
-                cust = {
-                    id: 'cust-' + Date.now(),
-                    fullName: payload.fullName,
-                    mobile: payload.mobile,
-                    whatsapp: payload.whatsapp || 'N/A',
-                    email: payload.email,
+            // Also keep local fallback database in sync
+            try {
+                const db = readDB();
+                db.bookings = db.bookings || [];
+                const serviceObj = (db.services || []).find(s => s.name === payload.serviceName);
+                const basePrice = serviceObj ? serviceObj.price : (Number((payload.estBudget || '').replace(/\D/g, '')) || 999);
+                
+                const localBooking = {
+                    id: result.bookingId,
+                    customerName: payload.fullName || payload.client_name,
+                    customerPhone: payload.mobile || payload.client_phone,
+                    customerWhatsapp: payload.whatsapp || payload.mobile,
+                    customerEmail: payload.email || payload.client_email,
                     company: payload.company || 'N/A',
                     location: payload.location || 'N/A',
-                    totalBookings: 1,
-                    totalSpent: basePrice,
-                    pendingAmount: postpaidAmount,
+                    serviceName: payload.serviceName || payload.service_type || 'Creative Service',
+                    projectDesc: payload.projectDesc || payload.desc || 'N/A',
+                    date: payload.prefDate || payload.date,
+                    timeSlot: payload.prefSlot || payload.slot || 'Flexible',
+                    totalPrice: basePrice,
+                    status: 'Pending Review',
+                    booking_status: 'Pending Review',
+                    paymentStatus: 'Review Pending',
                     createdAt: new Date().toISOString()
                 };
-                db.customers.unshift(cust);
-            } else {
-                cust.totalBookings = (cust.totalBookings || 0) + 1;
-                cust.totalSpent = (cust.totalSpent || 0) + basePrice;
-                cust.pendingAmount = (cust.pendingAmount || 0) + postpaidAmount;
-            }
+                db.bookings.unshift(localBooking);
+                writeDB(db);
+            } catch (_) {}
 
-            // 5. Create Admin Activity Notification
-            db.notifications.unshift({
-                id: 'notif-' + Date.now(),
-                type: 'NEW_BOOKING',
-                message: `New Booking ${bookingId} received from ${payload.fullName} for ${payload.serviceName}.`,
-                read: false,
-                createdAt: new Date().toISOString()
-            });
-
-            writeDB(db);
-
-            // 5b. Background Supabase Cloud Synchronization
-            if (supabaseServer) {
-                try {
-                    supabaseServer.from('bookings').insert([{
-                        id: bookingId,
-                        customer_name: payload.fullName,
-                        customer_phone: payload.mobile,
-                        customer_whatsapp: payload.whatsapp || 'N/A',
-                        customer_email: payload.email,
-                        company: payload.company || 'N/A',
-                        location: payload.location || 'N/A',
-                        service_name: payload.serviceName,
-                        project_desc: payload.projectDesc || 'N/A',
-                        booking_date: payload.prefDate || null,
-                        time_slot: payload.prefSlot || 'N/A',
-                        total_price: basePrice,
-                        prepaid_amount: prepaidAmount,
-                        postpaid_amount: postpaidAmount,
-                        amount_paid: prepaidAmount,
-                        amount_remaining: postpaidAmount,
-                        payment_method: payload.paymentPref || 'UPI',
-                        booking_status: 'Confirmed',
-                        payment_status: 'Prepaid Paid',
-                        ref_link: payload.refLink || 'None'
-                    }]).then(res => {
-                        console.log('[ARNE Supabase Server] Booking record synced to Supabase database.');
-                    }).catch(err => {
-                        console.warn('[ARNE Supabase Server Notice] Booking sync notice:', err.message);
-                    });
-
-                    supabaseServer.from('customers').insert([{
-                        full_name: payload.fullName,
-                        mobile: payload.mobile,
-                        whatsapp: payload.whatsapp || 'N/A',
-                        email: payload.email,
-                        company: payload.company || 'N/A',
-                        location: payload.location || 'N/A',
-                        total_bookings: 1,
-                        total_spent: basePrice,
-                        pending_amount: postpaidAmount
-                    }]).then(res => {
-                        console.log('[ARNE Supabase Server] Customer record synced to Supabase database.');
-                    }).catch(err => {
-                        console.warn('[ARNE Supabase Server Notice] Customer sync notice:', err.message);
-                    });
-                } catch (supErr) {
-                    console.warn('[ARNE Supabase Server Notice] Cloud sync exception:', supErr.message);
-                }
-            }
-
-            // 6. Attempt Email Dispatch
-            const emailResult = await handleBookingRequest(payload, clientIp);
-
-            return sendJSON(res, 200, {
-                success: true,
-                bookingId: bookingId,
-                prepaidAmount: prepaidAmount,
-                postpaidAmount: postpaidAmount,
-                message: 'Booking successfully confirmed!',
-                emailStatus: emailResult.emailSent ? 'Sent' : 'Recorded'
-            });
-
-        } catch (err) {
-            console.error('[Booking Submit Error]:', err);
-            return sendJSON(res, 500, { success: false, message: 'Server error processing booking.' });
+            return sendJSON(res, result.status || 200, result);
+        } catch (e) {
+            console.error('[Booking Route Error]:', e);
+            return sendJSON(res, 500, { success: false, message: 'Server error processing slot request.' });
         }
     }
 
@@ -547,6 +425,24 @@ const server = http.createServer(async (req, res) => {
             }
             writeDB(db);
             return sendJSON(res, 200, { success: true, slots: db.slots });
+        }
+
+        // POST /api/admin/update-booking-status (1-Click Approve / Decline with Twilio SMS)
+        if (req.method === 'POST' && (pathName === '/api/admin/update-booking-status' || pathName === '/api/admin/update-booking-status/')) {
+            const body = await parseJSON(req);
+            const result = await handleUpdateBookingStatus(body);
+
+            // Update local fallback db
+            if (result.success && body.bookingId) {
+                const b = (db.bookings || []).find(x => x.id === body.bookingId);
+                if (b) {
+                    b.status = body.status;
+                    b.booking_status = body.status;
+                    writeDB(db);
+                }
+            }
+
+            return sendJSON(res, result.status || 200, result);
         }
 
         // GET /api/admin/settings
