@@ -230,3 +230,22 @@ INSERT INTO public.services (id, name, category, price, starting_from, active, d
 ('srv-7', 'Cinematic Shoot', 'Videography', 4999, true, true, 'Full 4K cinema camera production shoot with gimbal lighting and director.'),
 ('srv-8', 'Website Designing', 'Web Development', 4999, true, true, 'Custom high-speed responsive website design with glassmorphism UI.')
 ON CONFLICT (id) DO UPDATE SET price = EXCLUDED.price;
+
+-- 13. Grant Permissions to Public (anon) and Authenticated Roles
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- 14. Enable Realtime Replication for Instant Updates (Optional)
+DO $$
+BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.customers;
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.patients;
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.payments;
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.contact_messages;
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+    WHEN undefined_object THEN NULL;
+END $$;
+

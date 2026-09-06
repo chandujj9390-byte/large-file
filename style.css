@@ -3867,7 +3867,8 @@ html.lenis body {
 @media (max-width: 768px) {
 
     /* Universal Mobile Viewport Containment */
-    html, body {
+    html,
+    body {
         overflow-x: hidden !important;
         max-width: 100% !important;
         position: relative;
