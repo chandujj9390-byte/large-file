@@ -80,80 +80,26 @@ export default function Navbar({ onOpenLoginModal, onOpenBookingModal }) {
           <a href="#contact" className="text-sm font-medium text-gray-300 hover:text-[#00ff88] transition-colors">Contact</a>
         </nav>
 
-        {/* Top-Right Action Area (CTA + Strictly Right-Aligned Auth Icon) */}
+        {/* Top-Right Action Area: Book a Slot CTA */}
         <div className="flex items-center gap-3 sm:gap-4">
-          
-          {/* Primary CTA (Hidden on tiny mobile) */}
           <button
             onClick={onOpenBookingModal}
-            className="hidden sm:inline-flex items-center justify-center px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#00ff88] to-[#10b981] text-black hover:opacity-90 hover:shadow-[0_0_20px_rgba(0,255,136,0.4)] transition-all duration-300"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-[#00ff88] to-[#10b981] text-black hover:opacity-90 hover:shadow-[0_0_20px_rgba(0,255,136,0.5)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            aria-label="Book a Slot"
           >
-            <span>Book Slot ↗</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span>Book a Slot ↗</span>
           </button>
 
-          {/* DYNAMIC TOP-RIGHT USER AUTH PROFILE ICON & DROPDOWN */}
-          <div className="relative" ref={dropdownRef}>
-            {user ? (
-              // Logged In: Active Avatar Icon with Dropdown Toggle
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#00ff88] to-[#10b981] text-black font-extrabold text-sm flex items-center justify-center border-2 border-white/20 hover:scale-105 hover:shadow-[0_0_15px_rgba(0,255,136,0.5)] transition-all duration-200"
-                aria-label="User account menu"
-                aria-expanded={dropdownOpen}
-              >
-                {avatarLetter}
-              </button>
-            ) : (
-              // Logged Out: User Profile Login Icon
-              <button
-                onClick={onOpenLoginModal}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 hover:border-[#00ff88]/50 text-gray-200 hover:text-[#00ff88] text-xs font-semibold tracking-wider uppercase transition-all duration-200"
-                aria-label="Login with Mobile Number"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <span className="hidden xs:inline">Login</span>
-              </button>
-            )}
-
-            {/* Authenticated User Dropdown Menu */}
-            {user && dropdownOpen && (
-              <div className="absolute right-0 mt-3 w-60 bg-[#0c120e]/95 backdrop-blur-2xl border border-[#00ff88]/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="px-3 py-2 border-b border-white/10">
-                  <p className="text-xs text-gray-400">Signed in as</p>
-                  <p className="text-sm font-bold text-white truncate">{userIdentifier}</p>
-                  <span className="inline-flex items-center gap-1.5 mt-1 text-[10px] text-[#00ff88] font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-pulse"></span>
-                    Verified Client
-                  </span>
-                </div>
-
-                <div className="mt-1 space-y-1">
-                  <button
-                    onClick={() => { setDropdownOpen(false); onOpenBookingModal?.(); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
-                  >
-                    <span>📊</span>
-                    <span>My Bookings</span>
-                  </button>
-
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
-                  >
-                    <span>🚪</span>
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Hamburger Menu Toggle (Positioned cleanly beside user icon) */}
+          {/* Mobile Hamburger Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="md:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

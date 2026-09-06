@@ -100,34 +100,16 @@
             </nav>
 
             <div class="nav-actions">
-                <!-- Top-Right User Profile / Auth State Icon -->
-                <div class="user-auth-wrapper" id="user-auth-wrapper">
-                    <button class="user-auth-btn" id="btn-user-auth" onclick="handleUserAuthClick()" aria-label="Account / Login">
-                        <span class="auth-icon-placeholder" id="auth-icon-logged-out">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            <span class="auth-btn-label">LOGIN</span>
-                        </span>
-                        <div class="user-avatar-active hidden" id="auth-avatar-logged-in">U</div>
-                    </button>
-
-                    <!-- User Dropdown Menu when Logged In -->
-                    <div class="user-dropdown-menu hidden" id="user-dropdown-menu">
-                        <div class="user-dropdown-header">
-                            <span class="user-dropdown-phone" id="dropdown-user-phone">+91 ••••• •••••</span>
-                            <span class="user-dropdown-status">● Verified Client</span>
-                        </div>
-                        <div class="user-dropdown-divider"></div>
-                        <button class="user-dropdown-item" onclick="openCustomerPortal()">
-                            <span>📊 My Bookings</span>
-                        </button>
-                        <button class="user-dropdown-item signout-item" onclick="handleSupabaseSignOut()">
-                            <span>🚪 Sign Out</span>
-                        </button>
-                    </div>
-                </div>
+                <!-- Top-Right Book a Slot CTA Button -->
+                <button class="nav-book-btn" id="btn-nav-book-slot" onclick="openBookingModal()" aria-label="Book a Slot">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>BOOK A SLOT ↗</span>
+                </button>
             </div>
         </div>
     </header>

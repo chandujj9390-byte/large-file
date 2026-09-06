@@ -459,7 +459,47 @@ html.lenis body {
     gap: 14px;
 }
 
-/* TOP-RIGHT USER AUTH PROFILE ICON & DROPDOWN */
+/* TOP-RIGHT BOOK A SLOT CTA BUTTON */
+.nav-book-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 20px;
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 999px;
+    color: #000000;
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.35);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-book-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.65), 0 4px 15px rgba(0, 0, 0, 0.4);
+    color: #000000;
+}
+
+.nav-book-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.nav-book-btn svg {
+    transition: transform 0.25s ease;
+}
+
+.nav-book-btn:hover svg {
+    transform: scale(1.1);
+}
+
 .user-auth-wrapper {
     position: relative;
     display: inline-flex;
