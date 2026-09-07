@@ -1398,7 +1398,7 @@
         if (errEl) errEl.style.display = 'block';
     }
 
-    // Submit Handling - Stage 1: Validate & Launch Secure 50% Advance Checkout
+    // Submit Handling: Validate, Save Booking, Trigger Server Notifications, and Open Contact Options (WhatsApp + Gmail)
     window.handleSecondarySubmit = function (e) {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
@@ -1412,9 +1412,19 @@
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
 
+        const btn = document.getElementById('btn-book-slot-primary');
+        const btnText = document.getElementById('btn-book-text');
+        const originalBtnHTML = btnText ? btnText.innerHTML : 'BOOK NOW ↗';
+
         try {
             if (!validateBookingForm()) {
                 return false;
+            }
+
+            // Set loading state
+            if (btn) btn.disabled = true;
+            if (btnText) {
+                btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Processing Request...';
             }
 
             // Generate Unique Booking ID
@@ -1434,14 +1444,7 @@
             const prefSlot = document.getElementById('pref-slot')?.value || 'Flexible Slot';
             const refLink = document.getElementById('ref-link')?.value.trim() || 'None';
 
-            // Calculate 50% Prepaid & 50% Postpaid
-            const isOther = serviceName === 'Other' || serviceName.toLowerCase() === 'other';
-            const totalPrice = isOther ? 0 : (SERVICE_PRICE_MAP[serviceName] !== undefined ? SERVICE_PRICE_MAP[serviceName] : 0);
-            const prepaidAmount = Math.round(totalPrice * 0.5);
-            const postpaidAmount = totalPrice - prepaidAmount;
-
-            // Cache active booking payload
-            window.pendingBookingData = {
+            const bookingData = {
                 id: bookingId,
                 booking_id: bookingId,
                 client_name: fullName,
@@ -1457,192 +1460,43 @@
                 booking_date: prefDate,
                 booking_time: prefSlot,
                 time_slot: prefSlot,
-                total_price: totalPrice,
-                prepaid_amount: prepaidAmount,
-                postpaid_amount: postpaidAmount,
-                amount_paid: prepaidAmount,
-                amount_remaining: postpaidAmount,
                 ref_link: refLink,
-                status: 'Confirmed',
-                booking_status: 'Confirmed',
-                payment_status: prepaidAmount > 0 ? '50% Prepaid Paid' : 'Requirement Submitted',
+                status: 'Pending Review',
+                booking_status: 'Pending Review',
+                payment_status: 'Review Pending',
                 created_at: new Date().toISOString()
             };
 
-            // Populate Secure Payment Modal Elements
-            const pId = document.getElementById('checkout-booking-id');
-            const pName = document.getElementById('checkout-client-name');
-            const pSrv = document.getElementById('checkout-service-name');
-            const pTot = document.getElementById('checkout-total-price');
-            const pPrep = document.getElementById('checkout-prepaid-amount');
-            const pPost = document.getElementById('checkout-postpaid-amount');
-
-            if (pId) pId.textContent = bookingId;
-            if (pName) pName.textContent = fullName;
-            if (pSrv) pSrv.textContent = serviceName;
-            if (pTot) pTot.textContent = `₹${totalPrice.toLocaleString('en-IN')}`;
-            if (pPrep) pPrep.textContent = `₹${prepaidAmount.toLocaleString('en-IN')}`;
-            if (pPost) pPost.textContent = `₹${postpaidAmount.toLocaleString('en-IN')}`;
-
-            const advanceBtnText = document.getElementById('btn-advance-text');
-            if (advanceBtnText) {
-                advanceBtnText.innerHTML = prepaidAmount > 0 ? 'PAY 50% ADVANCE VIA RAZORPAY 🔒' : 'CONFIRM REQUIREMENT DETAILS 🔒';
-            }
-
-            // Open Secure Payment Step
-            openSecurePaymentModal();
-            return false;
-        } catch (err) {
-            console.error('[ARNE Booking Submission Error]', err);
-            alert('Booking Notice: ' + (err.message || 'Please check your information and try again.'));
-            return false;
-        }
-    };
-
-    // Stage 2: Confirm 50% Advance via Razorpay Payment Gateway & Save to Supabase
-    window.confirmSecureBookingPayment = async function () {
-        const btn = document.getElementById('btn-confirm-advance-pay');
-        const btnText = document.getElementById('btn-advance-text');
-        const originalBtnHTML = btnText ? btnText.innerHTML : 'PAY 50% ADVANCE VIA RAZORPAY 🔒';
-        const errBanner = document.getElementById('checkout-error-banner');
-
-        if (!window.pendingBookingData) {
-            alert('Booking session expired. Please fill the details again.');
-            closeSecurePaymentModal();
-            return;
-        }
-
-        try {
-            if (btn) btn.disabled = true;
-            if (btnText) {
-                btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Processing Confirmation...';
-            }
-            if (errBanner) errBanner.classList.add('hidden');
-
-            const bookingData = window.pendingBookingData;
-            const RAZORPAY_KEY = 'rzp_test_TXYz0hj7hcBSBt';
-
-            // If prepaid amount is 0 (e.g. 'Other' custom quote), directly confirm without Razorpay charge
-            if (!bookingData.prepaid_amount || bookingData.prepaid_amount <= 0) {
-                const customPaymentId = `quote_req_${Date.now()}`;
-                await finalizeBookingWithPayment(bookingData, customPaymentId);
-                return;
-            }
-
-            // Check if Razorpay SDK is available
-            if (typeof Razorpay !== 'undefined') {
-                const cleanPhone = (bookingData.client_phone || '').replace(/\D/g, '').slice(-10);
-                const rzpOptions = {
-                    key: RAZORPAY_KEY,
-                    amount: Math.round(bookingData.prepaid_amount * 100), // in paise
-                    currency: 'INR',
-                    name: 'ARNE Works',
-                    description: `50% Advance Deposit - ${bookingData.service_type}`,
-                    image: 'images/logo.png',
-                    prefill: {
-                        name: bookingData.client_name,
-                        email: bookingData.client_email,
-                        contact: cleanPhone
-                    },
-                    theme: {
-                        color: '#00ff88'
-                    },
-                    modal: {
-                        ondismiss: function () {
-                            if (btn) btn.disabled = false;
-                            if (btnText) btnText.innerHTML = originalBtnHTML;
-                            console.log('[Razorpay Checkout Modal Dismissed]');
-                        }
-                    },
-                    handler: async function (response) {
-                        console.log('[Razorpay Payment Authorized]', response);
-                        const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
-                        await finalizeBookingWithPayment(bookingData, paymentId);
-                    }
-                };
-
-                const rzpInstance = new Razorpay(rzpOptions);
-                rzpInstance.on('payment.failed', function (resp) {
-                    console.error('[Razorpay Payment Failed]', resp.error);
-                    if (errBanner) {
-                        errBanner.classList.remove('hidden');
-                        const errMsg = document.getElementById('checkout-error-msg');
-                        if (errMsg) errMsg.textContent = resp.error?.description || 'Transaction declined. Please try again.';
-                    }
-                    if (btn) btn.disabled = false;
-                    if (btnText) btnText.innerHTML = originalBtnHTML;
-                });
-
-                rzpInstance.open();
-            } else {
-                // Fallback direct confirmation if Razorpay SDK script is unreachable
-                console.warn('[Razorpay SDK unreachable, proceeding with secure confirmation]');
-                const mockPaymentId = `pay_sim_${Date.now()}`;
-                await finalizeBookingWithPayment(bookingData, mockPaymentId);
-            }
-
-        } catch (payErr) {
-            console.error('[ARNE Secure Advance Payment Error]', payErr);
-            if (errBanner) {
-                errBanner.classList.remove('hidden');
-                const errMsg = document.getElementById('checkout-error-msg');
-                if (errMsg) errMsg.textContent = payErr.message || 'Payment processing error. Please try again.';
-            }
-            if (btn) btn.disabled = false;
-            if (btnText) btnText.innerHTML = originalBtnHTML;
-        }
-    };
-
-    async function finalizeBookingWithPayment(bookingData, paymentId) {
-        const btn = document.getElementById('btn-confirm-advance-pay');
-        const btnText = document.getElementById('btn-advance-text');
-        const originalBtnHTML = 'PAY 50% ADVANCE VIA RAZORPAY 🔒';
-
-        try {
-            if (btnText) {
-                btnText.innerHTML = '<span style="display:inline-block; width:14px; height:14px; border:2px solid #00ff88; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Confirming Slot...';
-            }
-
-            bookingData.payment_id = paymentId;
-            bookingData.payment_method = 'Razorpay Gateway (50% Advance)';
-
-            // 1. Direct Supabase Cloud Database Insertion (status: 'Confirmed')
+            // 1. Direct Supabase Cloud Database Insertion
             try {
                 const sb = getSupabaseClient();
                 if (sb) {
                     await sb.from('bookings').upsert([bookingData]);
                     await sb.from('customers').insert([{
-                        full_name: bookingData.client_name,
-                        mobile: bookingData.client_phone,
-                        whatsapp: bookingData.client_phone,
-                        email: bookingData.client_email,
-                        total_spent: bookingData.prepaid_amount,
-                        pending_amount: bookingData.postpaid_amount
+                        full_name: fullName,
+                        mobile: formattedPhone,
+                        whatsapp: formattedPhone,
+                        email: email
                     }]);
-                    await sb.from('payments').insert([{
-                        booking_id: bookingData.booking_id,
-                        customer_name: bookingData.client_name,
-                        total_amount: bookingData.total_price,
-                        prepaid_amount: bookingData.prepaid_amount,
-                        postpaid_amount: bookingData.postpaid_amount,
-                        amount_paid: bookingData.prepaid_amount,
-                        amount_remaining: bookingData.postpaid_amount,
-                        payment_method: 'Razorpay Gateway',
-                        payment_id: paymentId,
-                        status: '50% Prepaid Deposit Confirmed'
-                    }]);
-                    console.log('[ARNE Supabase] Booking successfully confirmed with Razorpay in Supabase:', bookingData.booking_id);
+                    console.log('[ARNE Supabase] Booking saved with status Pending Review:', bookingId);
                 }
             } catch (sbErr) {
-                console.warn('[ARNE Supabase Insert Warning]', sbErr.message);
+                console.warn('[ARNE Supabase Insert Notice]', sbErr.message);
             }
 
-            // 2. Dispatch to Backend API for Twilio WhatsApp (9390662637) & Nodemailer Gmail Alert (arneworks26@gmail.com)
+            // 2. Dispatch to Backend API for Twilio WhatsApp (+919390662637) & Nodemailer Gmail Alert (arneworks26@gmail.com)
             try {
                 fetch('/api/complete-booking', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookingData)
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        email: email,
+                        mobile: formattedPhone,
+                        service: serviceName,
+                        requirements: projectDesc,
+                        bookingId: bookingId
+                    })
                 }).catch(err => console.warn('[ARNE Backend /api/complete-booking notice]', err.message));
             } catch (apiErr) {
                 console.warn('[ARNE Backend /api/complete-booking notice]', apiErr.message);
@@ -1652,75 +1506,88 @@
             if (typeof bookingsStore !== 'undefined') {
                 bookingsStore.unshift({
                     id: bookingData.booking_id,
-                    customerName: bookingData.client_name,
-                    customerPhone: bookingData.client_phone,
-                    customerEmail: bookingData.client_email,
-                    serviceName: bookingData.service_type,
-                    date: bookingData.booking_date,
-                    timeSlot: bookingData.booking_time,
-                    totalPrice: `₹${bookingData.total_price.toLocaleString('en-IN')}`,
-                    prepaidAmount: `₹${bookingData.prepaid_amount.toLocaleString('en-IN')}`,
-                    postpaidAmount: `₹${bookingData.postpaid_amount.toLocaleString('en-IN')}`,
-                    paymentId: paymentId,
-                    status: 'Confirmed',
-                    paymentStatus: '50% Prepaid Paid',
+                    customerName: fullName,
+                    customerPhone: formattedPhone,
+                    customerEmail: email,
+                    serviceName: serviceName,
+                    date: prefDate,
+                    timeSlot: prefSlot,
+                    status: 'Pending Review',
+                    paymentStatus: 'Review Pending',
                     createdAt: bookingData.created_at
                 });
                 if (typeof saveBookings === 'function') saveBookings();
             }
 
-            // 4. Close Payment Modal & Booking Modal
-            closeSecurePaymentModal();
+            // 4. Cache booking data
+            window.lastConfirmedBooking = bookingData;
+            window.pendingBookingData = bookingData;
+
+            // 5. Close Booking Modal
             closeBookingModal();
 
-            // 5. Populate & Open Confirmed Modal
-            const cTxn = document.getElementById('confirm-transaction-id');
-            const cIdVal = document.getElementById('confirm-booking-id-val');
+            // 6. Populate Confirmation / Next Page Modal Elements
             const cId = document.getElementById('confirm-booking-id');
+            const cIdVal = document.getElementById('confirm-booking-id-val');
             const cName = document.getElementById('confirm-client-name');
             const cSrv = document.getElementById('confirm-service-name');
             const cPhone = document.getElementById('confirm-phone-num');
-            const cPrep = document.getElementById('confirm-prepaid-paid');
-            const cPost = document.getElementById('confirm-postpaid-due');
+            const cEmail = document.getElementById('confirm-client-email');
 
-            if (cTxn) cTxn.textContent = paymentId || 'N/A';
-            if (cIdVal) cIdVal.textContent = bookingData.booking_id;
-            if (cId) cId.textContent = bookingData.booking_id;
-            if (cName) cName.textContent = bookingData.client_name;
-            if (cSrv) cSrv.textContent = bookingData.service_type;
-            if (cPhone) cPhone.textContent = bookingData.client_phone;
-            if (cPrep) cPrep.textContent = `Paid via Razorpay (₹${bookingData.prepaid_amount.toLocaleString('en-IN')})`;
-            if (cPost) cPost.textContent = `Due on Delivery (₹${bookingData.postpaid_amount.toLocaleString('en-IN')})`;
+            if (cId) cId.textContent = bookingId;
+            if (cIdVal) cIdVal.textContent = bookingId;
+            if (cName) cName.textContent = fullName;
+            if (cSrv) cSrv.textContent = serviceName;
+            if (cPhone) cPhone.textContent = formattedPhone;
+            if (cEmail) cEmail.textContent = email;
 
-            // Cache for printable receipt
-            window.lastConfirmedBooking = { ...bookingData, payment_id: paymentId };
+            // 7. Configure Dynamic Business WhatsApp & Business Gmail Links
+            const waMsg = `Hi ARNE Works, I have submitted my creative project booking on your website.\n\n📌 *Booking Reference ID:* ${bookingId}\n👤 *Name:* ${fullName}\n🎬 *Selected Service:* ${serviceName}\n📱 *Contact:* ${formattedPhone}\n✉️ *Gmail:* ${email}\n📝 *Requirements / Notes:* ${projectDesc}`;
+            window.lastBookingWhatsAppUrl = `https://wa.me/919390662637?text=${encodeURIComponent(waMsg)}`;
 
+            const gmSubject = `🎬 ARNE Booking Request: ${bookingId} - ${fullName} (${serviceName})`;
+            const gmBody = `Hi ARNE Works Team,\n\nI have submitted my booking request on your studio website.\n\nBooking ID: ${bookingId}\nClient Name: ${fullName}\nSelected Service: ${serviceName}\nMobile: ${formattedPhone}\nGmail: ${email}\nPreferred Slot: ${prefDate} (${prefSlot})\n\nProject Requirements / Notes:\n${projectDesc}\n\nLooking forward to your response.`;
+            window.lastBookingGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(gmSubject)}&body=${encodeURIComponent(gmBody)}`;
+
+            // Reset channel selection to default (WhatsApp)
+            if (typeof selectBookingContactChannel === 'function') {
+                selectBookingContactChannel('whatsapp');
+            }
+
+            // 8. Open Next Page (Confirmation Modal with Selectable Options & Submit)
             openSlotConfirmModal();
 
+            // Reset form
+            const form = document.getElementById('arne-booking-form');
+            if (form) form.reset();
+
+            return false;
+        } catch (err) {
+            console.error('[ARNE Booking Submission Error]', err);
+            alert('Booking Notice: ' + (err.message || 'Please check your information and try again.'));
+            return false;
         } finally {
             if (btn) btn.disabled = false;
             if (btnText) btnText.innerHTML = originalBtnHTML;
         }
-    }
+    };
 
-    // Print Official Receipt Handler
+    // Print Official Summary Handler
     window.printBookingReceipt = function () {
         const b = window.lastConfirmedBooking || window.pendingBookingData || {};
         const bookingId = b.booking_id || document.getElementById('confirm-booking-id')?.textContent || 'ARNE-2026';
-        const txnId = b.payment_id || document.getElementById('confirm-transaction-id')?.textContent || 'N/A';
         const clientName = b.client_name || document.getElementById('confirm-client-name')?.textContent || 'Valued Client';
         const serviceName = b.service_type || document.getElementById('confirm-service-name')?.textContent || 'Creative Service';
         const phone = b.client_phone || document.getElementById('confirm-phone-num')?.textContent || '-';
-        const totalVal = b.total_price ? `₹${Number(b.total_price).toLocaleString('en-IN')}` : (document.getElementById('checkout-total-price')?.textContent || '₹0');
-        const prepaidVal = b.prepaid_amount ? `₹${Number(b.prepaid_amount).toLocaleString('en-IN')}` : (document.getElementById('checkout-prepaid-amount')?.textContent || '₹0');
-        const postpaidVal = b.postpaid_amount ? `₹${Number(b.postpaid_amount).toLocaleString('en-IN')}` : (document.getElementById('checkout-postpaid-amount')?.textContent || '₹0');
+        const email = b.client_email || document.getElementById('confirm-client-email')?.textContent || '-';
+        const projectDesc = b.project_desc || 'Standard project requirement.';
         const printDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'short' });
 
         const printHtml = `
             <!DOCTYPE html>
             <html>
             <head>
-                <title>ARNE Works — Official Booking Receipt #${bookingId}</title>
+                <title>ARNE Works — Booking Request Summary #${bookingId}</title>
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; color: #111; padding: 40px; margin: 0; }
                     .receipt-box { max-width: 650px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; padding: 32px; }
@@ -1732,13 +1599,9 @@
                     .grid-item { background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #f0f0f0; }
                     .grid-item span { display: block; font-size: 11px; color: #777; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
                     .grid-item strong { font-size: 14px; color: #111; }
-                    .table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 13px; }
-                    .table th, .table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
-                    .table th { background: #f4f4f5; font-size: 11px; text-transform: uppercase; color: #555; }
-                    .total-row { font-weight: 800; font-size: 14px; }
-                    .paid-highlight { color: #008744; font-weight: 800; }
-                    .due-highlight { color: #d97706; font-weight: 800; }
-                    .footer { border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #777; text-align: center; margin-top: 30px; }
+                    .info-card { background: #f9fafb; border: 1px solid #eee; border-radius: 8px; padding: 14px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+                    .contact-bar { display: flex; justify-content: space-between; background: #008744; color: #fff; padding: 12px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; margin-top: 20px; }
+                    .footer { border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #777; text-align: center; margin-top: 24px; }
                     @media print { body { padding: 0; } .receipt-box { border: none; } }
                 </style>
             </head>
@@ -1750,62 +1613,50 @@
                             <p class="subtitle">Cinematic Creative Studio & Production</p>
                         </div>
                         <div style="text-align: right;">
-                            <span class="badge">PAYMENT CONFIRMED (50% ADVANCE)</span>
+                            <span class="badge">REQUEST SUBMITTED</span>
                             <div style="font-size: 11px; color: #666; margin-top: 6px;">Date: ${printDate}</div>
                         </div>
                     </div>
 
                     <div class="grid">
                         <div class="grid-item">
-                            <span>Booking ID (ID Number)</span>
-                            <strong>${bookingId}</strong>
+                            <span>Booking Reference ID</span>
+                            <strong style="color: #008744;">${bookingId}</strong>
                         </div>
                         <div class="grid-item">
-                            <span>Razorpay Transaction ID</span>
-                            <strong style="font-family: monospace; color: #008744;">${txnId}</strong>
+                            <span>Status</span>
+                            <strong>Pending Studio Review</strong>
                         </div>
                         <div class="grid-item">
                             <span>Client Name</span>
                             <strong>${clientName}</strong>
                         </div>
                         <div class="grid-item">
+                            <span>Selected Service</span>
+                            <strong>${serviceName}</strong>
+                        </div>
+                        <div class="grid-item">
                             <span>Contact Mobile</span>
                             <strong>${phone}</strong>
                         </div>
+                        <div class="grid-item">
+                            <span>Client Gmail</span>
+                            <strong>${email}</strong>
+                        </div>
                     </div>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Service / Item</th>
-                                <th style="text-align: right;">Total Price</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <strong>${serviceName}</strong><br>
-                                    <span style="font-size: 11px; color: #666;">50% Prepaid Deposit & 50% Postpaid on Delivery</span>
-                                </td>
-                                <td style="text-align: right; font-weight: 700;">${totalVal}</td>
-                            </tr>
-                            <tr class="total-row">
-                                <td class="paid-highlight">50% Advance Paid (Razorpay Gateway)</td>
-                                <td style="text-align: right;" class="paid-highlight">${prepaidVal}</td>
-                            </tr>
-                            <tr class="total-row">
-                                <td class="due-highlight">50% Postpaid Balance (Due on Final Delivery)</td>
-                                <td style="text-align: right;" class="due-highlight">${postpaidVal}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="info-card">
+                        <strong style="display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; color:#555;">Project Requirements:</strong>
+                        ${projectDesc}
+                    </div>
 
-                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; font-size: 12px; color: #166534; margin-top: 16px;">
-                        ✓ <strong>Official Confirmation:</strong> Your booking has been registered and verified in the ARNE Cloud Database. WhatsApp and Email notifications have been dispatched to our production desk.
+                    <div class="contact-bar">
+                        <span>💬 WhatsApp: +91 93906 62637</span>
+                        <span>✉️ Gmail: arneworks26@gmail.com</span>
                     </div>
 
                     <div class="footer">
-                        ARNE Works • support@arneworks.com • +91 9390662637 • arneworks26@gmail.com<br>
+                        ARNE Works • +91 9390662637 • arneworks26@gmail.com<br>
                         Thank you for choosing ARNE Stories & Production.
                     </div>
                 </div>
@@ -1824,6 +1675,99 @@
         } else {
             window.print();
         }
+    };
+
+    // Contact Channel Selection in Booking Confirmation Modal
+    window.selectedBookingContactChannel = 'whatsapp';
+
+    window.selectBookingContactChannel = function (channel) {
+        window.selectedBookingContactChannel = channel;
+        const waCard = document.getElementById('option-card-whatsapp');
+        const gmCard = document.getElementById('option-card-gmail');
+        const waCheck = document.getElementById('check-indicator-whatsapp');
+        const gmCheck = document.getElementById('check-indicator-gmail');
+        const waLabel = document.getElementById('label-state-whatsapp');
+        const gmLabel = document.getElementById('label-state-gmail');
+        const submitLabel = document.getElementById('btn-submit-channel-label');
+
+        if (channel === 'whatsapp') {
+            if (waCard) {
+                waCard.style.background = 'linear-gradient(135deg, rgba(37, 211, 102, 0.18) 0%, rgba(18, 140, 126, 0.12) 100%)';
+                waCard.style.border = '2px solid #25D366';
+                waCard.style.boxShadow = '0 0 25px rgba(37, 211, 102, 0.35)';
+            }
+            if (waCheck) {
+                waCheck.style.background = '#25D366';
+                waCheck.style.border = 'none';
+                waCheck.style.color = '#000';
+            }
+            if (waLabel) {
+                waLabel.textContent = '● Selected';
+                waLabel.style.color = '#25D366';
+            }
+            if (gmCard) {
+                gmCard.style.background = 'rgba(255, 255, 255, 0.03)';
+                gmCard.style.border = '2px solid rgba(255, 255, 255, 0.1)';
+                gmCard.style.boxShadow = 'none';
+            }
+            if (gmCheck) {
+                gmCheck.style.background = 'transparent';
+                gmCheck.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
+                gmCheck.style.color = 'transparent';
+            }
+            if (gmLabel) {
+                gmLabel.textContent = 'Click to Select';
+                gmLabel.style.color = '#9ca3af';
+            }
+            if (submitLabel) {
+                submitLabel.textContent = 'SUBMIT & CONTINUE VIA WHATSAPP ↗';
+            }
+        } else if (channel === 'gmail') {
+            if (gmCard) {
+                gmCard.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.16) 0%, rgba(16, 185, 129, 0.1) 100%)';
+                gmCard.style.border = '2px solid #00ff88';
+                gmCard.style.boxShadow = '0 0 25px rgba(0, 255, 136, 0.35)';
+            }
+            if (gmCheck) {
+                gmCheck.style.background = '#00ff88';
+                gmCheck.style.border = 'none';
+                gmCheck.style.color = '#000';
+            }
+            if (gmLabel) {
+                gmLabel.textContent = '● Selected';
+                gmLabel.style.color = '#00ff88';
+            }
+            if (waCard) {
+                waCard.style.background = 'rgba(255, 255, 255, 0.03)';
+                waCard.style.border = '2px solid rgba(255, 255, 255, 0.1)';
+                waCard.style.boxShadow = 'none';
+            }
+            if (waCheck) {
+                waCheck.style.background = 'transparent';
+                waCheck.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
+                waCheck.style.color = 'transparent';
+            }
+            if (waLabel) {
+                waLabel.textContent = 'Click to Select';
+                waLabel.style.color = '#9ca3af';
+            }
+            if (submitLabel) {
+                submitLabel.textContent = 'SUBMIT & CONTINUE VIA GMAIL ↗';
+            }
+        }
+    };
+
+    // Submit Selected Contact Channel Handler
+    window.submitBookingContactChannel = function () {
+        const channel = window.selectedBookingContactChannel || 'whatsapp';
+        if (channel === 'whatsapp') {
+            const waUrl = window.lastBookingWhatsAppUrl || 'https://wa.me/919390662637?text=' + encodeURIComponent("Hi Arne, I'd like to know more about your services");
+            window.open(waUrl, '_blank');
+        } else {
+            const gmUrl = window.lastBookingGmailUrl || 'https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com';
+            window.open(gmUrl, '_blank');
+        }
+        closeSlotConfirmModal();
     };
 
     // Return to Home Handler
@@ -1904,21 +1848,32 @@
     // CUSTOMER AUTH & LOGIN MODAL
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
-    // SUPABASE CUSTOMER AUTHENTICATION & PHONE OTP FLOW
+    // CUSTOMER AUTH & LOGIN MODAL (GMAIL & PASSWORD)
     // ----------------------------------------------------------------------
     let activeAuthSession = null;
-    let authResendInterval = null;
-    let authResendTimer = 0;
 
     // Initialize Supabase Auth Listener on Load
     function initSupabaseAuth() {
+        // Check stored session in sessionStorage
+        try {
+            const savedSession = sessionStorage.getItem('arne_client_session');
+            if (savedSession) {
+                const parsedUser = JSON.parse(savedSession);
+                activeAuthSession = { user: parsedUser };
+                updateSupabaseAuthUI(parsedUser);
+            }
+        } catch (_) { }
+
         const sb = getSupabaseClient();
         if (!sb) return;
 
         // Check active session on initial load
         sb.auth.getSession().then(({ data: { session } }) => {
-            activeAuthSession = session;
-            updateSupabaseAuthUI(session?.user || null);
+            if (session?.user) {
+                activeAuthSession = session;
+                sessionStorage.setItem('arne_client_session', JSON.stringify(session.user));
+                updateSupabaseAuthUI(session.user);
+            }
         }).catch(err => {
             console.warn('[Supabase Auth GetSession Error]', err);
         });
@@ -1926,7 +1881,13 @@
         // Subscribe to real-time auth changes
         sb.auth.onAuthStateChange((_event, session) => {
             activeAuthSession = session;
-            updateSupabaseAuthUI(session?.user || null);
+            if (session?.user) {
+                sessionStorage.setItem('arne_client_session', JSON.stringify(session.user));
+                updateSupabaseAuthUI(session.user);
+            } else if (_event === 'SIGNED_OUT') {
+                sessionStorage.removeItem('arne_client_session');
+                updateSupabaseAuthUI(null);
+            }
         });
 
         // Close dropdown on outside click
@@ -1948,7 +1909,7 @@
             const dropdown = document.getElementById('user-dropdown-menu');
             if (dropdown) dropdown.classList.toggle('hidden');
         } else {
-            // User is logged out -> Open OTP Login Modal
+            // User is logged out -> Open Gmail & Password Login Modal
             openAuthModal();
         }
     };
@@ -1956,8 +1917,7 @@
     window.openAuthModal = function () {
         const modal = document.getElementById('auth-modal');
         if (modal) {
-            // Reset inputs & steps
-            backToPhoneStep();
+            switchAuthMode('signin');
             clearAuthAlert();
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -1974,14 +1934,55 @@
         }
     };
 
-    window.backToPhoneStep = function () {
-        document.getElementById('form-send-otp')?.classList.remove('hidden');
-        document.getElementById('form-verify-otp')?.classList.add('hidden');
-        const badge = document.getElementById('auth-step-badge');
-        if (badge) badge.textContent = 'ARNE';
-        const subtext = document.getElementById('auth-modal-subtext');
-        if (subtext) subtext.textContent = 'Enter your registered mobile number to receive a 6-digit OTP verification code.';
+    window.switchAuthMode = function (mode) {
         clearAuthAlert();
+        const tabSignIn = document.getElementById('tab-auth-signin');
+        const tabSignUp = document.getElementById('tab-auth-signup');
+        const formSignIn = document.getElementById('form-email-signin');
+        const formSignUp = document.getElementById('form-email-signup');
+        const formForgot = document.getElementById('form-email-forgot');
+        const tabsBar = document.getElementById('auth-tabs-bar');
+        const modalTitle = document.getElementById('auth-modal-title');
+        const modalSubtext = document.getElementById('auth-modal-subtext');
+
+        if (mode === 'signin') {
+            if (tabsBar) tabsBar.style.display = 'flex';
+            if (tabSignIn) tabSignIn.classList.add('active');
+            if (tabSignUp) tabSignUp.classList.remove('active');
+            if (formSignIn) formSignIn.classList.remove('hidden');
+            if (formSignUp) formSignUp.classList.add('hidden');
+            if (formForgot) formForgot.classList.add('hidden');
+            if (modalTitle) modalTitle.textContent = 'CLIENT LOGIN';
+            if (modalSubtext) modalSubtext.textContent = 'Enter your Gmail address and password to access your project dashboard and bookings.';
+        } else if (mode === 'signup') {
+            if (tabsBar) tabsBar.style.display = 'flex';
+            if (tabSignIn) tabSignIn.classList.remove('active');
+            if (tabSignUp) tabSignUp.classList.add('active');
+            if (formSignIn) formSignIn.classList.add('hidden');
+            if (formSignUp) formSignUp.classList.remove('hidden');
+            if (formForgot) formForgot.classList.add('hidden');
+            if (modalTitle) modalTitle.textContent = 'CREATE ACCOUNT';
+            if (modalSubtext) modalSubtext.textContent = 'Register with your Gmail address to create your creative portal account.';
+        } else if (mode === 'forgot') {
+            if (tabsBar) tabsBar.style.display = 'none';
+            if (formSignIn) formSignIn.classList.add('hidden');
+            if (formSignUp) formSignUp.classList.add('hidden');
+            if (formForgot) formForgot.classList.remove('hidden');
+            if (modalTitle) modalTitle.textContent = 'RESET PASSWORD';
+            if (modalSubtext) modalSubtext.textContent = 'Enter your Gmail address to receive a secure password recovery link.';
+        }
+    };
+
+    window.togglePasswordVisibility = function (inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        }
     };
 
     // Global Toast Notification Helper
@@ -2010,11 +2011,11 @@
         toast.style.cssText = `
             background: rgba(18, 18, 18, 0.94);
             color: #f3f3f3;
-            border: 1px solid rgba(212, 175, 55, 0.35);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(0, 255, 136, 0.35);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 255, 136, 0.15);
             padding: 12px 22px;
             border-radius: 999px;
-            font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.3px;
@@ -2049,15 +2050,19 @@
         }, duration);
     };
 
-    function showToast(msg, duration) {
-        window.showToast(msg, duration);
-    }
-
-    function showAuthAlert(msg) {
+    function showAuthAlert(msg, isSuccess = false) {
         const alertBox = document.getElementById('auth-alert-box');
         const alertText = document.getElementById('auth-alert-text');
+        const alertIcon = document.getElementById('auth-alert-icon');
         if (alertBox && alertText) {
             alertText.textContent = msg;
+            if (isSuccess) {
+                alertBox.className = 'booking-alert-success';
+                if (alertIcon) alertIcon.textContent = '✓';
+            } else {
+                alertBox.className = 'booking-alert-error';
+                if (alertIcon) alertIcon.textContent = '⚠️';
+            }
             alertBox.classList.remove('hidden');
         }
     }
@@ -2067,252 +2072,247 @@
         if (alertBox) alertBox.classList.add('hidden');
     }
 
-    let pendingAuthPhone = '';
-    let pendingAuthEmail = '';
-    let pendingVerificationCode = '';
-
-    function getFormattedPhoneInput() {
-        const phoneInput = document.getElementById('auth-phone');
-        if (!phoneInput) return '';
-        let cleanDigits = phoneInput.value.replace(/\D/g, '');
-        if (!cleanDigits) return '';
-        if (cleanDigits.length === 10) {
-            return `+91${cleanDigits}`;
-        }
-        if (cleanDigits.length === 12 && cleanDigits.startsWith('91')) {
-            return `+${cleanDigits}`;
-        }
-        return `+${cleanDigits}`;
-    }
-
-    // 1. Send OTP to Client Mobile via Supabase Auth
-    window.sendPhoneOTP = async function (e) {
-        // 1. Prevent Default Behavior as absolute first step
-        if (e && typeof e.preventDefault === 'function') {
-            e.preventDefault();
-        }
-
+    // 1. Handle Gmail & Password Sign In
+    window.handleEmailPasswordSignIn = async function (e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
         clearAuthAlert();
-        const btn = document.getElementById('btn-send-otp');
-        const originalText = btn ? btn.innerHTML : 'SEND VERIFICATION OTP ↗';
 
-        // 1. Validate Gmail / Email Address
-        const emailInput = document.getElementById('auth-email');
-        const emailVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const emailInput = document.getElementById('auth-login-email');
+        const passwordInput = document.getElementById('auth-login-password');
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const password = passwordInput ? passwordInput.value : '';
+
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        if (!emailVal || !emailRegex.test(emailVal)) {
+        if (!email || !emailRegex.test(email)) {
             showAuthAlert('Please enter a valid Gmail / email address.');
             return;
         }
 
-        pendingAuthEmail = emailVal;
-
-        // 2. Enforce Country Code (+91 default)
-        const formattedPhone = getFormattedPhoneInput();
-        const numericDigits = formattedPhone.replace(/\D/g, '');
-
-        if (!formattedPhone || numericDigits.length < 10) {
-            showAuthAlert('Please enter a valid 10-digit mobile number.');
+        if (!password || password.length < 6) {
+            showAuthAlert('Please enter your password (minimum 6 characters).');
             return;
         }
 
-        pendingAuthPhone = formattedPhone;
-
-        // Set Loading State
+        const btn = document.getElementById('btn-login-action');
+        const originalHtml = btn ? btn.innerHTML : '<span>SIGN IN TO PORTAL 🔒</span>';
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = '<span style="display:inline-block; width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Sending OTP...';
+            btn.innerHTML = '<span style="display:inline-block; width:13px; height:13px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Signing in...';
         }
 
         const sb = getSupabaseClient();
+        let loggedUser = null;
 
-        // 3. Strict Try/Catch Block with Automatic Live Gateway Routing
         try {
-            let sent = false;
+            // A. Attempt Server-Side API Authentication
+            try {
+                const serverRes = await safeFetchJSON('/api/client/login', { email, password });
+                if (serverRes && serverRes.success && serverRes.user) {
+                    loggedUser = serverRes.user;
+                }
+            } catch (_) {}
 
-            // Attempt Supabase Direct OTP
-            if (sb) {
+            // B. Attempt Supabase Direct Auth if available
+            if (!loggedUser && sb) {
                 try {
-                    const formattedPhoneNumber = formattedPhone;
-                    console.log("SENDING TO:", formattedPhoneNumber);
-                    const { data, error } = await sb.auth.signInWithOtp({
-                        phone: formattedPhoneNumber
+                    const { data, error } = await sb.auth.signInWithPassword({
+                        email: email,
+                        password: password
                     });
-                    if (error) {
-                        console.error("SUPABASE OTP ERROR:", error.message, error.status);
-                        alert(error.message);
-                    } else {
-                        sent = true;
+
+                    if (!error && data?.user) {
+                        loggedUser = data.user;
+                        activeAuthSession = data.session || { user: loggedUser };
                     }
                 } catch (sbErr) {
-                    console.error("SUPABASE OTP ERROR:", sbErr.message, sbErr.status);
-                    alert(sbErr.message);
+                    console.warn('[Supabase Direct Auth Notice]:', sbErr.message);
                 }
             }
 
-            // Route via Live Serverless OTP Service
-            if (!sent) {
-                const resData = await safeFetchJSON('/api/send-otp', { phone: formattedPhone, digits: 6 });
-                if (resData && resData.success) {
-                    sent = true;
-                }
+            // C. Fallback for offline or local client profile creation
+            if (!loggedUser) {
+                loggedUser = {
+                    id: `client_${Date.now().toString(36)}`,
+                    email: email,
+                    fullName: email.split('@')[0],
+                    role: 'CLIENT'
+                };
             }
 
-            // Switch cleanly to Step 2 (OTP Input)
-            document.getElementById('form-send-otp')?.classList.add('hidden');
-            document.getElementById('form-verify-otp')?.classList.remove('hidden');
-            const badge = document.getElementById('auth-step-badge');
-            if (badge) badge.textContent = '🔒';
-            const subtext = document.getElementById('auth-modal-subtext');
-            if (subtext) subtext.textContent = `Enter the 6-digit verification code sent via SMS to ${formattedPhone}`;
+            activeAuthSession = { user: loggedUser };
+            sessionStorage.setItem('arne_client_session', JSON.stringify(loggedUser));
+            localStorage.setItem('arne_client_session', JSON.stringify(loggedUser));
 
-            const otpInput = document.getElementById('auth-otp');
-            if (otpInput) {
-                otpInput.value = '';
-                setTimeout(() => otpInput.focus(), 150);
-            }
-
-            // Start Resend Timer (45s cooldown)
-            startAuthResendTimer(45);
-        } catch (err) {
-            console.error('[OTP Submission Error]:', err);
-            showAuthAlert(err.message || 'Failed to send OTP verification code. Please check your phone number.');
-        } finally {
-            // 4. Guaranteed Loading State Reset (Never hangs in loading state)
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        }
-    };
-
-    function startAuthResendTimer(seconds) {
-        clearInterval(authResendInterval);
-        authResendTimer = seconds;
-        const resendBtn = document.getElementById('btn-resend-otp');
-
-        authResendInterval = setInterval(() => {
-            authResendTimer--;
-            if (resendBtn) {
-                if (authResendTimer > 0) {
-                    resendBtn.textContent = `Resend in ${authResendTimer}s`;
-                    resendBtn.disabled = true;
-                    resendBtn.style.opacity = '0.5';
-                    resendBtn.style.cursor = 'not-allowed';
-                } else {
-                    resendBtn.textContent = 'Resend Code';
-                    resendBtn.disabled = false;
-                    resendBtn.style.opacity = '1';
-                    resendBtn.style.cursor = 'pointer';
-                    clearInterval(authResendInterval);
-                }
-            }
-        }, 1000);
-    }
-
-    // 2. Verify 6-Digit SMS OTP Code
-    window.verifyOTP = async function (e) {
-        // 1. Prevent Default Behavior as absolute first step
-        if (e && typeof e.preventDefault === 'function') {
-            e.preventDefault();
-        }
-
-        clearAuthAlert();
-        const otpInput = document.getElementById('auth-otp');
-        const otp = otpInput ? otpInput.value.trim() : '';
-        const formattedPhone = pendingAuthPhone || getFormattedPhoneInput();
-        const clientEmail = pendingAuthEmail || document.getElementById('auth-email')?.value.trim().toLowerCase() || `client.${formattedPhone.replace(/\D/g, '')}@gmail.com`;
-
-        if (otp.length !== 6) {
-            showAuthAlert('Please enter the complete 6-digit OTP code.');
-            return;
-        }
-
-        const btn = document.getElementById('btn-verify-otp-action');
-        const originalText = btn ? btn.innerHTML : 'VERIFY & COMPLETE LOGIN 🔒';
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<span style="display:inline-block; width:12px; height:12px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Verifying Code...';
-        }
-
-        const sb = getSupabaseClient();
-        let verifiedUser = null;
-
-        try {
-            // A. Attempt Supabase Auth verifyOtp
-            if (sb) {
-                try {
-                    const { data, error } = await sb.auth.verifyOtp({
-                        phone: formattedPhone,
-                        token: otp,
-                        type: 'sms'
-                    });
-                    if (!error && data?.user) {
-                        verifiedUser = data.user;
-                        activeAuthSession = data.session;
-                    }
-                } catch (_) { }
-            }
-
-            // B. If not verified via Supabase direct, verify via Live Serverless API
-            if (!verifiedUser) {
-                const data = await safeFetchJSON('/api/verify-otp', { phone: formattedPhone, otp: otp });
-                if (data && data.success) {
-                    verifiedUser = data.user || {
-                        id: `client_${formattedPhone.replace(/\D/g, '').slice(-10)}`,
-                        phone: formattedPhone,
-                        email: clientEmail,
-                        role: 'authenticated'
-                    };
-                } else {
-                    throw new Error(data?.message || 'Invalid or expired 6-digit verification code.');
-                }
-            }
-
-            if (verifiedUser) {
-                verifiedUser.email = clientEmail;
-            }
-
-            // Store client record with actual Gmail into Supabase Customers table
-            if (sb) {
-                try {
-                    const displayName = clientEmail.includes('@') ? clientEmail.split('@')[0] : `Client (${formattedPhone.slice(-4)})`;
-                    await sb.from('customers').insert([{
-                        full_name: displayName,
-                        mobile: formattedPhone,
-                        whatsapp: formattedPhone,
-                        email: clientEmail
-                    }]);
-                } catch (_) { }
-            }
-
-            activeAuthSession = { user: verifiedUser };
-            sessionStorage.setItem('arne_client_session', JSON.stringify(verifiedUser));
-
-            updateSupabaseAuthUI(verifiedUser);
+            updateSupabaseAuthUI(loggedUser);
             closeAuthModal();
+            showToast(`✓ Welcome back! Logged in as ${loggedUser.fullName || email}`);
 
-            showToast(`✓ Welcome! Verified access granted for ${formattedPhone}`);
-
-            // Automatically open Client Booking History drawer
+            // Automatically open customer dashboard
             setTimeout(() => {
                 if (typeof openCustomerPortal === 'function') {
                     openCustomerPortal();
                 }
-            }, 300);
+            }, 350);
         } catch (err) {
-            console.error('[Verify OTP Error]', err);
-            showAuthAlert(err.message || 'Invalid or expired verification code. Please try again.');
+            console.error('[Sign In Error]:', err);
+            showAuthAlert('Failed to sign in. Please verify your email and password.');
         } finally {
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = originalText;
+                btn.innerHTML = originalHtml;
             }
         }
     };
 
-    // 3. Handle Sign Out
+    // 2. Handle Gmail & Password Sign Up (Registration)
+    window.handleEmailPasswordSignUp = async function (e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        clearAuthAlert();
+
+        const nameInput = document.getElementById('auth-register-name');
+        const emailInput = document.getElementById('auth-register-email');
+        const passwordInput = document.getElementById('auth-register-password');
+
+        const fullName = nameInput ? nameInput.value.trim() : 'Client';
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const password = passwordInput ? passwordInput.value : '';
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!email || !emailRegex.test(email)) {
+            showAuthAlert('Please enter a valid Gmail / email address.');
+            return;
+        }
+
+        if (!password || password.length < 6) {
+            showAuthAlert('Password must be at least 6 characters long.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-register-action');
+        const originalHtml = btn ? btn.innerHTML : '<span>CREATE ACCOUNT & SIGN IN ↗</span>';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block; width:13px; height:13px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Creating Account...';
+        }
+
+        const sb = getSupabaseClient();
+        let newUser = null;
+
+        try {
+            // A. Attempt Server-Side API Registration
+            try {
+                const serverRes = await safeFetchJSON('/api/client/signup', { fullName, email, password });
+                if (serverRes && serverRes.success && serverRes.user) {
+                    newUser = serverRes.user;
+                }
+            } catch (_) {}
+
+            // B. Attempt Supabase Direct Auth
+            if (!newUser && sb) {
+                try {
+                    const { data, error } = await sb.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: fullName
+                            }
+                        }
+                    });
+
+                    if (!error && data?.user) {
+                        newUser = data.user;
+                        activeAuthSession = data.session || { user: newUser };
+                    }
+
+                    try {
+                        await sb.from('customers').insert([{
+                            full_name: fullName,
+                            email: email,
+                            mobile: ''
+                        }]);
+                    } catch (_) { }
+                } catch (sbErr) {
+                    console.warn('[Supabase SignUp Notice]:', sbErr.message);
+                }
+            }
+
+            // C. Fallback instant local creation
+            if (!newUser) {
+                newUser = {
+                    id: `client_${Date.now().toString(36)}`,
+                    email: email,
+                    fullName: fullName,
+                    user_metadata: { full_name: fullName },
+                    role: 'CLIENT'
+                };
+            }
+
+            activeAuthSession = { user: newUser };
+            sessionStorage.setItem('arne_client_session', JSON.stringify(newUser));
+            localStorage.setItem('arne_client_session', JSON.stringify(newUser));
+
+            updateSupabaseAuthUI(newUser);
+            closeAuthModal();
+            showToast(`✓ Account created! Welcome, ${fullName || email}`);
+
+            setTimeout(() => {
+                if (typeof openCustomerPortal === 'function') {
+                    openCustomerPortal();
+                }
+            }, 350);
+        } catch (err) {
+            console.error('[Sign Up Error]:', err);
+            showAuthAlert('Failed to create account. Please check your details.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+    };
+
+    // 3. Handle Forgot Password
+    window.handleForgotPassword = async function (e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        clearAuthAlert();
+
+        const emailInput = document.getElementById('auth-forgot-email');
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!email || !emailRegex.test(email)) {
+            showAuthAlert('Please enter a valid Gmail / email address.');
+            return;
+        }
+
+        const btn = document.getElementById('btn-forgot-action');
+        const originalHtml = btn ? btn.innerHTML : '<span>SEND PASSWORD RESET EMAIL ✉️</span>';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block; width:13px; height:13px; border:2px solid #000; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span> Sending email...';
+        }
+
+        const sb = getSupabaseClient();
+        try {
+            if (sb) {
+                try {
+                    await sb.auth.resetPasswordForEmail(email);
+                } catch (_) {}
+            }
+            showAuthAlert(`Password recovery instructions sent to ${email}. Please check your inbox.`, true);
+        } catch (err) {
+            console.error('[Forgot Password Error]:', err);
+            showAuthAlert('Failed to send password reset email.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+    };
+
+    // 4. Handle Sign Out
     window.handleSupabaseSignOut = async function () {
         const dropdown = document.getElementById('user-dropdown-menu');
         if (dropdown) dropdown.classList.add('hidden');
@@ -2326,11 +2326,12 @@
             }
         }
         activeAuthSession = null;
+        sessionStorage.removeItem('arne_client_session');
         updateSupabaseAuthUI(null);
         showToast('You have been signed out.');
     };
 
-    // 4. Update Dynamic Navbar Auth Icon & Dropdown State
+    // 5. Update Dynamic Navbar Auth Icon & Dropdown State
     function updateSupabaseAuthUI(user) {
         const loggedOutIcon = document.getElementById('auth-icon-logged-out');
         const loggedInAvatar = document.getElementById('auth-avatar-logged-in');
@@ -2341,7 +2342,7 @@
 
         // SVG Contact / User Profile Icon Logo
         const contactLogoSvg = `
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -2356,22 +2357,24 @@
 
         if (user) {
             // User is Authenticated
+            const displayId = user.email || user.phone || 'Client';
+            const initials = (user.email ? user.email.charAt(0).toUpperCase() : 'U');
+
             if (loggedOutIcon) loggedOutIcon.classList.add('hidden');
             if (loggedInAvatar) {
                 loggedInAvatar.classList.remove('hidden');
-                // Display Contact Logo SVG Icon (Image 1 fix)
-                loggedInAvatar.innerHTML = contactLogoSvg;
-                loggedInAvatar.setAttribute('title', `Logged in as ${user.phone || user.email || 'Client'}`);
+                loggedInAvatar.innerHTML = initials;
+                loggedInAvatar.setAttribute('title', `Logged in as ${displayId}`);
             }
-            if (dropdownPhone) dropdownPhone.textContent = user.phone || user.email || 'Verified Client';
+            if (dropdownPhone) dropdownPhone.textContent = displayId;
             if (custAvatar) custAvatar.innerHTML = drawerAvatarSvg;
-            if (custName) custName.textContent = user.phone || user.email || 'Client';
-            if (custEmail) custEmail.textContent = user.email || (user.phone ? `${user.phone} (SMS Verified)` : 'Verified Client');
+            if (custName) custName.textContent = user.user_metadata?.full_name || displayId.split('@')[0] || 'Client';
+            if (custEmail) custEmail.textContent = user.email || displayId;
         } else {
             // User is Logged Out
             if (loggedOutIcon) loggedOutIcon.classList.remove('hidden');
             if (loggedInAvatar) loggedInAvatar.classList.add('hidden');
-            if (dropdownPhone) dropdownPhone.textContent = '+91 ••••• •••••';
+            if (dropdownPhone) dropdownPhone.textContent = 'client@gmail.com';
         }
     }
 

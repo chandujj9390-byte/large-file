@@ -12,22 +12,124 @@
     }
   ],
   "services": [
-    { "id": "srv-1", "name": "Video Editing", "category": "Video Production", "price": 1049, "startingFrom": false, "active": true, "description": "Professional 4K video editing, color grading, sound design, and motion titles." },
-    { "id": "srv-2", "name": "Photo Editing", "category": "Photography", "price": 599, "startingFrom": false, "active": true, "description": "High-end portrait retouching, skin smoothing, and color correction." },
-    { "id": "srv-3", "name": "Reel / Shorts Editing", "category": "Social Media", "price": 799, "startingFrom": false, "active": true, "description": "Engaging vertical reel editing with viral captions, hooks, and trend transitions." },
-    { "id": "srv-4", "name": "Poster Designing", "category": "Graphic Design", "price": 529, "startingFrom": false, "active": true, "description": "Cinematic poster art, movie key art, and promotional graphics." },
-    { "id": "srv-5", "name": "Album Designing", "category": "Graphic Design", "price": 1299, "startingFrom": true, "active": true, "description": "Premium photo album layout design for weddings, events, and brand portfolios." },
-    { "id": "srv-6", "name": "Color Grading", "category": "Post Production", "price": 599, "startingFrom": false, "active": true, "description": "LUT development, DaVinci Resolve color matching, and cinematic film looks." },
-    { "id": "srv-8", "name": "Website Designing", "category": "Web Development", "price": 4999, "startingFrom": true, "active": true, "description": "Custom high-speed responsive website design with glassmorphism UI." }
+    {
+      "id": "srv-1",
+      "name": "Video Editing",
+      "category": "Video Production",
+      "price": 1049,
+      "startingFrom": false,
+      "active": true,
+      "description": "Professional 4K video editing, color grading, sound design, and motion titles."
+    },
+    {
+      "id": "srv-2",
+      "name": "Photo Editing",
+      "category": "Photography",
+      "price": 599,
+      "startingFrom": false,
+      "active": true,
+      "description": "High-end portrait retouching, skin smoothing, and color correction."
+    },
+    {
+      "id": "srv-3",
+      "name": "Reel / Shorts Editing",
+      "category": "Social Media",
+      "price": 799,
+      "startingFrom": false,
+      "active": true,
+      "description": "Engaging vertical reel editing with viral captions, hooks, and trend transitions."
+    },
+    {
+      "id": "srv-4",
+      "name": "Poster Designing",
+      "category": "Graphic Design",
+      "price": 529,
+      "startingFrom": false,
+      "active": true,
+      "description": "Cinematic poster art, movie key art, and promotional graphics."
+    },
+    {
+      "id": "srv-5",
+      "name": "Album Designing",
+      "category": "Graphic Design",
+      "price": 1299,
+      "startingFrom": true,
+      "active": true,
+      "description": "Premium photo album layout design for weddings, events, and brand portfolios."
+    },
+    {
+      "id": "srv-6",
+      "name": "Color Grading",
+      "category": "Post Production",
+      "price": 599,
+      "startingFrom": false,
+      "active": true,
+      "description": "LUT development, DaVinci Resolve color matching, and cinematic film looks."
+    },
+    {
+      "id": "srv-8",
+      "name": "Website Designing",
+      "category": "Web Development",
+      "price": 4999,
+      "startingFrom": true,
+      "active": true,
+      "description": "Custom high-speed responsive website design with glassmorphism UI."
+    }
   ],
   "slots": [
-    { "id": "s-1", "date": "2026-08-25", "time": "10:00 AM", "status": "AVAILABLE", "maxBookings": 1 },
-    { "id": "s-2", "date": "2026-08-25", "time": "02:00 PM", "status": "AVAILABLE", "maxBookings": 1 },
-    { "id": "s-3", "date": "2026-08-25", "time": "05:00 PM", "status": "AVAILABLE", "maxBookings": 1 },
-    { "id": "s-4", "date": "2026-08-26", "time": "11:00 AM", "status": "AVAILABLE", "maxBookings": 1 },
-    { "id": "s-5", "date": "2026-08-26", "time": "03:00 PM", "status": "AVAILABLE", "maxBookings": 1 }
+    {
+      "id": "s-1",
+      "date": "2026-08-25",
+      "time": "10:00 AM",
+      "status": "AVAILABLE",
+      "maxBookings": 1
+    },
+    {
+      "id": "s-2",
+      "date": "2026-08-25",
+      "time": "02:00 PM",
+      "status": "AVAILABLE",
+      "maxBookings": 1
+    },
+    {
+      "id": "s-3",
+      "date": "2026-08-25",
+      "time": "05:00 PM",
+      "status": "AVAILABLE",
+      "maxBookings": 1
+    },
+    {
+      "id": "s-4",
+      "date": "2026-08-26",
+      "time": "11:00 AM",
+      "status": "AVAILABLE",
+      "maxBookings": 1
+    },
+    {
+      "id": "s-5",
+      "date": "2026-08-26",
+      "time": "03:00 PM",
+      "status": "AVAILABLE",
+      "maxBookings": 1
+    }
   ],
   "bookings": [
+    {
+      "id": "ARNE-2026-229551",
+      "customerName": "Chandu",
+      "customerPhone": "+919390662637",
+      "customerEmail": "chandukk031@gmail.com",
+      "company": "N/A",
+      "location": "N/A",
+      "serviceName": "Video Editing",
+      "projectDesc": "N/A",
+      "timeSlot": "Flexible",
+      "totalPrice": 999,
+      "status": "Pending Review",
+      "booking_status": "Pending Review",
+      "paymentStatus": "Review Pending",
+      "createdAt": "2026-09-06T19:12:20.547Z"
+    },
     {
       "id": "ARNE-2026-849201",
       "customerName": "Rahul Sharma",
