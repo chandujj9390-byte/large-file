@@ -123,15 +123,31 @@ const ModalSuccessView = memo(function ModalSuccessView({ data, onClose }) {
           <span className="text-[10px] font-bold text-[#25D366] text-right mt-1">Chat on WhatsApp ↗</span>
         </a>
 
-        <a
-          href={`https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(
-            `ARNE Booking: ${data.bookingId} - ${data.fullName}`
-          )}&body=${encodeURIComponent(
-            `Hi ARNE Works Team,\n\nI have submitted my booking #${data.bookingId} for ${data.service}.\nClient Name: ${data.fullName}\nPhone: ${data.mobile}\nEmail: ${data.email}\n\nLooking forward to hearing from you!`
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex flex-col justify-between p-3 rounded-xl bg-[#ea4335]/10 border border-[#ea4335]/30 hover:border-[#ea4335] transition-all"
+        <button
+          type="button"
+          onClick={() => {
+            const businessEmail = 'arneworks26@gmail.com';
+            const subject = `ARNE Booking: ${data.bookingId} - ${data.fullName}`;
+            const body = `Hi ARNE Works Team,\n\nI have submitted my booking #${data.bookingId} for ${data.service}.\nClient Name: ${data.fullName}\nPhone: ${data.mobile}\nEmail: ${data.email}\n\nLooking forward to hearing from you!`;
+            const encodedEmail = encodeURIComponent(businessEmail);
+            const encodedSubject = encodeURIComponent(subject);
+            const encodedBody = encodeURIComponent(body);
+
+            const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/i.test(navigator.userAgent || '');
+            if (isIOS) {
+              const gmailUrl = `googlegmail:///co?to=${encodedEmail}&subject=${encodedSubject}&body=${encodedBody}`;
+              const mailtoUrl = `mailto:${encodedEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+              window.location.href = gmailUrl;
+              setTimeout(() => {
+                if (!document.hidden) {
+                  window.location.href = mailtoUrl;
+                }
+              }, 500);
+            } else {
+              window.location.href = `mailto:${encodedEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+            }
+          }}
+          className="group flex flex-col justify-between p-3 rounded-xl bg-[#ea4335]/10 border border-[#ea4335]/30 hover:border-[#ea4335] transition-all cursor-pointer text-left"
         >
           <div className="flex items-center gap-2.5">
             <span className="text-xl">✉️</span>
@@ -141,7 +157,7 @@ const ModalSuccessView = memo(function ModalSuccessView({ data, onClose }) {
             </div>
           </div>
           <span className="text-[10px] font-bold text-[#ff7b72] text-right mt-1">Open Gmail ↗</span>
-        </a>
+        </button>
       </div>
 
       <button

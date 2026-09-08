@@ -86,7 +86,7 @@ function VerifyDetailsModal({
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }, [name, mobile, email, service, selectedDate, selectedSlot, projectBrief]);
 
-  // 2. ACTION: Direct Gmail / Default Email Client Compose (mailto:)
+  // 2. ACTION: Direct Gmail / Default Email Client Compose with OS Deep Linking
   const handleGmailCompose = useCallback(() => {
     const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_GMAIL || 'arneworks26@gmail.com';
     const emailSubject = `New Booking Request: ${name}`;
@@ -99,8 +99,30 @@ function VerifyDetailsModal({
       `Service Required: ${service}\n` +
       `Project Requirements: ${projectBrief}`;
 
-    const mailtoLink = `mailto:${encodeURIComponent(businessEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    window.location.href = mailtoLink;
+    const encodedEmail = encodeURIComponent(businessEmail);
+    const encodedSubject = encodeURIComponent(emailSubject);
+    const encodedBody = encodeURIComponent(emailBody);
+
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/i.test(navigator.userAgent || '');
+
+    if (isIOS) {
+      // Gmail Custom iOS URL Scheme
+      const gmailUrl = `googlegmail:///co?to=${encodedEmail}&subject=${encodedSubject}&body=${encodedBody}`;
+      const mailtoUrl = `mailto:${encodedEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+
+      window.location.href = gmailUrl;
+
+      // Fallback to standard mailto link if Gmail app is not installed
+      setTimeout(() => {
+        if (!document.hidden) {
+          window.location.href = mailtoUrl;
+        }
+      }, 500);
+    } else {
+      // Android / Desktop: Standard mailto opens the default email client natively
+      const mailtoUrl = `mailto:${encodedEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+      window.location.href = mailtoUrl;
+    }
   }, [name, mobile, email, service, projectBrief]);
 
   if (!isOpen) return null;
