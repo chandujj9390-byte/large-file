@@ -5155,4 +5155,14 @@ html.lenis body {
     fill: currentColor;
     transition: transform 0.2s ease;
 }
+
+/* Mobile Performance Optimizations: Content-Visibility for Offscreen Sections */
+.services-section,
+.advantage-section,
+.about-section,
+.contact-section,
+.footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
+}
 

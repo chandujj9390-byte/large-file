@@ -5,21 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARNE — Cinematic Creative Studio & Production</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts for typography (including Signature Calligraphy Font) -->
+    <!-- Performance & Font Preconnections -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600;700&family=Great+Vibes&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@700;800;900&display=swap"
-        rel="stylesheet">
-    <!-- Supabase JS Client Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Razorpay Checkout SDK -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <!-- Lenis Hardware-Accelerated Smooth Scroll -->
-    <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
-    <!-- Trustpilot Official Widget Bootstrap Script -->
-    <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>
+    
+    <!-- Core Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- High-Performance Asynchronous Google Fonts -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600;700&family=Great+Vibes&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600;700&family=Great+Vibes&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@700;800;900&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Caveat:wght@600;700&family=Great+Vibes&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@700;800;900&display=swap">
+    </noscript>
+
+    <!-- Supabase JS Client Library (Deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <!-- Lenis Hardware-Accelerated Smooth Scroll (Deferred) -->
+    <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js" defer></script>
 </head>
 
 <body class="dark-theme">
@@ -135,7 +138,7 @@
         <!-- HERO SECTION (Editorial Agency Style) -->
         <section id="hero" class="hero-section">
             <div class="fixed-canvas-wrapper">
-                <video class="hero-bg-video" autoplay muted loop playsinline preload="auto">
+                <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata">
                     <source src="https://yjgbzipdvhgdftxdlccx.supabase.co/storage/v1/object/public/assets/showcase-video.mp4" type="video/mp4">
                     <source src="assets/video.mp4" type="video/mp4">
                     <source src="public/assets/video.mp4" type="video/mp4">
@@ -196,56 +199,56 @@
                             <!-- Video 1 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/1.mov" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/1.mov" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 2 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/M%20CONVENTION%20OF%20JAGA%20ANNA.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/M%20CONVENTION%20OF%20JAGA%20ANNA.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 3 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/SS%20CONVENTION%20KALAHASTRI.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/SS%20CONVENTION%20KALAHASTRI.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 4 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/raghul%20food%20items%20video%20oof%20RC.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/raghul%20food%20items%20video%20oof%20RC.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 5 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/raghul%20convention%20of%20RC%201.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/raghul%20convention%20of%20RC%201.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 6 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/farm%20house%20video.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/farm%20house%20video.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 7 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/cs%20convention%20of%20jaga%20anna.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/cs%20convention%20of%20jaga%20anna.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
 
                             <!-- Video 8 -->
                             <div class="reel-card reveal-scale">
                                 <div class="reel-video-box">
-                                    <video src="videos/august%2015%20reel.mp4" autoplay loop muted playsinline preload="auto"></video>
+                                    <video src="videos/august%2015%20reel.mp4" loop muted playsinline preload="none" loading="lazy"></video>
                                 </div>
                             </div>
                         </div>
@@ -501,7 +504,7 @@
                     <div class="split-visual-card aerial-video-player-card"
                         style="background: linear-gradient(135deg, rgba(0,255,136,0.12) 0%, rgba(9,13,11,0.92) 100%); border: 1px solid var(--border-glow); padding: 24px; border-radius: 32px; backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
                         <div class="client-video-wrapper">
-                            <video controls playsinline preload="metadata" class="aerial-bridge-video"
+                            <video controls playsinline preload="none" class="aerial-bridge-video"
                                 style="width: 100%; aspect-ratio: 16 / 9; border-radius: 20px; border: 1px solid var(--border-card); background: rgba(0, 0, 0, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); display: block; object-fit: cover;">
                                 <source src="https://yjgbzipdvhgdftxdlccx.supabase.co/storage/v1/object/public/assets/showcase-video.mp4" type="video/mp4">
                                 <source src="assets/video.mp4" type="video/mp4">
@@ -977,9 +980,9 @@
         </div>
     </div>
 
-    <script src="js/asset-loader.js"></script>
-    <script src="js/three-scene.js"></script>
-    <script src="script.js"></script>
+    <script src="js/asset-loader.js" defer></script>
+    <script src="js/three-scene.js" defer></script>
+    <script src="script.js" defer></script>
 </body>
 
 </html>

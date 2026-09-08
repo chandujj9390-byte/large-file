@@ -3411,7 +3411,7 @@
 
         function processBatch() {
             if (loadQueue.length === 0) return;
-            const BATCH_SIZE = 4;
+            const BATCH_SIZE = 2;
             const batch = loadQueue.splice(0, BATCH_SIZE);
             let batchLoaded = 0;
 
@@ -3419,13 +3419,22 @@
                 loadFrame(idx, () => {
                     batchLoaded++;
                     if (batchLoaded === batch.length) {
-                        setTimeout(processBatch, 16);
+                        if ('requestIdleCallback' in window) {
+                            requestIdleCallback(processBatch, { timeout: 100 });
+                        } else {
+                            setTimeout(processBatch, 40);
+                        }
                     }
                 });
             });
         }
 
-        setTimeout(processBatch, 50);
+        // Defer batch queue until browser is idle after initial render
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(processBatch, { timeout: 1000 });
+        } else {
+            setTimeout(processBatch, 800);
+        }
 
         window.addEventListener('scroll', updateScroll, { passive: true });
         window.addEventListener('resize', resize, { passive: true });
@@ -3441,7 +3450,7 @@
     }
 
     // ----------------------------------------------------------------------
-    // PRELOADER ENGINE & FAST FADE OUT
+    // PRELOADER ENGINE & INSTANT ZERO-DELAY FADE OUT
     // ----------------------------------------------------------------------
     function hidePreloader() {
         const preloader = document.getElementById('preloader');
@@ -3451,15 +3460,43 @@
     }
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(hidePreloader, 200);
+        hidePreloader();
     } else {
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(hidePreloader, 200);
+        document.addEventListener('DOMContentLoaded', hidePreloader);
+        window.addEventListener('load', hidePreloader);
+        setTimeout(hidePreloader, 100);
+    }
+
+    // ----------------------------------------------------------------------
+    // HIGH-PERFORMANCE VIDEO LAZY PLAYBACK (INTERSECTION OBSERVER)
+    // ----------------------------------------------------------------------
+    function initVideoObserver() {
+        if (!('IntersectionObserver' in window)) return;
+
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                if (entry.isIntersecting) {
+                    if (video.paused) {
+                        video.play().catch(() => {});
+                    }
+                } else {
+                    if (!video.paused) {
+                        video.pause();
+                    }
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.reel-video-box video, .aerial-bridge-video').forEach(video => {
+            videoObserver.observe(video);
         });
-        window.addEventListener('load', function () {
-            setTimeout(hidePreloader, 200);
-        });
-        setTimeout(hidePreloader, 300);
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initVideoObserver();
+    } else {
+        document.addEventListener('DOMContentLoaded', initVideoObserver);
     }
     // ----------------------------------------------------------------------
     // CONTACT FORM & AUTOMATED WEBSITE SUBSCRIPTION WITH LOVE SYMBOL ❤️
