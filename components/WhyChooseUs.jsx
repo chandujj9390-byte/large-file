@@ -151,7 +151,7 @@ function StatusIcon({ status }) {
   );
 }
 
-export default function WhyChooseUs() {
+function WhyChooseUs() {
   return (
     <section className="relative w-full bg-transparent text-white py-20 sm:py-28 px-4 sm:px-6 lg:px-12 overflow-hidden selection:bg-[#00ff88] selection:text-black">
       <div className="relative max-w-7xl mx-auto">
@@ -351,4 +351,6 @@ export default function WhyChooseUs() {
     </section>
   );
 }
+
+export default React.memo(WhyChooseUs);
 

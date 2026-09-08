@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ============================================================================
@@ -43,55 +43,66 @@ const PORTFOLIO_PROJECTS = [
   },
   {
     id: "proj-4",
-    title: "High-End Beauty & Fashion Retouching",
+    title: "Verve Fashion – Lookbook Redux",
     category: "Photo Editing",
-    subtitle: "Micro skin texture preservation & studio frequency separation",
+    subtitle: "Editorial high-end beauty and garment retouching",
     mediaType: "image",
-    mediaSrc: "images/IMG_0298.JPG.jpeg",
-    tags: ["Editorial", "Frequency Separation", "8K Master"],
+    mediaSrc: "images/verve-fashion.jpg",
+    tags: ["Color Correction", "Skin Retouch", "Lookbook"],
     year: "2024",
     link: "#",
   },
   {
     id: "proj-5",
-    title: "Arne Creative Studio – 3D Web Architecture",
-    category: "Web Development",
-    subtitle: "Next.js 14, WebGL shaders & high-conversion interactive UI",
+    title: "Apex Horizon – Architectural Walkthrough",
+    category: "Video Editing",
+    subtitle: "Drone footage pacing, speed maps, and ambient soundscapes",
     mediaType: "image",
-    mediaSrc: "images/website-design-showcase.jpg",
-    tags: ["Next.js", "Tailwind CSS", "Framer Motion", "GSAP"],
+    mediaSrc: "images/apex-horizon.jpg",
+    tags: ["4K Real Estate", "Pacing & Speed Ramps", "Audio Mastering"],
     year: "2024",
     link: "#",
   },
   {
     id: "proj-6",
-    title: "Fintech SaaS Platform & Design System",
-    category: "Web Development",
-    subtitle: "Real-time analytics dashboard with sub-second latency",
+    title: "Pulse Music Festival – Official Teaser",
+    category: "Video Editing",
+    subtitle: "Bass drops, glitch transitions, and kinetic typography",
     mediaType: "image",
-    mediaSrc: "images/brand-design-system.jpg",
-    tags: ["React", "TypeScript", "Tailwind", "REST API"],
+    mediaSrc: "images/pulse-festival.jpg",
+    tags: ["Glitch VFX", "Kinetic Type", "Festival Aftermovie"],
     year: "2024",
     link: "#",
   },
   {
     id: "proj-7",
-    title: "Hyper-Personalized Mobile Experience",
-    category: "App Development",
-    subtitle: "Cross-platform iOS & Android mobile ecosystem with offline AI sync",
+    title: "Nebula App – Next-Gen SaaS Landing Page",
+    category: "Web Development",
+    subtitle: "Ultra-modern dark mode landing page with smooth micro-interactions",
     mediaType: "image",
-    mediaSrc: "images/IMG_0277.PNG",
-    tags: ["Flutter", "React Native", "SwiftUI", "Coming Soon"],
-    year: "2025",
+    mediaSrc: "images/web-dev-1.jpg",
+    tags: ["Next.js 14", "Tailwind CSS", "Framer Motion"],
+    year: "2024",
+    link: "#",
+  },
+  {
+    id: "proj-8",
+    title: "Aura Commerce – Luxury Headless Store",
+    category: "Web Development",
+    subtitle: "High-performance luxury e-commerce experience with sub-second page loads",
+    mediaType: "image",
+    mediaSrc: "images/web-dev-2.jpg",
+    tags: ["React", "Shopify Plus", "Tailwind CSS"],
+    year: "2024",
     link: "#",
   },
 ];
 
 // ============================================================================
-// 2. CATEGORIES CONFIGURATION
+// 2. CATEGORY TABS
 // ============================================================================
 const CATEGORIES = [
-  { id: "all", label: "All" },
+  { id: "all", label: "All Works", filterKey: "all" },
   { id: "video", label: "Video Editing", filterKey: "Video Editing" },
   { id: "photo", label: "Photo Editing", filterKey: "Photo Editing" },
   { id: "web", label: "Web Development", filterKey: "Web Development" },
@@ -105,16 +116,18 @@ const CATEGORIES = [
   },
 ];
 
-export default function SelectedWorks() {
+function SelectedWorks() {
   const [activeTab, setActiveTab] = useState("all");
   const [hoveredCard, setHoveredCard] = useState(null);
 
-  // Filter projects according to the active tab
-  const filteredProjects = PORTFOLIO_PROJECTS.filter((project) => {
-    if (activeTab === "all") return true;
-    const currentCategory = CATEGORIES.find((c) => c.id === activeTab);
-    return currentCategory ? project.category === currentCategory.filterKey : true;
-  });
+  // Filter projects with useMemo
+  const filteredProjects = useMemo(() => {
+    return PORTFOLIO_PROJECTS.filter((project) => {
+      if (activeTab === "all") return true;
+      const currentCategory = CATEGORIES.find((c) => c.id === activeTab);
+      return currentCategory ? project.category === currentCategory.filterKey : true;
+    });
+  }, [activeTab]);
 
   return (
     <section className="relative w-full bg-[#0a0a0a] text-white py-24 sm:py-32 px-4 sm:px-6 lg:px-12 overflow-hidden selection:bg-[#00ff88] selection:text-black">
@@ -382,3 +395,6 @@ export default function SelectedWorks() {
     </section>
   );
 }
+
+export default React.memo(SelectedWorks);
+

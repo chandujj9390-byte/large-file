@@ -1,12 +1,15 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Sphere, TorusKnot, Environment } from '@react-three/drei';
+'use client';
+
+import React, { useRef, useState, useEffect, Suspense, memo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 /**
  * Abstract 3D Floating Geometry with Monochromatic Red Shader & Silhouette Effect
+ * Reads state.pointer from R3F frame loop directly to eliminate React component re-renders.
  */
-function AbstractRedObject({ mousePosition }) {
+const AbstractRedObject = memo(function AbstractRedObject() {
   const meshRef = useRef();
   const innerRef = useRef();
 
@@ -18,16 +21,16 @@ function AbstractRedObject({ mousePosition }) {
     meshRef.current.rotation.y += delta * 0.28;
     meshRef.current.rotation.z += delta * 0.08;
 
-    // Subtle interactive mouse parallax
-    if (mousePosition) {
+    // Subtle interactive mouse parallax via zero-overhead internal state.pointer
+    if (state && state.pointer) {
       meshRef.current.position.x = THREE.MathUtils.lerp(
         meshRef.current.position.x,
-        mousePosition.x * 0.6,
+        state.pointer.x * 0.6,
         0.05
       );
       meshRef.current.position.y = THREE.MathUtils.lerp(
         meshRef.current.position.y,
-        mousePosition.y * 0.6,
+        state.pointer.y * 0.6,
         0.05
       );
     }
@@ -78,12 +81,12 @@ function AbstractRedObject({ mousePosition }) {
       </group>
     </Float>
   );
-}
+});
 
 /**
  * Dramatic Monochromatic Red Lighting Rig & Backlight
  */
-function RedCinematicLighting() {
+const RedCinematicLighting = memo(function RedCinematicLighting() {
   return (
     <>
       {/* Deep Dark Ambient Base */}
@@ -113,12 +116,12 @@ function RedCinematicLighting() {
       <pointLight position={[3, -3, 2]} intensity={2.5} color="#990018" />
     </>
   );
-}
+});
 
 /**
- * Background Canvas Scene
+ * Background Canvas Scene (Heavy WebGL Scene - Memoized)
  */
-function SceneCanvas({ mousePosition }) {
+const SceneCanvas = memo(function SceneCanvas() {
   return (
     <Canvas
       camera={{ position: [0, 0, 4.5], fov: 45 }}
@@ -145,32 +148,20 @@ function SceneCanvas({ mousePosition }) {
       <RedCinematicLighting />
 
       <Suspense fallback={null}>
-        <AbstractRedObject mousePosition={mousePosition} />
+        <AbstractRedObject />
       </Suspense>
     </Canvas>
   );
-}
+});
 
 /**
- * ThreeScene Main Export (Strictly Client-Side Safe for Vercel / Next.js / React SSR)
+ * ThreeScene Main Export (Strictly Client-Side Safe & Performance-Optimized)
  */
-export default function ThreeScene({ children }) {
+function ThreeScene({ children }) {
   const [mounted, setMounted] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // Strictly ensure window & DOM are available before mounting 3D WebGL context
   useEffect(() => {
     setMounted(true);
-
-    const handleMouseMove = (e) => {
-      if (typeof window === 'undefined') return;
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      setMousePosition({ x, y });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   if (!mounted || typeof window === 'undefined') {
@@ -191,10 +182,10 @@ export default function ThreeScene({ children }) {
 
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100%', overflowX: 'hidden', overflowY: 'visible' }}>
-      {/* 3D Background Canvas */}
-      <SceneCanvas mousePosition={mousePosition} />
+      {/* 3D Background Canvas (Zero React state overhead) */}
+      <SceneCanvas />
 
-      {/* UI Overlay Container (Sits securely on top of 3D Canvas with pointer interactions) */}
+      {/* UI Overlay Container */}
       <div
         style={{
           position: 'relative',
@@ -209,3 +200,5 @@ export default function ThreeScene({ children }) {
     </div>
   );
 }
+
+export default memo(ThreeScene);

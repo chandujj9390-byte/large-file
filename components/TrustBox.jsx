@@ -82,4 +82,4 @@ const TrustBox = ({
   );
 };
 
-export default TrustBox;
+export default React.memo(TrustBox);

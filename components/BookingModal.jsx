@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useForm } from 'react-hook-form';
 
 // Arne Stories Curated Production Services
 const ARNE_SERVICES = [
@@ -15,26 +16,172 @@ const ARNE_SERVICES = [
 ];
 
 /**
- * BookingModal — 2-Step Cinematic Next.js Booking Flow with Review Screen
- * Step 1: Client Details Form
- * Step 2: "Check at Once" Review Screen (Edit Details / Confirm & Book Now)
- * Step 3: Final Confirmation Screen
+ * Modal Ambient Glow (Memoized)
  */
-export default function BookingModal({ isOpen, onClose }) {
+const ModalGlow = memo(function ModalGlow() {
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-[#00ff88]/10 blur-[160px] rounded-full pointer-events-none" />
+  );
+});
+
+/**
+ * Modal Step Progress Bar (Memoized)
+ */
+const ModalProgressBar = memo(function ModalProgressBar({ step }) {
+  if (step >= 3) return null;
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      <div className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${step >= 1 ? 'bg-[#00ff88] shadow-[0_0_8px_#00ff88]' : 'bg-white/10'}`} />
+      <div className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${step >= 2 ? 'bg-[#00ff88] shadow-[0_0_8px_#00ff88]' : 'bg-white/10'}`} />
+    </div>
+  );
+});
+
+/**
+ * BookingModal Review Details Card (Memoized)
+ */
+const ModalReviewCard = memo(function ModalReviewCard({ data }) {
+  return (
+    <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 text-left space-y-3 text-xs divide-y divide-white/5">
+      <div className="flex justify-between items-center pt-1 first:pt-0">
+        <span className="text-gray-400 font-medium">Name:</span>
+        <span className="font-bold text-white text-right">{data.fullName}</span>
+      </div>
+      <div className="flex justify-between items-center pt-3">
+        <span className="text-gray-400 font-medium">Mobile Number:</span>
+        <span className="font-mono font-bold text-[#00ff88] text-right">
+          +91 {data.mobile ? data.mobile.replace(/\D/g, '').slice(-10) : ''}
+        </span>
+      </div>
+      <div className="flex justify-between items-center pt-3">
+        <span className="text-gray-400 font-medium">Email:</span>
+        <span className="font-medium text-gray-200 text-right">{data.email}</span>
+      </div>
+      <div className="flex justify-between items-center pt-3">
+        <span className="text-gray-400 font-medium">Service:</span>
+        <span className="font-bold text-white text-right">{data.service}</span>
+      </div>
+      <div className="flex justify-between items-center pt-3">
+        <span className="text-gray-400 font-medium">Selected Date:</span>
+        <span className="font-semibold text-gray-200 text-right">Immediate / Flexible</span>
+      </div>
+      <div className="flex justify-between items-center pt-3">
+        <span className="text-gray-400 font-medium">Selected Slot:</span>
+        <span className="font-semibold text-gray-200 text-right">Morning (10:00 AM - 01:00 PM)</span>
+      </div>
+      <div className="pt-3">
+        <span className="block text-gray-400 font-medium mb-1">Project Brief:</span>
+        <p className="text-gray-300 leading-relaxed bg-black/50 p-3 rounded-xl border border-white/5">
+          {data.requirements?.trim() || 'No additional requirements specified.'}
+        </p>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * BookingModal Success View (Memoized)
+ */
+const ModalSuccessView = memo(function ModalSuccessView({ data, onClose }) {
+  return (
+    <div className="text-center py-3 sm:py-5 space-y-4 animate-in fade-in">
+      <div className="w-14 h-14 rounded-full bg-[#00ff88]/15 border border-[#00ff88]/40 flex items-center justify-center mx-auto text-[#00ff88] shadow-[0_0_25px_rgba(0,255,136,0.3)] animate-pulse">
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+
+      <div className="space-y-1.5">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#00ff88] bg-[#00ff88]/10 px-3 py-1 rounded-full border border-[#00ff88]/20">
+          Booking Reference #{data.bookingId}
+        </span>
+        <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+          Booking Submitted!
+        </h2>
+        <p className="text-xs text-gray-300 max-w-sm mx-auto leading-relaxed">
+          We have received your request and our team will contact you shortly.
+        </p>
+      </div>
+
+      {/* Direct WhatsApp & Gmail Quick Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left my-2">
+        <a
+          href={`https://wa.me/919390662637?text=${encodeURIComponent(
+            `Hi ARNE Works, I have submitted booking #${data.bookingId} for ${data.service}. Name: ${data.fullName}.`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex flex-col justify-between p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 hover:border-[#25D366] transition-all"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">💬</span>
+            <div>
+              <span className="block text-[9px] font-extrabold text-[#25D366] uppercase">Business WhatsApp</span>
+              <span className="block text-xs font-bold text-white font-mono">+91 9390662637</span>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-[#25D366] text-right mt-1">Chat on WhatsApp ↗</span>
+        </a>
+
+        <a
+          href={`https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(
+            `ARNE Booking: ${data.bookingId} - ${data.fullName}`
+          )}&body=${encodeURIComponent(
+            `Hi ARNE Works Team,\n\nI have submitted my booking #${data.bookingId} for ${data.service}.\nClient Name: ${data.fullName}\nPhone: ${data.mobile}\nEmail: ${data.email}\n\nLooking forward to hearing from you!`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex flex-col justify-between p-3 rounded-xl bg-[#ea4335]/10 border border-[#ea4335]/30 hover:border-[#ea4335] transition-all"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">✉️</span>
+            <div>
+              <span className="block text-[9px] font-extrabold text-[#ff7b72] uppercase">Business Gmail</span>
+              <span className="block text-[11px] font-bold text-white truncate max-w-[130px]">arneworks26@gmail.com</span>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-[#ff7b72] text-right mt-1">Open Gmail ↗</span>
+        </a>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00ff88] to-[#10b981] text-black font-extrabold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_20px_rgba(0,255,136,0.3)] cursor-pointer"
+      >
+        Done & Close
+      </button>
+    </div>
+  );
+});
+
+/**
+ * BookingModal — High-Performance Cinematic Next.js Booking Modal
+ * Uses react-hook-form uncontrolled inputs to completely eliminate keystroke input lag.
+ */
+function BookingModal({ isOpen, onClose }) {
   // Step state: 1 = Form, 2 = Review Details, 3 = Success Confirmation
   const [currentStep, setCurrentStep] = useState(1);
-
-  const [formData, setFormData] = useState({
-    fullName: '',
-    mobile: '',
-    email: '',
-    service: '',
-    requirements: ''
-  });
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [submissionError, setSubmissionError] = useState('');
   const [bookingSuccessData, setBookingSuccessData] = useState(null);
+
+  // Uncontrolled form state
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    reset,
+    formState: { errors }
+  } = useForm({
+    mode: 'onSubmit',
+    defaultValues: {
+      fullName: '',
+      mobile: '',
+      email: '',
+      service: '',
+      requirements: ''
+    }
+  });
 
   // Manage body scroll lock and cleanup safely
   useEffect(() => {
@@ -48,66 +195,27 @@ export default function BookingModal({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setError('');
-
-    if (name === 'mobile') {
-      const digitsOnly = value.replace(/\D/g, '');
-      setFormData((prev) => ({ ...prev, mobile: digitsOnly }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+  const servicesList = useMemo(() => ARNE_SERVICES, []);
 
   // Step 1 -> Step 2: Validate and Transition to Review Screen
-  const handleProceedToReview = (e) => {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    setError('');
-
-    const { fullName, mobile, email, service } = formData;
-
-    if (!fullName.trim()) {
-      setError('Please enter your full name.');
-      return;
-    }
-
-    const cleanMobile = mobile.replace(/\D/g, '');
-    if (!cleanMobile || cleanMobile.length < 10) {
-      setError('Please enter a valid 10-digit mobile number.');
-      return;
-    }
-
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!email || !emailRegex.test(email.trim())) {
-      setError('Please enter a valid Gmail / email address.');
-      return;
-    }
-
-    if (!service) {
-      setError('Please select a creative service.');
-      return;
-    }
-
-    // Advance to Step 2 Review
+  const handleProceedToReview = useCallback(() => {
+    setSubmissionError('');
     setCurrentStep(2);
-  };
+  }, []);
 
   // Step 2 -> Step 1: Back to Edit Details (Preserves all state)
-  const handleBackToEdit = () => {
-    setError('');
+  const handleBackToEdit = useCallback(() => {
+    setSubmissionError('');
     setCurrentStep(1);
-  };
+  }, []);
 
   // Step 2 -> Step 3: Confirm & Submit Verified Payload to Backend
-  const handleFinalConfirmBooking = async () => {
-    setError('');
+  const handleFinalConfirmBooking = useCallback(async () => {
+    setSubmissionError('');
     setLoading(true);
 
-    const { fullName, mobile, email, service, requirements } = formData;
-    const cleanMobile = mobile.replace(/\D/g, '');
+    const formValues = getValues();
+    const cleanMobile = (formValues.mobile || '').replace(/\D/g, '');
     const formattedPhone = cleanMobile.startsWith('91') && cleanMobile.length === 12
       ? `+${cleanMobile}`
       : (cleanMobile.startsWith('+') ? cleanMobile : `+91${cleanMobile.slice(-10)}`);
@@ -119,11 +227,11 @@ export default function BookingModal({ isOpen, onClose }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          fullName: fullName.trim(),
+          fullName: formValues.fullName.trim(),
           mobile: formattedPhone,
-          email: email.trim().toLowerCase(),
-          service: service,
-          requirements: requirements.trim() || 'No specific requirements specified.'
+          email: formValues.email.trim().toLowerCase(),
+          service: formValues.service,
+          requirements: formValues.requirements?.trim() || 'No specific requirements specified.'
         }),
       });
 
@@ -133,37 +241,45 @@ export default function BookingModal({ isOpen, onClose }) {
         throw new Error(data.message || 'Failed to submit booking request.');
       }
 
-      // Successful Booking -> Switch to Step 3
       setBookingSuccessData({
         bookingId: data.bookingId || data.id || `ARNE-${Math.floor(100000 + Math.random() * 900000)}`,
-        fullName: fullName.trim(),
-        service: service,
-        email: email.trim().toLowerCase(),
+        fullName: formValues.fullName.trim(),
+        service: formValues.service,
+        email: formValues.email.trim().toLowerCase(),
         mobile: formattedPhone,
-        requirements: requirements.trim()
+        requirements: formValues.requirements?.trim() || ''
       });
 
       setCurrentStep(3);
     } catch (err) {
       console.error('[Booking Submit Error]:', err);
-      setError(err.message || 'Something went wrong. Please try again.');
+      setSubmissionError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [getValues]);
 
-  const handleModalClose = () => {
-    setError('');
+  const handleModalClose = useCallback(() => {
+    setSubmissionError('');
     setCurrentStep(1);
     setBookingSuccessData(null);
+    reset();
     onClose?.();
-  };
+  }, [onClose, reset]);
+
+  const activeReviewData = useMemo(() => {
+    return currentStep === 2 ? getValues() : null;
+  }, [currentStep, getValues]);
+
+  if (!isOpen) return null;
+
+  const firstError = errors.fullName?.message || errors.mobile?.message || errors.email?.message || errors.service?.message || submissionError;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto">
       
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-[#00ff88]/10 blur-[160px] rounded-full pointer-events-none" />
+      <ModalGlow />
 
       {/* Main Modal Card */}
       <div className="relative w-full max-w-lg bg-[#0c100e]/95 border border-[#00ff88]/30 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(0,255,136,0.1)] text-white font-sans transition-all my-auto">
@@ -180,25 +296,20 @@ export default function BookingModal({ isOpen, onClose }) {
         </button>
 
         {/* Step Progress Bar */}
-        {currentStep < 3 && (
-          <div className="flex items-center gap-2 mb-6">
-            <div className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${currentStep >= 1 ? 'bg-[#00ff88] shadow-[0_0_8px_#00ff88]' : 'bg-white/10'}`} />
-            <div className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${currentStep >= 2 ? 'bg-[#00ff88] shadow-[0_0_8px_#00ff88]' : 'bg-white/10'}`} />
-          </div>
-        )}
+        <ModalProgressBar step={currentStep} />
 
         {/* Error Alert Box */}
-        {error && (
+        {firstError && (
           <div className="mb-4 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2.5 animate-in fade-in">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{error}</span>
+            <span>{firstError}</span>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 1: CLIENT DETAILS FORM                                               */}
+        {/* STEP 1: CLIENT DETAILS FORM (react-hook-form Uncontrolled Inputs)          */}
         {/* ========================================================================= */}
         {currentStep === 1 && (
           <div>
@@ -215,7 +326,7 @@ export default function BookingModal({ isOpen, onClose }) {
               </p>
             </div>
 
-            <form onSubmit={handleProceedToReview} className="space-y-4">
+            <form onSubmit={handleSubmit(handleProceedToReview)} className="space-y-4">
               {/* Full Name */}
               <div>
                 <label className="block text-[11px] font-extrabold uppercase tracking-wider text-gray-300 mb-1.5">
@@ -223,11 +334,11 @@ export default function BookingModal({ isOpen, onClose }) {
                 </label>
                 <input
                   type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
                   placeholder="e.g. Rahul Sharma"
-                  required
+                  {...register('fullName', {
+                    required: 'Please enter your full name.',
+                    minLength: { value: 2, message: 'Name must be at least 2 characters.' }
+                  })}
                   className="w-full bg-white/[0.04] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors"
                 />
               </div>
@@ -244,13 +355,16 @@ export default function BookingModal({ isOpen, onClose }) {
                     </span>
                     <input
                       type="tel"
-                      name="mobile"
-                      value={formData.mobile}
-                      onChange={handleChange}
                       placeholder="9876543210"
                       maxLength={10}
                       inputMode="numeric"
-                      required
+                      {...register('mobile', {
+                        required: 'Please enter your 10-digit mobile number.',
+                        pattern: {
+                          value: /^[0-9]{10}$/,
+                          message: 'Please enter a valid 10-digit mobile number.'
+                        }
+                      })}
                       className="w-full bg-transparent px-3 py-3 text-sm text-white placeholder-gray-500 outline-none"
                     />
                   </div>
@@ -258,94 +372,85 @@ export default function BookingModal({ isOpen, onClose }) {
 
                 <div>
                   <label className="block text-[11px] font-extrabold uppercase tracking-wider text-gray-300 mb-1.5">
-                    Client Gmail / Email <span className="text-[#00ff88]">*</span>
+                    Client Gmail <span className="text-[#00ff88]">*</span>
                   </label>
                   <input
                     type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
                     placeholder="name@gmail.com"
-                    required
+                    {...register('email', {
+                      required: 'Please enter your email address.',
+                      pattern: {
+                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        message: 'Please enter a valid Gmail / email address.'
+                      }
+                    })}
                     className="w-full bg-white/[0.04] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors"
                   />
                 </div>
               </div>
 
-              {/* Selected Service */}
+              {/* Service Selection */}
               <div>
                 <label className="block text-[11px] font-extrabold uppercase tracking-wider text-gray-300 mb-1.5">
-                  Selected Service <span className="text-[#00ff88]">*</span>
+                  Select Service <span className="text-[#00ff88]">*</span>
                 </label>
                 <div className="relative">
                   <select
-                    name="service"
-                    value={formData.service}
-                    onChange={handleChange}
-                    required
+                    {...register('service', { required: 'Please select a creative service.' })}
                     className="w-full bg-[#0c100e] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
                   >
-                    <option value="" disabled>Select a creative service...</option>
-                    {ARNE_SERVICES.map((srv, idx) => (
-                      <option key={idx} value={srv} className="bg-[#0c100e] text-white">
+                    <option value="" disabled className="text-gray-500">-- Select a Creative Service --</option>
+                    {servicesList.map((srv, idx) => (
+                      <option key={idx} value={srv} className="text-white bg-[#0c100e]">
                         {srv}
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 text-xs">
+                    ▼
                   </div>
                 </div>
               </div>
 
-              {/* Requirements */}
+              {/* Project Brief */}
               <div>
                 <label className="block text-[11px] font-extrabold uppercase tracking-wider text-gray-300 mb-1.5">
-                  Requirements / Project Notes
+                  Project Brief / Notes
                 </label>
                 <textarea
-                  name="requirements"
-                  value={formData.requirements}
-                  onChange={handleChange}
                   rows={3}
-                  placeholder="Describe your project style, footage length, references, etc."
+                  placeholder="Describe your style, timeline, reference links..."
+                  {...register('requirements')}
                   className="w-full bg-white/[0.04] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition-colors resize-none"
                 />
               </div>
 
-              {/* Step 1 CTA: Review Booking Details */}
+              {/* Step 1 Submit Button */}
               <button
                 type="submit"
-                className="w-full mt-2 py-4 px-6 rounded-xl bg-gradient-to-r from-[#00ff88] to-[#10b981] hover:opacity-95 text-black font-extrabold text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(0,255,136,0.35)] hover:shadow-[0_0_35px_rgba(0,255,136,0.6)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-[#00ff88] via-[#10b981] to-[#00cc6a] text-black font-extrabold text-xs uppercase tracking-widest hover:opacity-95 hover:shadow-[0_0_30px_rgba(0,255,136,0.4)] transition-all cursor-pointer flex items-center justify-center gap-2 mt-2"
               >
-                <span>Review Booking Details</span>
-                <span className="text-base font-bold">→</span>
+                <span>Proceed to Review Details</span>
+                <span>→</span>
               </button>
-
-              <p className="text-[11px] text-center text-gray-500 mt-2">
-                🔒 You can review and verify all details in the next step before final submission.
-              </p>
             </form>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 2: "VERIFY DETAILS" SCREEN (FORWARD TO WHATSAPP / GMAIL)              */}
+        {/* STEP 2: "CHECK AT ONCE" REVIEW SCREEN                                     */}
         {/* ========================================================================= */}
-        {currentStep === 2 && (
-          <div className="space-y-5 animate-in fade-in">
-            {/* Header */}
-            <div className="text-center mb-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-[#00ff88] text-[10px] font-extrabold tracking-widest uppercase mb-2">
-                <span>🔍</span> Step 2 of 2
+        {currentStep === 2 && activeReviewData && (
+          <div className="space-y-4 animate-in fade-in">
+            <div className="text-left mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-[#00ff88] text-[10px] font-extrabold tracking-widest uppercase mb-1.5">
+                <span>🔍</span> Step 2 of 2: Review Screen
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Verify Details
+              <h2 className="text-xl font-bold tracking-tight text-white">
+                Review Details Before Confirmation
               </h2>
               <p className="text-xs text-gray-400 mt-1">
-                Please double-check your booking details before forwarding.
+                Please check your information once before confirming.
               </p>
             </div>
 
@@ -364,40 +469,7 @@ export default function BookingModal({ isOpen, onClose }) {
             </div>
 
             {/* Summary Review Card */}
-            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 text-left space-y-3 text-xs divide-y divide-white/5">
-              <div className="flex justify-between items-center pt-1 first:pt-0">
-                <span className="text-gray-400 font-medium">Name:</span>
-                <span className="font-bold text-white text-right">{formData.fullName}</span>
-              </div>
-              <div className="flex justify-between items-center pt-3">
-                <span className="text-gray-400 font-medium">Mobile Number:</span>
-                <span className="font-mono font-bold text-[#00ff88] text-right">
-                  +91 {formData.mobile.slice(-10)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-3">
-                <span className="text-gray-400 font-medium">Email:</span>
-                <span className="font-medium text-gray-200 text-right">{formData.email}</span>
-              </div>
-              <div className="flex justify-between items-center pt-3">
-                <span className="text-gray-400 font-medium">Service:</span>
-                <span className="font-bold text-white text-right">{formData.service}</span>
-              </div>
-              <div className="flex justify-between items-center pt-3">
-                <span className="text-gray-400 font-medium">Selected Date:</span>
-                <span className="font-semibold text-gray-200 text-right">Immediate / Flexible</span>
-              </div>
-              <div className="flex justify-between items-center pt-3">
-                <span className="text-gray-400 font-medium">Selected Slot:</span>
-                <span className="font-semibold text-gray-200 text-right">Morning (10:00 AM - 01:00 PM)</span>
-              </div>
-              <div className="pt-3">
-                <span className="block text-gray-400 font-medium mb-1">Project Brief:</span>
-                <p className="text-gray-300 leading-relaxed bg-black/50 p-3 rounded-xl border border-white/5">
-                  {formData.requirements.trim() || 'No additional requirements specified.'}
-                </p>
-              </div>
-            </div>
+            <ModalReviewCard data={activeReviewData} />
 
             {/* Forwarding Options (WhatsApp & Gmail) */}
             <div className="pt-2">
@@ -412,13 +484,13 @@ export default function BookingModal({ isOpen, onClose }) {
                   onClick={() => {
                     const formattedMsg = 
                       `📌 *New Slot Confirmed by Client*%0A` +
-                      `• *Client:* ${encodeURIComponent(formData.fullName)}%0A` +
-                      `• *Phone:* %2B91${encodeURIComponent(formData.mobile.slice(-10))}%0A` +
-                      `• *Email:* ${encodeURIComponent(formData.email)}%0A` +
-                      `• *Service:* ${encodeURIComponent(formData.service)}%0A` +
+                      `• *Client:* ${encodeURIComponent(activeReviewData.fullName)}%0A` +
+                      `• *Phone:* %2B91${encodeURIComponent(activeReviewData.mobile ? activeReviewData.mobile.replace(/\D/g, '').slice(-10) : '')}%0A` +
+                      `• *Email:* ${encodeURIComponent(activeReviewData.email)}%0A` +
+                      `• *Service:* ${encodeURIComponent(activeReviewData.service)}%0A` +
                       `• *Date:* Immediate%20%2F%20Flexible%0A` +
                       `• *Slot:* Morning%20(10:00%20AM%20-%2001:00%20PM)%0A` +
-                      `• *Project Brief:* ${encodeURIComponent(formData.requirements.trim() || 'No specific notes.')}`;
+                      `• *Project Brief:* ${encodeURIComponent(activeReviewData.requirements?.trim() || 'No specific notes.')}`;
                     const waNum = process.env.NEXT_PUBLIC_BUSINESS_WHATSAPP || '919390662637';
                     window.open(`https://wa.me/${waNum}?text=${formattedMsg}`, '_blank', 'noopener,noreferrer');
                   }}
@@ -471,76 +543,12 @@ export default function BookingModal({ isOpen, onClose }) {
         {/* STEP 3: FINAL SUCCESS CONFIRMATION SCREEN                                 */}
         {/* ========================================================================= */}
         {currentStep === 3 && bookingSuccessData && (
-          <div className="text-center py-3 sm:py-5 space-y-4 animate-in fade-in">
-            <div className="w-14 h-14 rounded-full bg-[#00ff88]/15 border border-[#00ff88]/40 flex items-center justify-center mx-auto text-[#00ff88] shadow-[0_0_25px_rgba(0,255,136,0.3)] animate-pulse">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#00ff88] bg-[#00ff88]/10 px-3 py-1 rounded-full border border-[#00ff88]/20">
-                Booking Reference #{bookingSuccessData.bookingId}
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-                Booking Submitted!
-              </h2>
-              <p className="text-xs text-gray-300 max-w-sm mx-auto leading-relaxed">
-                We have received your request and our team will contact you shortly.
-              </p>
-            </div>
-
-            {/* Direct WhatsApp & Gmail Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left my-2">
-              <a
-                href={`https://wa.me/919390662637?text=${encodeURIComponent(
-                  `Hi ARNE Works, I have submitted booking #${bookingSuccessData.bookingId} for ${bookingSuccessData.service}. Name: ${bookingSuccessData.fullName}.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col justify-between p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 hover:border-[#25D366] transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl">💬</span>
-                  <div>
-                    <span className="block text-[9px] font-extrabold text-[#25D366] uppercase">Business WhatsApp</span>
-                    <span className="block text-xs font-bold text-white font-mono">+91 9390662637</span>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-[#25D366] text-right mt-1">Chat on WhatsApp ↗</span>
-              </a>
-
-              <a
-                href={`https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(
-                  `ARNE Booking: ${bookingSuccessData.bookingId} - ${bookingSuccessData.fullName}`
-                )}&body=${encodeURIComponent(
-                  `Hi ARNE Works Team,\n\nI have submitted my booking #${bookingSuccessData.bookingId} for ${bookingSuccessData.service}.\nClient Name: ${bookingSuccessData.fullName}\nPhone: ${bookingSuccessData.mobile}\nEmail: ${bookingSuccessData.email}\n\nLooking forward to hearing from you!`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col justify-between p-3 rounded-xl bg-[#ea4335]/10 border border-[#ea4335]/30 hover:border-[#ea4335] transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl">✉️</span>
-                  <div>
-                    <span className="block text-[9px] font-extrabold text-[#ff7b72] uppercase">Business Gmail</span>
-                    <span className="block text-[11px] font-bold text-white truncate max-w-[130px]">arneworks26@gmail.com</span>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-[#ff7b72] text-right mt-1">Open Gmail ↗</span>
-              </a>
-            </div>
-
-            <button
-              onClick={handleModalClose}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00ff88] to-[#10b981] text-black font-extrabold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_20px_rgba(0,255,136,0.3)] cursor-pointer"
-            >
-              Done & Close
-            </button>
-          </div>
+          <ModalSuccessView data={bookingSuccessData} onClose={handleModalClose} />
         )}
 
       </div>
     </div>
   );
 }
+
+export default memo(BookingModal);

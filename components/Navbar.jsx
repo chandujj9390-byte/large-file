@@ -146,3 +146,6 @@ export default function Navbar({ onOpenLoginModal, onOpenBookingModal }) {
     </header>
   );
 }
+
+export default React.memo(Navbar);
+
