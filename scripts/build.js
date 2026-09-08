@@ -36,7 +36,8 @@ const itemsToCopy = [
     'style.css',
     'server.js',
     'vercel.json',
-    'package.json'
+    'package.json',
+    'CNAME'
 ];
 
 itemsToCopy.forEach(item => {
