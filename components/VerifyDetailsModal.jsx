@@ -86,45 +86,6 @@ function VerifyDetailsModal({
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }, [name, mobile, email, service, selectedDate, selectedSlot, projectBrief]);
 
-  // 2. ACTION: Direct Gmail / Default Email Client Compose with OS Deep Linking
-  const handleGmailCompose = useCallback(() => {
-    const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_GMAIL || 'arneworks26@gmail.com';
-    const emailSubject = `New Booking Request: ${name}`;
-
-    const emailBody = 
-      `📌 New Booking Request - Arne Stories\n` +
-      `Client Name: ${name}\n` +
-      `Contact Number: ${mobile}\n` +
-      `Client Email: ${email}\n` +
-      `Service Required: ${service}\n` +
-      `Project Requirements: ${projectBrief}`;
-
-    const encodedEmail = encodeURIComponent(businessEmail);
-    const encodedSubject = encodeURIComponent(emailSubject);
-    const encodedBody = encodeURIComponent(emailBody);
-
-    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/i.test(navigator.userAgent || '');
-
-    if (isIOS) {
-      // Gmail Custom iOS URL Scheme
-      const gmailUrl = `googlegmail:///co?to=${encodedEmail}&subject=${encodedSubject}&body=${encodedBody}`;
-      const mailtoUrl = `mailto:${encodedEmail}?subject=${encodedSubject}&body=${encodedBody}`;
-
-      window.location.href = gmailUrl;
-
-      // Fallback to standard mailto link if Gmail app is not installed
-      setTimeout(() => {
-        if (!document.hidden) {
-          window.location.href = mailtoUrl;
-        }
-      }, 500);
-    } else {
-      // Android / Desktop: Standard mailto opens the default email client natively
-      const mailtoUrl = `mailto:${encodedEmail}?subject=${encodedSubject}&body=${encodedBody}`;
-      window.location.href = mailtoUrl;
-    }
-  }, [name, mobile, email, service, projectBrief]);
-
   if (!isOpen) return null;
 
   return (
@@ -141,67 +102,61 @@ function VerifyDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
-            aria-label="Close modal"
+            aria-label="Close details modal"
+            className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer text-xs"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ✕
           </button>
         )}
 
-        {/* Header Badge & Title */}
-        <div className="text-left mb-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-[#00ff88] text-[10px] font-extrabold tracking-widest uppercase mb-2">
-            <span>⚡</span> STEP 2: VERIFY DETAILS
+        {/* 1. Modal Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#00ff88]/10 border border-[#00ff88]/30 mb-3 shadow-[0_0_20px_rgba(0,255,136,0.2)]">
+            <CheckCircleIcon className="w-6 h-6 text-[#00ff88]" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-            Verify Booking Information
-          </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            Please check your information once before confirming.
+          <h3 className="text-xl font-black tracking-tight text-white uppercase">
+            Verify Your Booking
+          </h3>
+          <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+            Please review the details below before forwarding your slot confirmation.
           </p>
         </div>
 
-        {/* Section Title & Edit Details Shortcut Button */}
-        <div className="mb-2 pb-2 border-b border-white/10 flex items-center justify-between">
-          <h3 className="text-xs font-extrabold tracking-wider uppercase text-gray-300">
-            Client Details
-          </h3>
-          {onEdit && (
-            <button
-              type="button"
-              onClick={onEdit}
-              className="text-[11px] font-bold text-[#00ff88] hover:underline cursor-pointer flex items-center gap-1"
-            >
-              <span>✏️</span> Edit Details
-            </button>
-          )}
+        {/* 2. Compact Booking Metadata Badges */}
+        <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white/[0.03] border border-white/5 rounded-2xl mb-4 text-xs font-mono">
+          <div className="flex items-center gap-1.5 text-gray-300">
+            <span className="text-gray-500">ID:</span>
+            <span className="text-[#00ff88] font-bold">{bookingId}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-gray-400">
+            <span>Studio:</span>
+            <span className="text-white font-semibold">ARNE Works</span>
+          </div>
         </div>
 
-        {/* 3. Details Review Card */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 text-left space-y-3 text-xs divide-y divide-white/5">
-          {/* Row: Name */}
-          <div className="flex justify-between items-center pt-1 first:pt-0">
-            <span className="text-gray-400 font-medium">Name:</span>
+        {/* 3. Detailed Data Summary Container */}
+        <div className="space-y-3 bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-5 text-xs divide-y divide-white/5">
+          {/* Row: Client Name */}
+          <div className="flex justify-between items-center pb-1">
+            <span className="text-gray-400 font-medium">Client Name:</span>
             <span className="font-bold text-white text-right">{name}</span>
           </div>
 
-          {/* Row: Mobile */}
+          {/* Row: Mobile Number */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Mobile Number:</span>
-            <span className="font-mono font-bold text-[#00ff88] text-right">{mobile}</span>
+            <span className="text-gray-400 font-medium">Contact Number:</span>
+            <span className="font-bold text-[#00ff88] font-mono text-right">{mobile}</span>
           </div>
 
           {/* Row: Email */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Client Email:</span>
+            <span className="text-gray-400 font-medium">Email Address:</span>
             <span className="font-medium text-gray-200 text-right">{email}</span>
           </div>
 
           {/* Row: Service */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Service Required:</span>
+            <span className="text-gray-400 font-medium">Service Selected:</span>
             <span className="font-bold text-white text-right">{service}</span>
           </div>
 
@@ -226,31 +181,21 @@ function VerifyDetailsModal({
           </div>
         </div>
 
-        {/* 4. Action Buttons (Side-by-Side: WhatsApp & Gmail) */}
+        {/* 4. Action Button (WhatsApp Direct) */}
         <div className="mt-6 pt-2">
           <p className="text-[11px] text-center text-gray-400 mb-3 font-medium">
             Forward your verified booking request via:
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Button 1: WhatsApp (Solid Green) */}
+          <div>
+            {/* Button: WhatsApp (Solid Green) */}
             <button
               type="button"
               onClick={handleWhatsAppForward}
               className="w-full py-3.5 px-4 rounded-xl bg-green-600 hover:bg-green-500 text-white font-extrabold text-xs uppercase tracking-wider transition-all duration-200 shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5"
             >
               <WhatsAppIcon className="w-4 h-4 fill-white" />
-              <span>WhatsApp</span>
-            </button>
-
-            {/* Button 2: Gmail (Solid Red with mailto:) */}
-            <button
-              type="button"
-              onClick={handleGmailCompose}
-              className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs uppercase tracking-wider transition-all duration-200 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5"
-            >
-              <MailIcon className="w-4 h-4 text-white" />
-              <span>Gmail</span>
+              <span>Continue via WhatsApp</span>
             </button>
           </div>
         </div>

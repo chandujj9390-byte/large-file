@@ -448,14 +448,14 @@ export default function BookingVerificationFlow({ className = '', onComplete }) 
               </div>
             </div>
 
-            {/* Two Primary Forwarding Buttons (WhatsApp & Gmail) */}
+            {/* Primary Forwarding Button (WhatsApp) */}
             <div className="pt-2">
               <p className="text-[11px] text-center text-gray-400 mb-3 font-medium">
-                Choose forwarding channel for owner confirmation:
+                Forward your booking request for studio confirmation:
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Button 1: WhatsApp (Solid Green) */}
+              <div>
+                {/* Button: WhatsApp (Solid Green) */}
                 <button
                   type="button"
                   onClick={() => handleDispatchBooking('whatsapp')}
@@ -471,26 +471,6 @@ export default function BookingVerificationFlow({ className = '', onComplete }) 
                     <>
                       <WhatsAppIcon className="w-4 h-4 fill-white" />
                       <span>Send via WhatsApp</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Button 2: Gmail (Solid Crimson) */}
-                <button
-                  type="button"
-                  onClick={() => handleDispatchBooking('gmail')}
-                  disabled={loadingChannel !== null}
-                  className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {loadingChannel === 'gmail' ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    <>
-                      <MailIcon className="w-4 h-4 text-white" />
-                      <span>Send via Gmail</span>
                     </>
                   )}
                 </button>

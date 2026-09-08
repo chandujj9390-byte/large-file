@@ -767,57 +767,32 @@
                 BOOKING SUBMITTED! 🎬
             </h2>
             <p style="font-size: 13px; color: #9ca3af; line-height: 1.5; max-width: 460px; margin: 0 auto 20px auto;">
-                Thank you! Your project details have been recorded. You can connect with our studio directly via Business WhatsApp or Business Gmail below:
+                Thank you! Your project details have been recorded. You can connect with our studio directly via Business WhatsApp below:
             </p>
 
-            <!-- TWO SELECTABLE BUSINESS CONTACT CHANNELS -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px;">
-                <!-- 1. Business WhatsApp Number Option -->
+            <!-- BUSINESS CONTACT CHANNEL -->
+            <div style="margin-bottom: 22px;">
+                <!-- Business WhatsApp Number Option -->
                 <div id="option-card-whatsapp" onclick="selectBookingContactChannel('whatsapp')"
-                    style="cursor: pointer; background: linear-gradient(135deg, rgba(37, 211, 102, 0.18) 0%, rgba(18, 140, 126, 0.12) 100%); border: 2px solid #25D366; border-radius: 16px; padding: 16px 14px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 25px rgba(37, 211, 102, 0.35); position: relative;">
-                    <div id="check-indicator-whatsapp" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background: #25D366; color: #000; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(37,211,102,0.6);">
-                        ✓
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 36px; height: 36px; border-radius: 10px; background: #25D366; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; flex-shrink: 0; box-shadow: 0 0 12px rgba(37,211,102,0.4);">
+                    style="cursor: pointer; background: linear-gradient(135deg, rgba(37, 211, 102, 0.18) 0%, rgba(18, 140, 126, 0.12) 100%); border: 2px solid #25D366; border-radius: 16px; padding: 16px 18px; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 25px rgba(37, 211, 102, 0.35); position: relative;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: #25D366; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; flex-shrink: 0; box-shadow: 0 0 14px rgba(37,211,102,0.4);">
                             💬
                         </div>
                         <div>
-                            <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.8px; color: #25D366; text-transform: uppercase; display: block;">WhatsApp</span>
-                            <span style="font-size: 12px; font-weight: 800; color: #ffffff; font-family: monospace;">+91 9390662637</span>
+                            <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.8px; color: #25D366; text-transform: uppercase; display: block; margin-bottom: 2px;">Business WhatsApp</span>
+                            <span style="font-size: 14px; font-weight: 800; color: #ffffff; font-family: monospace;">+91 9390662637</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px; padding-top: 6px; border-top: 1px solid rgba(37,211,102,0.25); font-size: 11px; font-weight: 800; color: #25D366;">
-                        <span>Chat on WhatsApp</span>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: #25D366;">
                         <span id="label-state-whatsapp">● Selected</span>
-                    </div>
-                </div>
-
-                <!-- 2. Business Gmail Account Option -->
-                <div id="option-card-gmail" onclick="selectBookingContactChannel('gmail')"
-                    style="cursor: pointer; background: rgba(255, 255, 255, 0.03); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px 14px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;">
-                    <div id="check-indicator-gmail" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background: transparent; border: 1.5px solid rgba(255,255,255,0.3); color: transparent; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center;">
-                        ✓
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 36px; height: 36px; border-radius: 10px; background: #00ff88; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #000; flex-shrink: 0; box-shadow: 0 0 12px rgba(0,255,136,0.35);">
-                            ✉️
-                        </div>
-                        <div>
-                            <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.8px; color: #00ff88; text-transform: uppercase; display: block;">Business Gmail</span>
-                            <span style="font-size: 11px; font-weight: 700; color: #ffffff; word-break: break-all;">arneworks26@gmail.com</span>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px; padding-top: 6px; border-top: 1px solid rgba(0,255,136,0.2); font-size: 11px; font-weight: 800; color: #9ca3af;">
-                        <span>Open Gmail</span>
-                        <span id="label-state-gmail">Click to Select</span>
                     </div>
                 </div>
             </div>
 
             <!-- Single SUBMIT Action Button -->
             <button type="button" id="btn-submit-contact-channel" onclick="submitBookingContactChannel()" class="btn-primary btn-sparkle" style="width: 100%; padding: 15px 20px; font-size: 13px; font-weight: 900; letter-spacing: 1px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; text-transform: uppercase; background: linear-gradient(135deg, #00ff88 0%, #10b981 100%); color: #000; box-shadow: 0 0 25px rgba(0,255,136,0.45); transition: all 0.25s ease;">
-                <span id="btn-submit-channel-label">SUBMIT &amp; CONTINUE VIA WHATSAPP ↗</span>
+                <span id="btn-submit-channel-label">CONTINUE VIA WHATSAPP ↗</span>
             </button>
         </div>
     </div>

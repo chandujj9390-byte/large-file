@@ -99,44 +99,24 @@ const SuccessConfirmation = memo(function SuccessConfirmation({ successData, onR
         </p>
       </div>
 
-      {/* Direct WhatsApp & Gmail Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left my-2">
+      {/* Direct WhatsApp Quick Action */}
+      <div className="text-left my-2">
         <a
           href={`https://wa.me/919390662637?text=${encodeURIComponent(
             `Hi ARNE Works, I have submitted booking #${successData.bookingId} for ${successData.service}. Name: ${successData.fullName}.`
           )}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex flex-col justify-between p-3 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 hover:border-[#25D366] transition-all text-decoration-none"
+          className="group flex items-center justify-between p-3.5 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 hover:border-[#25D366] transition-all text-decoration-none"
         >
-          <div className="flex items-center gap-2.5">
-            <span className="text-xl">💬</span>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">💬</span>
             <div>
               <span className="block text-[9px] font-extrabold text-[#25D366] uppercase">Business WhatsApp</span>
-              <span className="block text-xs font-bold text-white font-mono">+91 9390662637</span>
+              <span className="block text-sm font-bold text-white font-mono">+91 9390662637</span>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-[#25D366] text-right mt-1">Chat on WhatsApp ↗</span>
-        </a>
-
-        <a
-          href={`https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(
-            `ARNE Booking: ${successData.bookingId} - ${successData.fullName}`
-          )}&body=${encodeURIComponent(
-            `Hi ARNE Works Team,\n\nI have submitted my booking #${successData.bookingId} for ${successData.service}.\nClient Name: ${successData.fullName}\nPhone: ${successData.mobile}\nEmail: ${successData.email}\n\nLooking forward to hearing from you!`
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex flex-col justify-between p-3 rounded-xl bg-[#ea4335]/10 border border-[#ea4335]/30 hover:border-[#ea4335] transition-all text-decoration-none"
-        >
-          <div className="flex items-center gap-2.5">
-            <span className="text-xl">✉️</span>
-            <div>
-              <span className="block text-[9px] font-extrabold text-[#ff7b72] uppercase">Business Gmail</span>
-              <span className="block text-[11px] font-bold text-white truncate max-w-[130px]">arneworks26@gmail.com</span>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold text-[#ff7b72] text-right mt-1">Open Gmail ↗</span>
+          <span className="text-xs font-bold text-[#25D366] text-right">Chat on WhatsApp ↗</span>
         </a>
       </div>
 

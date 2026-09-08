@@ -267,45 +267,25 @@
                 </div>
             </div>
 
-            <!-- TWO SELECTABLE BUSINESS CHANNELS -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;">
-                <!-- 1. Business WhatsApp Option -->
+            <!-- BUSINESS WHATSAPP CONTACT CHANNEL -->
+            <div style="margin-bottom: 24px;">
                 <div id="c-card-whatsapp" onclick="selectConfChannel('whatsapp')"
-                    style="cursor: pointer; background: rgba(37, 211, 102, 0.16); border: 2px solid #25D366; border-radius: 16px; padding: 16px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; transition: all 0.25s ease; box-shadow: 0 0 20px rgba(37, 211, 102, 0.3); position: relative;">
-                    <div id="c-check-whatsapp" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background: #25D366; color: #000; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center;">
-                        ✓
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 24px;">💬</span>
+                    style="cursor: pointer; background: rgba(37, 211, 102, 0.16); border: 2px solid #25D366; border-radius: 16px; padding: 18px 20px; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.25s ease; box-shadow: 0 0 20px rgba(37, 211, 102, 0.3); position: relative;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span style="font-size: 28px;">💬</span>
                         <div>
-                            <span style="font-size: 10px; font-weight: 800; color: #25D366; text-transform: uppercase; display: block;">Business WhatsApp</span>
-                            <span style="font-size: 13px; font-weight: 800; color: #fff; font-family: monospace;">+91 9390662637</span>
+                            <span style="font-size: 10px; font-weight: 800; color: #25D366; text-transform: uppercase; display: block; margin-bottom: 2px;">Business WhatsApp</span>
+                            <span style="font-size: 15px; font-weight: 800; color: #fff; font-family: monospace;">+91 9390662637</span>
                         </div>
                     </div>
-                    <span id="c-label-whatsapp" style="font-size: 11px; font-weight: 800; color: #25D366; text-align: right;">● Selected</span>
-                </div>
-
-                <!-- 2. Business Gmail Option -->
-                <div id="c-card-gmail" onclick="selectConfChannel('gmail')"
-                    style="cursor: pointer; background: rgba(255, 255, 255, 0.03); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; transition: all 0.25s ease; position: relative;">
-                    <div id="c-check-gmail" style="position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; background: transparent; border: 1.5px solid rgba(255, 255, 255, 0.3); color: transparent; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center;">
-                        ✓
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 24px;">✉️</span>
-                        <div>
-                            <span style="font-size: 10px; font-weight: 800; color: #00ff88; text-transform: uppercase; display: block;">Business Gmail</span>
-                            <span style="font-size: 12px; font-weight: 700; color: #fff; word-break: break-all;">arneworks26@gmail.com</span>
-                        </div>
-                    </div>
-                    <span id="c-label-gmail" style="font-size: 11px; font-weight: 800; color: #9ca3af; text-align: right;">Click to Select</span>
+                    <span id="c-label-whatsapp" style="font-size: 12px; font-weight: 800; color: #25D366;">● Selected</span>
                 </div>
             </div>
 
             <!-- Single SUBMIT Button -->
             <div style="margin-top: 10px;">
                 <button id="c-btn-submit" onclick="submitConfChannel()" class="btn-green-conf" style="width: 100%; padding: 16px; font-size: 13px; font-weight: 900; letter-spacing: 1px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; text-transform: uppercase;">
-                    <span id="c-submit-label">SUBMIT &amp; CONTINUE VIA WHATSAPP ↗</span>
+                    <span id="c-submit-label">CONTINUE VIA WHATSAPP ↗</span>
                 </button>
             </div>
         </div>
@@ -323,91 +303,29 @@
     <script>
         let currentConfChannel = 'whatsapp';
         let confWhatsAppUrl = 'https://wa.me/919390662637';
-        let confGmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com';
 
         function selectConfChannel(channel) {
-            currentConfChannel = channel;
+            currentConfChannel = 'whatsapp';
             const waCard = document.getElementById('c-card-whatsapp');
-            const gmCard = document.getElementById('c-card-gmail');
-            const waCheck = document.getElementById('c-check-whatsapp');
-            const gmCheck = document.getElementById('c-check-gmail');
             const waLabel = document.getElementById('c-label-whatsapp');
-            const gmLabel = document.getElementById('c-label-gmail');
             const submitLabel = document.getElementById('c-submit-label');
 
-            if (channel === 'whatsapp') {
-                if (waCard) {
-                    waCard.style.background = 'rgba(37, 211, 102, 0.16)';
-                    waCard.style.border = '2px solid #25D366';
-                    waCard.style.boxShadow = '0 0 20px rgba(37, 211, 102, 0.3)';
-                }
-                if (waCheck) {
-                    waCheck.style.background = '#25D366';
-                    waCheck.style.border = 'none';
-                    waCheck.style.color = '#000';
-                }
-                if (waLabel) {
-                    waLabel.textContent = '● Selected';
-                    waLabel.style.color = '#25D366';
-                }
-                if (gmCard) {
-                    gmCard.style.background = 'rgba(255, 255, 255, 0.03)';
-                    gmCard.style.border = '2px solid rgba(255, 255, 255, 0.1)';
-                    gmCard.style.boxShadow = 'none';
-                }
-                if (gmCheck) {
-                    gmCheck.style.background = 'transparent';
-                    gmCheck.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
-                    gmCheck.style.color = 'transparent';
-                }
-                if (gmLabel) {
-                    gmLabel.textContent = 'Click to Select';
-                    gmLabel.style.color = '#9ca3af';
-                }
-                if (submitLabel) {
-                    submitLabel.textContent = 'SUBMIT & CONTINUE VIA WHATSAPP ↗';
-                }
-            } else {
-                if (gmCard) {
-                    gmCard.style.background = 'rgba(0, 255, 136, 0.16)';
-                    gmCard.style.border = '2px solid #00ff88';
-                    gmCard.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.3)';
-                }
-                if (gmCheck) {
-                    gmCheck.style.background = '#00ff88';
-                    gmCheck.style.border = 'none';
-                    gmCheck.style.color = '#000';
-                }
-                if (gmLabel) {
-                    gmLabel.textContent = '● Selected';
-                    gmLabel.style.color = '#00ff88';
-                }
-                if (waCard) {
-                    waCard.style.background = 'rgba(255, 255, 255, 0.03)';
-                    waCard.style.border = '2px solid rgba(255, 255, 255, 0.1)';
-                    waCard.style.boxShadow = 'none';
-                }
-                if (waCheck) {
-                    waCheck.style.background = 'transparent';
-                    waCheck.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
-                    waCheck.style.color = 'transparent';
-                }
-                if (waLabel) {
-                    waLabel.textContent = 'Click to Select';
-                    waLabel.style.color = '#9ca3af';
-                }
-                if (submitLabel) {
-                    submitLabel.textContent = 'SUBMIT & CONTINUE VIA GMAIL ↗';
-                }
+            if (waCard) {
+                waCard.style.background = 'rgba(37, 211, 102, 0.16)';
+                waCard.style.border = '2px solid #25D366';
+                waCard.style.boxShadow = '0 0 20px rgba(37, 211, 102, 0.3)';
+            }
+            if (waLabel) {
+                waLabel.textContent = '● Selected';
+                waLabel.style.color = '#25D366';
+            }
+            if (submitLabel) {
+                submitLabel.textContent = 'CONTINUE VIA WHATSAPP ↗';
             }
         }
 
         function submitConfChannel() {
-            if (currentConfChannel === 'whatsapp') {
-                window.open(confWhatsAppUrl, '_blank');
-            } else {
-                window.open(confGmailUrl, '_blank');
-            }
+            window.open(confWhatsAppUrl, '_blank');
         }
 
         function loadConfirmationData() {

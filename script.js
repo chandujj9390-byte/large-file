@@ -1681,92 +1681,29 @@
     window.selectedBookingContactChannel = 'whatsapp';
 
     window.selectBookingContactChannel = function (channel) {
-        window.selectedBookingContactChannel = channel;
+        window.selectedBookingContactChannel = 'whatsapp';
         const waCard = document.getElementById('option-card-whatsapp');
-        const gmCard = document.getElementById('option-card-gmail');
-        const waCheck = document.getElementById('check-indicator-whatsapp');
-        const gmCheck = document.getElementById('check-indicator-gmail');
         const waLabel = document.getElementById('label-state-whatsapp');
-        const gmLabel = document.getElementById('label-state-gmail');
         const submitLabel = document.getElementById('btn-submit-channel-label');
 
-        if (channel === 'whatsapp') {
-            if (waCard) {
-                waCard.style.background = 'linear-gradient(135deg, rgba(37, 211, 102, 0.18) 0%, rgba(18, 140, 126, 0.12) 100%)';
-                waCard.style.border = '2px solid #25D366';
-                waCard.style.boxShadow = '0 0 25px rgba(37, 211, 102, 0.35)';
-            }
-            if (waCheck) {
-                waCheck.style.background = '#25D366';
-                waCheck.style.border = 'none';
-                waCheck.style.color = '#000';
-            }
-            if (waLabel) {
-                waLabel.textContent = '● Selected';
-                waLabel.style.color = '#25D366';
-            }
-            if (gmCard) {
-                gmCard.style.background = 'rgba(255, 255, 255, 0.03)';
-                gmCard.style.border = '2px solid rgba(255, 255, 255, 0.1)';
-                gmCard.style.boxShadow = 'none';
-            }
-            if (gmCheck) {
-                gmCheck.style.background = 'transparent';
-                gmCheck.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
-                gmCheck.style.color = 'transparent';
-            }
-            if (gmLabel) {
-                gmLabel.textContent = 'Click to Select';
-                gmLabel.style.color = '#9ca3af';
-            }
-            if (submitLabel) {
-                submitLabel.textContent = 'SUBMIT & CONTINUE VIA WHATSAPP ↗';
-            }
-        } else if (channel === 'gmail') {
-            if (gmCard) {
-                gmCard.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.16) 0%, rgba(16, 185, 129, 0.1) 100%)';
-                gmCard.style.border = '2px solid #00ff88';
-                gmCard.style.boxShadow = '0 0 25px rgba(0, 255, 136, 0.35)';
-            }
-            if (gmCheck) {
-                gmCheck.style.background = '#00ff88';
-                gmCheck.style.border = 'none';
-                gmCheck.style.color = '#000';
-            }
-            if (gmLabel) {
-                gmLabel.textContent = '● Selected';
-                gmLabel.style.color = '#00ff88';
-            }
-            if (waCard) {
-                waCard.style.background = 'rgba(255, 255, 255, 0.03)';
-                waCard.style.border = '2px solid rgba(255, 255, 255, 0.1)';
-                waCard.style.boxShadow = 'none';
-            }
-            if (waCheck) {
-                waCheck.style.background = 'transparent';
-                waCheck.style.border = '1.5px solid rgba(255, 255, 255, 0.3)';
-                waCheck.style.color = 'transparent';
-            }
-            if (waLabel) {
-                waLabel.textContent = 'Click to Select';
-                waLabel.style.color = '#9ca3af';
-            }
-            if (submitLabel) {
-                submitLabel.textContent = 'SUBMIT & CONTINUE VIA GMAIL ↗';
-            }
+        if (waCard) {
+            waCard.style.background = 'linear-gradient(135deg, rgba(37, 211, 102, 0.18) 0%, rgba(18, 140, 126, 0.12) 100%)';
+            waCard.style.border = '2px solid #25D366';
+            waCard.style.boxShadow = '0 0 25px rgba(37, 211, 102, 0.35)';
+        }
+        if (waLabel) {
+            waLabel.textContent = '● Selected';
+            waLabel.style.color = '#25D366';
+        }
+        if (submitLabel) {
+            submitLabel.textContent = 'CONTINUE VIA WHATSAPP ↗';
         }
     };
 
     // Submit Selected Contact Channel Handler
     window.submitBookingContactChannel = function () {
-        const channel = window.selectedBookingContactChannel || 'whatsapp';
-        if (channel === 'whatsapp') {
-            const waUrl = window.lastBookingWhatsAppUrl || 'https://wa.me/919390662637?text=' + encodeURIComponent("Hi Arne, I'd like to know more about your services");
-            window.open(waUrl, '_blank');
-        } else {
-            const gmUrl = window.lastBookingGmailUrl || 'https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com';
-            window.open(gmUrl, '_blank');
-        }
+        const waUrl = window.lastBookingWhatsAppUrl || 'https://wa.me/919390662637?text=' + encodeURIComponent("Hi Arne, I'd like to know more about your services");
+        window.open(waUrl, '_blank');
         closeSlotConfirmModal();
     };
 
