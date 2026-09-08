@@ -53,8 +53,8 @@ export async function POST(req) {
     const confirmationUrl = `${domain}/api/confirm-booking?id=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(confirmationToken)}`;
 
     // 2. Insert Pending Record into Supabase
-    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xrrhzjabhfnbbblfwyko.supabase.co';
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
+    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://yjgbzipdvhgdftxdlccx.supabase.co';
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_9fjwQtl2NjYC7OYLmy1pVw_oyc4ru2C';
     
     let dbSuccess = false;
     if (SUPABASE_URL && SUPABASE_KEY) {

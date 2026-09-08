@@ -1,6 +1,6 @@
 -- ==============================================================================
--- Supabase SQL Table Schema for ARNE Stories Booking & Confirmation Architecture
--- Project ID: xrrhzjabhfnbbblfwyko
+-- Supabase SQL Table Schema for-- ARNE Stories - Consolidated Supabase Schema & Verification
+-- Project ID: yjgbzipdvhgdftxdlccx
 -- ==============================================================================
 
 -- 1. Create the `bookings` table

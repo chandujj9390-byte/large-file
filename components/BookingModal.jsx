@@ -502,27 +502,30 @@ function BookingModal({ isOpen, onClose }) {
                   <span>WhatsApp</span>
                 </button>
 
-                {/* Button 2: Gmail (Solid Red) */}
+                {/* Button 2: Gmail (Solid Red with mailto:) */}
                 <button
                   type="button"
-                  onClick={handleFinalConfirmBooking}
-                  disabled={loading}
-                  className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:bg-red-700/60 disabled:cursor-not-allowed text-white font-extrabold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all cursor-pointer flex items-center justify-center gap-2"
+                  onClick={() => {
+                    const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_GMAIL || 'arneworks26@gmail.com';
+                    const emailSubject = `New Booking Request: ${activeReviewData.fullName || 'Client'}`;
+                    const emailBody = 
+                      `📌 New Booking Request - Arne Stories\n` +
+                      `Client Name: ${activeReviewData.fullName || ''}\n` +
+                      `Contact Number: ${activeReviewData.mobile || ''}\n` +
+                      `Client Email: ${activeReviewData.email || ''}\n` +
+                      `Service Required: ${activeReviewData.service || ''}\n` +
+                      `Project Requirements: ${activeReviewData.requirements?.trim() || 'No additional notes.'}`;
+
+                    const mailtoLink = `mailto:${encodeURIComponent(businessEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+                    window.location.href = mailtoLink;
+                  }}
+                  className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  {loading ? (
-                    <>
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <rect width="20" height="16" x="2" y="4" rx="2" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                      </svg>
-                      <span>Gmail</span>
-                    </>
-                  )}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                  <span>Gmail</span>
                 </button>
               </div>
             </div>

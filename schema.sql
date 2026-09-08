@@ -1,6 +1,6 @@
 -- ====================================================================
 -- ARNE Works — Supabase Database Migration & SQL Setup Script
--- Project ID: xrrhzjabhfnbbblfwyko
+-- Project ID: yjgbzipdvhgdftxdlccx
 -- Run this complete script in your Supabase SQL Editor (SQL Editor -> New Query -> Run)
 -- ====================================================================
 

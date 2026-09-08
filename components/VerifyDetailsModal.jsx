@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useEffect, useCallback, memo } from 'react';
 
 /**
  * WhatsApp Icon SVG Component
@@ -40,6 +40,7 @@ const MailIcon = memo(function MailIcon({ className = 'w-5 h-5' }) {
 
 /**
  * VerifyDetailsModal Component
+ * Displays verified details with direct WhatsApp and direct mailto: Gmail compose.
  */
 function VerifyDetailsModal({
   isOpen = true,
@@ -47,9 +48,6 @@ function VerifyDetailsModal({
   onEdit,
   bookingData = {}
 }) {
-  const [isSendingGmail, setIsSendingGmail] = useState(false);
-  const [gmailStatus, setGmailStatus] = useState(null); // { success: boolean, message: string }
-
   // Manage body scroll lock and cleanup safely
   useEffect(() => {
     if (isOpen) {
@@ -62,23 +60,18 @@ function VerifyDetailsModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   // Extract and normalize booking details
-  const name = bookingData.name || bookingData.fullName || 'Rahul Sharma';
+  const name = bookingData.name || bookingData.fullName || 'Client';
   const mobile = bookingData.mobile || bookingData.phone || '+91 93906 62637';
   const email = bookingData.email || 'client@gmail.com';
   const service = bookingData.service || 'Video Editing (4K / Cinematic)';
   const selectedDate = bookingData.selectedDate || bookingData.date || 'Immediate / Flexible';
   const selectedSlot = bookingData.selectedSlot || bookingData.slot || 'Morning (10:00 AM - 01:00 PM)';
-  const projectBrief = bookingData.projectBrief || bookingData.requirements || bookingData.notes || 'Cinematic reel editing with color grading and sound design.';
-
-  // Format clean international phone for WhatsApp URL
-  const destinationWhatsApp = process.env.NEXT_PUBLIC_BUSINESS_WHATSAPP || '919390662637';
+  const projectBrief = bookingData.projectBrief || bookingData.requirements || bookingData.notes || 'No additional notes specified.';
 
   // 1. ACTION: Forward via WhatsApp
-  const handleWhatsAppForward = () => {
-    // Construct beautifully formatted message with URI encoded line breaks (%0A)
+  const handleWhatsAppForward = useCallback(() => {
+    const destinationWhatsApp = process.env.NEXT_PUBLIC_BUSINESS_WHATSAPP || '919390662637';
     const formattedMessage = 
       `📌 *New Slot Confirmed by Client*%0A` +
       `• *Client:* ${encodeURIComponent(name)}%0A` +
@@ -91,59 +84,26 @@ function VerifyDetailsModal({
 
     const whatsappUrl = `https://wa.me/${destinationWhatsApp}?text=${formattedMessage}`;
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-  };
+  }, [name, mobile, email, service, selectedDate, selectedSlot, projectBrief]);
 
-  // 2. ACTION: Forward via Gmail (Nodemailer Backend Dispatch)
-  const handleGmailForward = async () => {
-    setIsSendingGmail(true);
-    setGmailStatus(null);
+  // 2. ACTION: Direct Gmail / Default Email Client Compose (mailto:)
+  const handleGmailCompose = useCallback(() => {
+    const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_GMAIL || 'arneworks26@gmail.com';
+    const emailSubject = `New Booking Request: ${name}`;
 
-    try {
-      const response = await fetch('/api/complete-booking', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fullName: name,
-          mobile: mobile,
-          email: email,
-          service: service,
-          selectedDate: selectedDate,
-          selectedSlot: selectedSlot,
-          requirements: projectBrief,
-        }),
-      });
+    const emailBody = 
+      `📌 New Booking Request - Arne Stories\n` +
+      `Client Name: ${name}\n` +
+      `Contact Number: ${mobile}\n` +
+      `Client Email: ${email}\n` +
+      `Service Required: ${service}\n` +
+      `Project Requirements: ${projectBrief}`;
 
-      const data = await response.json();
+    const mailtoLink = `mailto:${encodeURIComponent(businessEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.location.href = mailtoLink;
+  }, [name, mobile, email, service, projectBrief]);
 
-      if (response.ok && data.success) {
-        setGmailStatus({
-          success: true,
-          message: 'Booking details dispatched to business Gmail successfully!'
-        });
-
-        // Open directly in Google Gmail Web Composer (bypasses Outlook / desktop apps)
-        const gmSubject = `🎬 ARNE Booking Request: ${name} (${service})`;
-        const gmBody = `Hi ARNE Works Team,\n\nI have submitted my booking request on your studio website.\n\nClient Name: ${name}\nMobile: ${mobile}\nEmail: ${email}\nService: ${service}\nSlot: ${selectedDate} (${selectedSlot})\n\nProject Brief / Notes:\n${projectBrief}\n\nLooking forward to your response.`;
-        window.open(
-          `https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(gmSubject)}&body=${encodeURIComponent(gmBody)}`,
-          '_blank',
-          'noopener,noreferrer'
-        );
-      } else {
-        throw new Error(data.message || 'Failed to dispatch Gmail notification.');
-      }
-    } catch (err) {
-      console.error('[Gmail Forward Error]:', err);
-      setGmailStatus({
-        success: false,
-        message: err.message || 'Network error sending details to Gmail. Please try WhatsApp.'
-      });
-    } finally {
-      setIsSendingGmail(false);
-    }
-  };
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto">
@@ -162,25 +122,27 @@ function VerifyDetailsModal({
             className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
             aria-label="Close modal"
           >
-            ✕
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         )}
 
-        {/* 1. Centered Header */}
-        <div className="text-center mb-6">
+        {/* Header Badge & Title */}
+        <div className="text-left mb-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/20 text-[#00ff88] text-[10px] font-extrabold tracking-widest uppercase mb-2">
-            <span>🔍</span> Step 2 of 2
+            <span>⚡</span> STEP 2: VERIFY DETAILS
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Verify Details
+          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+            Verify Booking Information
           </h2>
           <p className="text-xs text-gray-400 mt-1">
-            Please double-check your booking details before forwarding.
+            Please check your information once before confirming.
           </p>
         </div>
 
-        {/* 2. Section Title & Divider */}
-        <div className="mb-4 pb-2 border-b border-white/10 flex items-center justify-between">
+        {/* Section Title & Edit Details Shortcut Button */}
+        <div className="mb-2 pb-2 border-b border-white/10 flex items-center justify-between">
           <h3 className="text-xs font-extrabold tracking-wider uppercase text-gray-300">
             Client Details
           </h3>
@@ -190,69 +152,57 @@ function VerifyDetailsModal({
               onClick={onEdit}
               className="text-[11px] font-bold text-[#00ff88] hover:underline cursor-pointer flex items-center gap-1"
             >
-              <span>✏️</span> Edit
+              <span>✏️</span> Edit Details
             </button>
           )}
         </div>
 
-        {/* 3. Data Display List */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 text-xs space-y-3 divide-y divide-white/5">
-          {/* Name */}
+        {/* 3. Details Review Card */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-5 text-left space-y-3 text-xs divide-y divide-white/5">
+          {/* Row: Name */}
           <div className="flex justify-between items-center pt-1 first:pt-0">
             <span className="text-gray-400 font-medium">Name:</span>
             <span className="font-bold text-white text-right">{name}</span>
           </div>
 
-          {/* Mobile Number */}
+          {/* Row: Mobile */}
           <div className="flex justify-between items-center pt-3">
             <span className="text-gray-400 font-medium">Mobile Number:</span>
             <span className="font-mono font-bold text-[#00ff88] text-right">{mobile}</span>
           </div>
 
-          {/* Email */}
+          {/* Row: Email */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Email:</span>
-            <span className="font-medium text-gray-200 text-right truncate max-w-[200px]">{email}</span>
+            <span className="text-gray-400 font-medium">Client Email:</span>
+            <span className="font-medium text-gray-200 text-right">{email}</span>
           </div>
 
-          {/* Service */}
+          {/* Row: Service */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Service:</span>
+            <span className="text-gray-400 font-medium">Service Required:</span>
             <span className="font-bold text-white text-right">{service}</span>
           </div>
 
-          {/* Selected Date */}
+          {/* Row: Date */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Selected Date:</span>
+            <span className="text-gray-400 font-medium">Preferred Date:</span>
             <span className="font-semibold text-gray-200 text-right">{selectedDate}</span>
           </div>
 
-          {/* Selected Slot */}
+          {/* Row: Slot */}
           <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-400 font-medium">Selected Slot:</span>
+            <span className="text-gray-400 font-medium">Preferred Slot:</span>
             <span className="font-semibold text-gray-200 text-right">{selectedSlot}</span>
           </div>
 
-          {/* Project Brief */}
+          {/* Row: Project Brief / Notes */}
           <div className="pt-3">
-            <span className="block text-gray-400 font-medium mb-1.5">Project Brief:</span>
-            <p className="text-gray-300 leading-relaxed bg-black/50 p-3 rounded-xl border border-white/5 break-words">
+            <span className="block text-gray-400 font-medium mb-1">Project Brief / Notes:</span>
+            <p className="text-gray-300 leading-relaxed bg-black/50 p-3 rounded-xl border border-white/5 whitespace-pre-wrap">
               {projectBrief}
             </p>
           </div>
         </div>
-
-        {/* Gmail Status Alert */}
-        {gmailStatus && (
-          <div className={`mt-4 p-3 rounded-xl border text-xs flex items-center gap-2.5 animate-in fade-in ${
-            gmailStatus.success 
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
-              : 'bg-red-500/10 border-red-500/30 text-red-400'
-          }`}>
-            <span>{gmailStatus.success ? '✓' : '⚠️'}</span>
-            <span className="font-medium">{gmailStatus.message}</span>
-          </div>
-        )}
 
         {/* 4. Action Buttons (Side-by-Side: WhatsApp & Gmail) */}
         <div className="mt-6 pt-2">
@@ -261,7 +211,7 @@ function VerifyDetailsModal({
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Button 1: WhatsApp (Green) */}
+            {/* Button 1: WhatsApp (Solid Green) */}
             <button
               type="button"
               onClick={handleWhatsAppForward}
@@ -271,24 +221,14 @@ function VerifyDetailsModal({
               <span>WhatsApp</span>
             </button>
 
-            {/* Button 2: Gmail (Emerald Green) */}
+            {/* Button 2: Gmail (Solid Red with mailto:) */}
             <button
               type="button"
-              onClick={handleGmailForward}
-              disabled={isSendingGmail}
-              className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-700/60 disabled:cursor-not-allowed text-white font-extrabold text-xs uppercase tracking-wider transition-all duration-200 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5"
+              onClick={handleGmailCompose}
+              className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs uppercase tracking-wider transition-all duration-200 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2.5"
             >
-              {isSendingGmail ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Sending...</span>
-                </>
-              ) : (
-                <>
-                  <MailIcon className="w-4 h-4 text-white" />
-                  <span>Gmail</span>
-                </>
-              )}
+              <MailIcon className="w-4 h-4 text-white" />
+              <span>Gmail</span>
             </button>
           </div>
         </div>

@@ -8,8 +8,8 @@
     // ----------------------------------------------------------------------
     // SUPABASE CLOUD DATABASE CONNECTION
     // ----------------------------------------------------------------------
-    const SUPABASE_URL = 'https://xrrhzjabhfnbbblfwyko.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_rIkNV4jmbx5NDH96yRoviw_w1AGwuZD';
+    const SUPABASE_URL = 'https://yjgbzipdvhgdftxdlccx.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_9fjwQtl2NjYC7OYLmy1pVw_oyc4ru2C';
     let supabaseClient = null;
 
     function getSupabaseClient() {
@@ -28,7 +28,7 @@
     try {
         supabaseClient = getSupabaseClient();
         if (supabaseClient) {
-            console.log('[ARNE Supabase] Connected to project: xrrhzjabhfnbbblfwyko');
+            console.log('[ARNE Supabase] Connected to project: yjgbzipdvhgdftxdlccx');
         }
     } catch (e) { }
 
@@ -3342,7 +3342,7 @@
                 `public/frame1/ezgif-frame-${num}.png`,
                 `./frame1/ezgif-frame-${num}.png`,
                 `./public/frame1/ezgif-frame-${num}.png`,
-                `https://xrrhzjabhfnbbblfwyko.supabase.co/storage/v1/object/public/hero-frames/ezgif-frame-${num}.png`
+                `https://yjgbzipdvhgdftxdlccx.supabase.co/storage/v1/object/public/hero-frames/ezgif-frame-${num}.png`
             ];
         }
 

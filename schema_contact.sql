@@ -1,6 +1,6 @@
 -- ====================================================================
 -- ARNE Works — Supabase 'users' Contact Form Table Migration Script
--- Project ID: xrrhzjabhfnbbblfwyko
+-- Project ID: yjgbzipdvhgdftxdlccx
 -- Run this script in your Supabase SQL Editor:
 -- (Supabase Dashboard -> SQL Editor -> New Query -> Paste & Run)
 -- ====================================================================
