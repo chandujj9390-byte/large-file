@@ -190,7 +190,7 @@ export default function ThreeScene({ children }) {
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', minHeight: '100%', overflowX: 'hidden', overflowY: 'visible' }}>
       {/* 3D Background Canvas */}
       <SceneCanvas mousePosition={mousePosition} />
 
@@ -200,7 +200,7 @@ export default function ThreeScene({ children }) {
           position: 'relative',
           zIndex: 10,
           width: '100%',
-          minHeight: '100vh',
+          minHeight: '100%',
           pointerEvents: 'auto',
         }}
       >

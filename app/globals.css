@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root scrolling defaults */
+html,
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #060907;
+  color: #ffffff;
+}

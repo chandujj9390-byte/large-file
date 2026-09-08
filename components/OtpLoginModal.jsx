@@ -42,6 +42,18 @@ export default function OtpLoginModal({ isOpen, onClose, onSuccess }) {
     }
   }, [isOpen]);
 
+  // Manage body scroll lock and cleanup safely
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // Format phone with mandatory international country code (+91)
