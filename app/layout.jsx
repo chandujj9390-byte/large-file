@@ -3,6 +3,9 @@ import './globals.css';
 export const metadata = {
   title: 'ARNE WORKS — Cinematic Visual Studio',
   description: 'High-end video editing, color grading, VFX, and creative production services.',
+  verification: {
+    google: '8tz13PPnFQFPUmgGHH1iUfHGxk0fAqbWeET0MNgCmR4',
+  },
 };
 
 export default function RootLayout({ children }) {
