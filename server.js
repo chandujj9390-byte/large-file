@@ -151,7 +151,12 @@ const MIME_TYPES = {
 const server = http.createServer(async (req, res) => {
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
     const urlParts = req.url.split('?');
-    const pathName = urlParts[0];
+    let pathName = urlParts[0];
+    try {
+        pathName = decodeURIComponent(urlParts[0]);
+    } catch (e) {
+        pathName = urlParts[0];
+    }
 
     // CORS Preflight Handling
     if (req.method === 'OPTIONS') {
