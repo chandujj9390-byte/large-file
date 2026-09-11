@@ -2430,6 +2430,45 @@ html.lenis body {
     display: block;
 }
 
+/* International Phone Input & Dial Code */
+.intl-phone-wrapper {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: stretch;
+}
+
+.intl-phone-wrapper .phone-code-select {
+    width: 140px;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    font-size: 13px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(0, 255, 136, 0.25);
+    border-radius: 12px;
+    color: #00ff88;
+}
+
+.intl-phone-wrapper .phone-code-select:focus {
+    border-color: var(--primary-emerald);
+    box-shadow: 0 0 16px rgba(0, 255, 136, 0.25);
+}
+
+.intl-phone-wrapper .intl-phone-input {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 480px) {
+    .intl-phone-wrapper .phone-code-select {
+        width: 110px;
+        font-size: 12px;
+        padding: 12px 8px;
+    }
+}
+
 /* Drag & Drop File Area */
 .drag-drop-zone {
     border: 2px dashed rgba(0, 255, 136, 0.3);

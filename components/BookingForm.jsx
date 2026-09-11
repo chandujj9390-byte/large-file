@@ -17,9 +17,96 @@ const ARNE_SERVICES = [
   'Poster & Title Card Designing',
   'Cinematic Photo Album Layout',
   'DaVinci Resolve Color Grading',
-  'Website Designing & Development',
-  'Other Creative Service'
-];
+// Comprehensive Country to States / Provinces Dictionary
+const COUNTRY_STATES_MAP = {
+  'India': [
+    'Andhra Pradesh', 'Telangana', 'Karnataka', 'Tamil Nadu', 'Maharashtra',
+    'Kerala', 'Gujarat', 'Delhi (NCT)', 'Uttar Pradesh', 'West Bengal',
+    'Rajasthan', 'Punjab', 'Haryana', 'Madhya Pradesh', 'Bihar', 'Odisha',
+    'Assam', 'Jharkhand', 'Chhattisgarh', 'Himachal Pradesh', 'Uttarakhand',
+    'Goa', 'Jammu and Kashmir', 'Chandigarh', 'Puducherry', 'Arunachal Pradesh',
+    'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Sikkim', 'Tripura',
+    'Andaman and Nicobar Islands', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Ladakh', 'Lakshadweep', 'Other State / UT'
+  ],
+  'United States': [
+    'California', 'Texas', 'Florida', 'New York', 'Illinois', 'Pennsylvania',
+    'Ohio', 'Georgia', 'North Carolina', 'Michigan', 'New Jersey', 'Virginia',
+    'Washington', 'Arizona', 'Massachusetts', 'Tennessee', 'Indiana', 'Missouri',
+    'Maryland', 'Wisconsin', 'Colorado', 'Minnesota', 'South Carolina', 'Alabama',
+    'Louisiana', 'Kentucky', 'Oregon', 'Oklahoma', 'Connecticut', 'Utah', 'Iowa',
+    'Nevada', 'Arkansas', 'Mississippi', 'Kansas', 'New Mexico', 'Nebraska',
+    'Idaho', 'West Virginia', 'Hawaii', 'New Hampshire', 'Maine', 'Montana',
+    'Rhode Island', 'Delaware', 'South Dakota', 'North Dakota', 'Alaska',
+    'District of Columbia (DC)', 'Vermont', 'Wyoming', 'Other Territory'
+  ],
+  'United Kingdom': [
+    'Greater London', 'South East England', 'North West England', 'West Midlands',
+    'Yorkshire and the Humber', 'East of England', 'South West England',
+    'East Midlands', 'North East England', 'Scotland (Edinburgh/Glasgow)',
+    'Wales (Cardiff/Swansea)', 'Northern Ireland (Belfast)', 'Other Region'
+  ],
+  'United Arab Emirates': [
+    'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain'
+  ],
+  'Canada': [
+    'Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan',
+    'Nova Scotia', 'New Brunswick', 'Newfoundland and Labrador',
+    'Prince Edward Island', 'Northwest Territories', 'Nunavut', 'Yukon', 'Other Province'
+  ],
+  'Australia': [
+    'New South Wales (Sydney)', 'Victoria (Melbourne)', 'Queensland (Brisbane)',
+    'Western Australia (Perth)', 'South Australia (Adelaide)', 'Tasmania (Hobart)',
+    'Australian Capital Territory (Canberra)', 'Northern Territory (Darwin)', 'Other Territory'
+  ],
+  'Singapore': [
+    'Central Region', 'East Region', 'North Region', 'North-East Region', 'West Region',
+    'Downtown Core', 'Jurong', 'Tampines', 'Woodlands', 'Bedok', 'Orchard / Marina Bay'
+  ],
+  'Germany': [
+    'Bavaria (Bayern)', 'Berlin', 'Baden-Württemberg', 'North Rhine-Westphalia',
+    'Hesse (Hessen)', 'Hamburg', 'Lower Saxony (Niedersachsen)', 'Saxony (Sachsen)',
+    'Rhineland-Palatinate', 'Schleswig-Holstein', 'Brandenburg', 'Saxony-Anhalt',
+    'Thuringia', 'Mecklenburg-Vorpommern', 'Saarland', 'Bremen', 'Other State'
+  ],
+  'Saudi Arabia': [
+    'Riyadh Region', 'Makkah Region (Jeddah/Mecca)', 'Eastern Province (Dammam/Khobar)',
+    'Madinah Region', 'Al Qassim', 'Asir', 'Tabuk', 'Hail', 'Jazan', 'Najran',
+    'Al Bahah', 'Al Jawf', 'Northern Borders', 'Other Province'
+  ],
+  'Qatar': [
+    'Doha (Ad Dawhah)', 'Al Rayyan', 'Al Wakrah', 'Al Khor', 'Al Daayen', 'Umm Salal', 'Al Shamal', 'Al Shahaniya'
+  ],
+  'Kuwait': [
+    'Al Asimah (Capital)', 'Hawalli', 'Farwaniya', 'Ahmadi', 'Jahra', 'Mubarak Al-Kabeer'
+  ],
+  'Malaysia': [
+    'Selangor', 'Kuala Lumpur', 'Johor', 'Penang (Pulau Pinang)', 'Perak', 'Sabah',
+    'Sarawak', 'Kedah', 'Pahang', 'Melaka', 'Negeri Sembilan', 'Terengganu', 'Kelantan', 'Perlis', 'Putrajaya', 'Other State'
+  ],
+  'New Zealand': [
+    'Auckland', 'Wellington', 'Canterbury (Christchurch)', 'Waikato (Hamilton)',
+    'Bay of Plenty (Tauranga)', 'Otago (Dunedin/Queenstown)', 'Other Region'
+  ],
+  'France': [
+    'Île-de-France (Paris)', 'Auvergne-Rhône-Alpes (Lyon)', 'Provence-Alpes-Côte d\'Azur',
+    'Nouvelle-Aquitaine', 'Occitanie', 'Hauts-de-France', 'Grand Est', 'Pays de la Loire', 'Brittany', 'Other Region'
+  ],
+  'Netherlands': [
+    'North Holland (Amsterdam)', 'South Holland (Rotterdam/The Hague)', 'Utrecht',
+    'North Brabant (Eindhoven)', 'Gelderland', 'Overijssel', 'Limburg', 'Other Province'
+  ],
+  'Ireland': [
+    'Dublin', 'Cork', 'Galway', 'Limerick', 'Waterford', 'Kildare', 'Meath', 'Wicklow', 'Other County'
+  ],
+  'South Africa': [
+    'Gauteng (Johannesburg/Pretoria)', 'Western Cape (Cape Town)', 'KwaZulu-Natal (Durban)',
+    'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'Other Province'
+  ],
+  'Other': [
+    'Capital / Main City', 'Northern Region', 'Southern Region', 'Eastern Region', 'Western Region', 'Central Region', 'Other Province / State'
+  ]
+};
 
 /**
  * Ambient Glow Subcomponent (Memoized to prevent repaints)
@@ -54,9 +141,13 @@ const ReviewCard = memo(function ReviewCard({ data }) {
         <span className="font-bold text-white text-right">{data.fullName}</span>
       </div>
       <div className="flex justify-between items-center pt-3">
+        <span className="text-gray-400 font-medium">Location:</span>
+        <span className="font-bold text-gray-200 text-right">{data.state ? `${data.state}, ` : ''}{data.country || 'India'}</span>
+      </div>
+      <div className="flex justify-between items-center pt-3">
         <span className="text-gray-400 font-medium">Phone:</span>
         <span className="font-mono font-bold text-[#00ff88] text-right">
-          +91 {data.mobile ? data.mobile.replace(/\D/g, '').slice(-10) : ''}
+          {data.countryCode || '+91'} {data.mobile || ''}
         </span>
       </div>
       <div className="flex justify-between items-center pt-3">
@@ -103,7 +194,7 @@ const SuccessConfirmation = memo(function SuccessConfirmation({ successData, onR
       <div className="text-left my-2">
         <a
           href={`https://wa.me/919390662637?text=${encodeURIComponent(
-            `Hi ARNE Works, I have submitted booking #${successData.bookingId} for ${successData.service}. Name: ${successData.fullName}.`
+            `Hi ARNE Works, I have submitted my creative project booking on your website.\n\n📌 *Booking Reference ID:* ${successData.bookingId}\n👤 *Client Name:* ${successData.fullName}\n🎬 *Selected Service:* ${successData.service}\n🌍 *Location:* ${successData.state ? successData.state + ', ' : ''}${successData.country || 'India'}\n📱 *Mobile / WhatsApp:* ${successData.mobile}\n✉️ *Gmail / Email:* ${successData.email}\n📝 *Requirements / Notes:* ${successData.requirements || 'None'}`
           )}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -113,7 +204,7 @@ const SuccessConfirmation = memo(function SuccessConfirmation({ successData, onR
             <span className="text-2xl">💬</span>
             <div>
               <span className="block text-[9px] font-extrabold text-[#25D366] uppercase">Business WhatsApp</span>
-              <span className="block text-sm font-bold text-white font-mono">+91 9390662637</span>
+              <span className="block text-sm font-bold text-white">Official Direct Support</span>
             </div>
           </div>
           <span className="text-xs font-bold text-[#25D366] text-right">Chat on WhatsApp ↗</span>
@@ -141,12 +232,14 @@ function BookingForm({ onSlotRequested, className = '' }) {
   const [loading, setLoading] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
   const [bookingSuccessData, setBookingSuccessData] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState('India');
 
   // Uncontrolled form state via react-hook-form
   const {
     register,
     handleSubmit,
     getValues,
+    setValue,
     reset,
     formState: { errors }
   } = useForm({
@@ -155,10 +248,18 @@ function BookingForm({ onSlotRequested, className = '' }) {
       fullName: '',
       email: '',
       mobile: '',
+      country: 'India',
+      state: '',
+      countryCode: '+91',
       service: '',
       requirements: ''
     }
   });
+
+  // Dynamic States for currently selected country
+  const availableStates = useMemo(() => {
+    return COUNTRY_STATES_MAP[selectedCountry] || COUNTRY_STATES_MAP['Other'] || [];
+  }, [selectedCountry]);
 
   // Services memo
   const servicesList = useMemo(() => ARNE_SERVICES, []);
@@ -182,10 +283,13 @@ function BookingForm({ onSlotRequested, className = '' }) {
 
     const formValues = getValues();
     const rawDigits = (formValues.mobile || '').replace(/\D/g, '');
-    const clean10Digits = rawDigits.startsWith('91') && rawDigits.length === 12 
-      ? rawDigits.slice(2) 
-      : rawDigits.slice(-10);
-    const formattedPhoneNumber = `+91${clean10Digits}`;
+    const dialCode = (formValues.countryCode || '+91').replace(/[^0-9]/g, '');
+    const formattedPhoneNumber = (formValues.mobile || '').startsWith('+') 
+      ? `+${rawDigits}` 
+      : (dialCode ? `+${dialCode}${rawDigits}` : `+${rawDigits}`);
+    
+    const countryVal = formValues.country || 'India';
+    const stateVal = formValues.state || '';
     const cleanEmail = (formValues.email || '').trim().toLowerCase();
     const cleanNotes = (formValues.requirements || '').trim() || 'No additional requirements specified.';
 
@@ -202,6 +306,10 @@ function BookingForm({ onSlotRequested, className = '' }) {
         client_email: cleanEmail,
         mobile: formattedPhoneNumber,
         client_phone: formattedPhoneNumber,
+        country: countryVal,
+        state: stateVal,
+        client_country: countryVal,
+        client_state: stateVal,
         service: formValues.service,
         service_type: formValues.service,
         requirements: cleanNotes,
@@ -220,6 +328,10 @@ function BookingForm({ onSlotRequested, className = '' }) {
           client_phone: formattedPhoneNumber,
           customer_phone: formattedPhoneNumber,
           customer_whatsapp: formattedPhoneNumber,
+          country: countryVal,
+          state: stateVal,
+          client_country: countryVal,
+          client_state: stateVal,
           service_type: formValues.service,
           service_name: formValues.service,
           project_desc: cleanNotes,
@@ -324,7 +436,7 @@ function BookingForm({ onSlotRequested, className = '' }) {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Rahul Sharma"
+                  placeholder=""
                   {...register('fullName', {
                     required: 'Please enter your full name.',
                     minLength: { value: 2, message: 'Full name must be at least 2 characters.' }
@@ -333,29 +445,102 @@ function BookingForm({ onSlotRequested, className = '' }) {
                 />
               </div>
 
-              {/* Field 2 & 3: Mobile Number & Client Gmail (Grid) */}
+              {/* Field 2 & 3: Country & State / Province (Grid) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">
-                    Mobile Number <span className="text-[#00ff88]">*</span>
+                    Country <span className="text-[#00ff88]">*</span>
+                  </label>
+                  <select
+                    {...register('country', { required: 'Please select your country.' })}
+                    defaultValue="India"
+                    onChange={(e) => {
+                      setSelectedCountry(e.target.value);
+                      setValue('country', e.target.value);
+                      setValue('state', '');
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-[#0c100e] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] text-white text-sm outline-none transition-all cursor-pointer"
+                  >
+                    <option value="India">🇮🇳 India (+91)</option>
+                    <option value="United States">🇺🇸 United States (+1)</option>
+                    <option value="United Kingdom">🇬🇧 United Kingdom (+44)</option>
+                    <option value="United Arab Emirates">🇦🇪 United Arab Emirates (+971)</option>
+                    <option value="Canada">🇨🇦 Canada (+1)</option>
+                    <option value="Australia">🇦🇺 Australia (+61)</option>
+                    <option value="Singapore">🇸🇬 Singapore (+65)</option>
+                    <option value="Germany">🇩🇪 Germany (+49)</option>
+                    <option value="Saudi Arabia">🇸🇦 Saudi Arabia (+966)</option>
+                    <option value="Qatar">🇶🇦 Qatar (+974)</option>
+                    <option value="Kuwait">🇰🇼 Kuwait (+965)</option>
+                    <option value="Malaysia">🇲🇾 Malaysia (+60)</option>
+                    <option value="New Zealand">🇳🇿 New Zealand (+64)</option>
+                    <option value="France">🇫🇷 France (+33)</option>
+                    <option value="Netherlands">🇳🇱 Netherlands (+31)</option>
+                    <option value="Ireland">🇮🇪 Ireland (+353)</option>
+                    <option value="South Africa">🇿🇦 South Africa (+27)</option>
+                    <option value="Other">🌐 Other Country</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                    State / Province <span className="text-[#00ff88]">*</span>
+                  </label>
+                  <select
+                    {...register('state', { required: 'Please select your State / Province.' })}
+                    defaultValue=""
+                    className="w-full px-4 py-3 rounded-xl bg-[#0c100e] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] text-white text-sm outline-none transition-all cursor-pointer"
+                  >
+                    <option value="">-- Choose State / Province --</option>
+                    {availableStates.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Field 4 & 5: Mobile Number (International) & Client Gmail (Grid) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                    Mobile Number (WhatsApp) <span className="text-[#00ff88]">*</span>
                   </label>
                   <div className="flex items-center rounded-xl bg-white/[0.04] border border-white/10 focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88] transition-all overflow-hidden">
-                    <span className="px-3 py-3 text-xs font-bold text-[#00ff88] bg-[#00ff88]/10 border-r border-white/10 select-none">
-                      +91
-                    </span>
+                    <select
+                      {...register('countryCode')}
+                      defaultValue="+91"
+                      className="px-2.5 py-3 text-xs font-bold text-[#00ff88] bg-[#00ff88]/10 border-r border-white/10 outline-none cursor-pointer"
+                    >
+                      <option value="+91">🇮🇳 +91</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+61">🇦🇺 +61</option>
+                      <option value="+65">🇸🇬 +65</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+966">🇸🇦 +966</option>
+                      <option value="+974">🇶🇦 +974</option>
+                      <option value="+965">🇰🇼 +965</option>
+                      <option value="+60">🇲🇾 +60</option>
+                      <option value="+64">🇳🇿 +64</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+31">🇳🇱 +31</option>
+                      <option value="+353">🇮🇪 +353</option>
+                      <option value="+27">🇿🇦 +27</option>
+                      <option value="+">🌐 +</option>
+                    </select>
                     <input
                       type="tel"
-                      placeholder="9390662637"
-                      maxLength={10}
-                      inputMode="numeric"
+                      placeholder=""
+                      maxLength={15}
+                      inputMode="tel"
                       {...register('mobile', {
-                        required: 'Please enter your 10-digit mobile number.',
-                        pattern: {
-                          value: /^[0-9]{10}$/,
-                          message: 'Please enter a valid 10-digit mobile number.'
-                        }
+                        required: 'Please enter your mobile number.',
+                        minLength: { value: 6, message: 'Enter a valid mobile number.' }
                       })}
-                      className="w-full px-3 py-3 bg-transparent text-white text-sm outline-none placeholder-gray-600"
+                      className="w-full px-3 py-3 bg-transparent text-white text-sm outline-none placeholder-gray-600 font-mono"
                     />
                   </div>
                 </div>
@@ -366,7 +551,7 @@ function BookingForm({ onSlotRequested, className = '' }) {
                   </label>
                   <input
                     type="email"
-                    placeholder="name@gmail.com"
+                    placeholder=""
                     {...register('email', {
                       required: 'Please enter your email address.',
                       pattern: {
@@ -405,12 +590,12 @@ function BookingForm({ onSlotRequested, className = '' }) {
               {/* Field 5: Project Requirements */}
               <div>
                 <label className="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">
-                  Requirements / Project Notes
+                  Requirements / Project Notes <span className="text-[#00ff88]">*</span>
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Describe your project style, timeline, reference links, etc."
-                  {...register('requirements')}
+                  placeholder=""
+                  {...register('requirements', { required: 'Please enter your project requirements / notes.' })}
                   className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] text-white text-sm outline-none placeholder-gray-600 transition-all resize-none"
                 />
               </div>

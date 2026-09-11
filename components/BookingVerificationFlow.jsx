@@ -265,7 +265,7 @@ export default function BookingVerificationFlow({ className = '', onComplete }) 
                     <input
                       type="tel"
                       name="mobile"
-                      placeholder="9390662637"
+                      placeholder="9876543210"
                       maxLength={10}
                       inputMode="numeric"
                       value={formData.mobile}

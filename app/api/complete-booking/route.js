@@ -10,7 +10,7 @@ import twilio from 'twilio';
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { fullName, mobile, email, service, requirements } = body;
+    const { fullName, mobile, email, country, state, service, requirements, date, timeSlot, budget, refLink, refFiles } = body;
 
     // Validate Required Inputs
     if (!fullName || !mobile || !email || !service) {
@@ -50,9 +50,18 @@ export async function POST(req) {
             client_phone: mobile.trim(),
             customer_phone: mobile.trim(),
             customer_whatsapp: mobile.trim(),
+            country: country || 'India',
+            state: state || '',
             service_type: service.trim(),
             service_name: service.trim(),
             project_desc: clientNotes,
+            booking_date: date || '',
+            booking_time: timeSlot || '',
+            time_slot: timeSlot || '',
+            estimated_budget: budget || '',
+            budget: budget || '',
+            ref_link: refLink || '',
+            ref_files: refFiles || '',
             status: 'New Booking',
             booking_status: 'New Booking',
             payment_status: 'Review Pending',
@@ -73,7 +82,9 @@ export async function POST(req) {
               full_name: fullName.trim(),
               mobile: mobile.trim(),
               whatsapp: mobile.trim(),
-              email: email.trim().toLowerCase()
+              email: email.trim().toLowerCase(),
+              country: country || 'India',
+              state: state || ''
             }
           ]);
         } catch (_) {}
@@ -97,7 +108,7 @@ export async function POST(req) {
         const fromFormatted = twilioFrom.startsWith('whatsapp:') ? twilioFrom : `whatsapp:${twilioFrom}`;
         const toFormatted = businessTo.startsWith('whatsapp:') ? businessTo : `whatsapp:${businessTo}`;
 
-        const whatsappBody = `📌 *New Slot Confirmed by Client*\n• *Client:* ${fullName.trim()}\n• *Phone:* ${mobile.trim()}\n• *Email:* ${email.trim()}\n• *Service:* ${service.trim()}\n• *Notes:* ${clientNotes}`;
+        const whatsappBody = `📌 *New Slot Confirmed by Client*\n• *Client:* ${fullName.trim()}\n• *Location:* ${state ? state + ', ' : ''}${country || 'India'}\n• *Phone:* ${mobile.trim()}\n• *Email:* ${email.trim()}\n• *Service:* ${service.trim()}\n• *Preferred Date:* ${date || 'Flexible'}\n• *Preferred Slot:* ${timeSlot || 'Flexible'}${budget ? `\n• *Budget:* ${budget}` : ''}${refLink ? `\n• *Reference Link:* ${refLink}` : ''}${refFiles ? `\n• *Reference Files:* ${refFiles}` : ''}\n• *Notes:* ${clientNotes}`;
 
         await client.messages.create({
           from: fromFormatted,
@@ -137,9 +148,15 @@ export async function POST(req) {
             <div style="background: rgba(255, 255, 255, 0.05); padding: 22px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
               <p style="margin: 8px 0; font-size: 14px;"><strong>Reference ID:</strong> <span style="color: #00ff88; font-family: monospace;">${bookingId}</span></p>
               <p style="margin: 8px 0; font-size: 14px;"><strong>Client Name:</strong> ${fullName}</p>
+              <p style="margin: 8px 0; font-size: 14px;"><strong>Location:</strong> ${state ? state + ', ' : ''}${country || 'India'}</p>
               <p style="margin: 8px 0; font-size: 14px;"><strong>Mobile Number:</strong> <a href="tel:${mobile}" style="color: #00ff88; text-decoration: none;">${mobile}</a></p>
               <p style="margin: 8px 0; font-size: 14px;"><strong>Client Gmail:</strong> <a href="mailto:${email}" style="color: #00ff88; text-decoration: none;">${email}</a></p>
               <p style="margin: 8px 0; font-size: 14px;"><strong>Selected Service:</strong> ${service}</p>
+              <p style="margin: 8px 0; font-size: 14px;"><strong>Preferred Date:</strong> ${date || 'Flexible'}</p>
+              <p style="margin: 8px 0; font-size: 14px;"><strong>Preferred Slot:</strong> ${timeSlot || 'Flexible Slot'}</p>
+              ${budget ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Estimated Budget:</strong> ${budget}</p>` : ''}
+              ${refLink ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Reference Link:</strong> <a href="${refLink}" target="_blank" style="color: #00ff88;">${refLink}</a></p>` : ''}
+              ${refFiles ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Reference Files:</strong> ${refFiles}</p>` : ''}
               <p style="margin: 8px 0; font-size: 14px;"><strong>Booking Status:</strong> <span style="background: rgba(0,255,136,0.15); color: #00ff88; padding: 3px 8px; border-radius: 6px; font-weight: bold;">New Booking</span></p>
               <p style="margin: 8px 0; font-size: 14px;"><strong>Confirmed At:</strong> ${timestamp}</p>
             </div>

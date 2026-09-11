@@ -338,7 +338,7 @@ async function handleBookSlotRequest(reqData) {
 
                             <div class="policy-card">
                                 <strong>📌 Cancellation & Reschedule Policy:</strong><br>
-                                If you need to modify, reschedule, or cancel your booking, please notify us at least 24 hours in advance by replying directly to this email or connecting with Chandu via WhatsApp at <strong>+91 9390662637</strong>.
+                                If you need to modify, reschedule, or cancel your booking, please notify us at least 24 hours in advance by replying directly to this email or connecting with Chandu via WhatsApp at <strong>Official WhatsApp Support</strong>.
                             </div>
 
                             <p style="font-size: 13px; color: #a1a1aa; margin: 0;">
@@ -347,7 +347,7 @@ async function handleBookSlotRequest(reqData) {
                         </div>
                         <div class="footer">
                             <p style="margin: 0 0 6px 0;"><strong>ARNE Stories & Creative Studio</strong> — Directed by Chandu</p>
-                            <p style="margin: 0;">Email: <a href="mailto:arnestories26@gmail.com">arnestories26@gmail.com</a> | WhatsApp: <a href="https://wa.me/919390662637">+91 9390662637</a></p>
+                            <p style="margin: 0;">Email: <a href="mailto:arnestories26@gmail.com">arnestories26@gmail.com</a> | WhatsApp: <a href="https://wa.me/919390662637">Chat on WhatsApp (Direct Support)</a></p>
                         </div>
                     </div>
                 </body>
@@ -370,11 +370,11 @@ Project Requirements:
 ${projectDesc}
 
 Cancellation / Reschedule Note:
-If you need to modify or reschedule your booking, please notify us at least 24 hours in advance by replying to this email or contacting Chandu at arnestories26@gmail.com / WhatsApp +91 9390662637.
+If you need to modify or reschedule your booking, please notify us at least 24 hours in advance by replying to this email or contacting Chandu at arnestories26@gmail.com / Official WhatsApp Support.
 
 ==========================================
 ARNE Stories Creative Studio
-Phone/WhatsApp: +91 9390662637
+WhatsApp: Official WhatsApp Direct (https://wa.me/919390662637)
 Email: arnestories26@gmail.com
                 `.trim();
 

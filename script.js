@@ -1151,14 +1151,35 @@
         const nameEl = document.getElementById('cust-full-name');
         const mobileEl = document.getElementById('cust-mobile');
         const emailEl = document.getElementById('cust-email');
+        const countryEl = document.getElementById('cust-country');
+        const stateEl = document.getElementById('cust-state');
+        const dialCodeEl = document.getElementById('cust-country-code');
         const companyEl = document.getElementById('cust-company');
         const locationEl = document.getElementById('cust-location');
 
         if (nameEl) nameEl.value = '';
         if (mobileEl) mobileEl.value = '';
         if (emailEl) emailEl.value = '';
+        if (countryEl) countryEl.value = 'India';
+        if (dialCodeEl) dialCodeEl.value = '+91';
+        if (typeof populateStatesForCountry === 'function') {
+            populateStatesForCountry('India');
+        }
+        if (stateEl) stateEl.value = '';
         if (companyEl) companyEl.value = '';
         if (locationEl) locationEl.value = '';
+
+        const srvEl = document.getElementById('service-select');
+        const descEl = document.getElementById('project-description');
+        const slotEl = document.getElementById('pref-slot');
+        const budgetEl = document.getElementById('est-budget');
+        const linkEl = document.getElementById('ref-link');
+
+        if (srvEl) srvEl.value = '';
+        if (descEl) descEl.value = '';
+        if (slotEl) slotEl.value = 'Flexible Slot';
+        if (budgetEl) budgetEl.value = '';
+        if (linkEl) linkEl.value = '';
 
         // Reset views and error states
         document.getElementById('booking-form-content')?.classList.remove('hidden');
@@ -1170,6 +1191,520 @@
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         if (window.lenis) window.lenis.stop();
+    };
+
+    // Country calling codes dictionary for global support
+    const COUNTRY_CALLING_CODES = {
+        'India': '+91',
+        'United States': '+1',
+        'United Kingdom': '+44',
+        'United Arab Emirates': '+971',
+        'Canada': '+1-ca',
+        'Australia': '+61',
+        'Singapore': '+65',
+        'Germany': '+49',
+        'Saudi Arabia': '+966',
+        'Qatar': '+974',
+        'Kuwait': '+965',
+        'Oman': '+968',
+        'Malaysia': '+60',
+        'New Zealand': '+64',
+        'France': '+33',
+        'Netherlands': '+31',
+        'Ireland': '+353',
+        'South Africa': '+27',
+        'Italy': '+39',
+        'Spain': '+34',
+        'Japan': '+81',
+        'Brazil': '+55',
+        'Mexico': '+52',
+        'Other': '+'
+    };
+
+    // Comprehensive Country to States / Provinces dictionary
+    const COUNTRY_STATES_MAP = {
+        'India': [
+            'Andhra Pradesh',
+            'Telangana',
+            'Karnataka',
+            'Tamil Nadu',
+            'Maharashtra',
+            'Kerala',
+            'Gujarat',
+            'Delhi (NCT)',
+            'Uttar Pradesh',
+            'West Bengal',
+            'Rajasthan',
+            'Punjab',
+            'Haryana',
+            'Madhya Pradesh',
+            'Bihar',
+            'Odisha',
+            'Assam',
+            'Jharkhand',
+            'Chhattisgarh',
+            'Himachal Pradesh',
+            'Uttarakhand',
+            'Goa',
+            'Jammu and Kashmir',
+            'Chandigarh',
+            'Puducherry',
+            'Arunachal Pradesh',
+            'Manipur',
+            'Meghalaya',
+            'Mizoram',
+            'Nagaland',
+            'Sikkim',
+            'Tripura',
+            'Andaman and Nicobar Islands',
+            'Dadra and Nagar Haveli and Daman and Diu',
+            'Ladakh',
+            'Lakshadweep',
+            'Other State / UT'
+        ],
+        'United States': [
+            'Alabama',
+            'Alaska',
+            'Arizona',
+            'Arkansas',
+            'California',
+            'Colorado',
+            'Connecticut',
+            'Delaware',
+            'District of Columbia (DC)',
+            'Florida',
+            'Georgia',
+            'Hawaii',
+            'Idaho',
+            'Illinois',
+            'Indiana',
+            'Iowa',
+            'Kansas',
+            'Kentucky',
+            'Louisiana',
+            'Maine',
+            'Maryland',
+            'Massachusetts',
+            'Michigan',
+            'Minnesota',
+            'Mississippi',
+            'Missouri',
+            'Montana',
+            'Nebraska',
+            'Nevada',
+            'New Hampshire',
+            'New Jersey',
+            'New Mexico',
+            'New York',
+            'North Carolina',
+            'North Dakota',
+            'Ohio',
+            'Oklahoma',
+            'Oregon',
+            'Pennsylvania',
+            'Rhode Island',
+            'South Carolina',
+            'South Dakota',
+            'Tennessee',
+            'Texas',
+            'Utah',
+            'Vermont',
+            'Virginia',
+            'Washington',
+            'West Virginia',
+            'Wisconsin',
+            'Wyoming',
+            'Other Territory'
+        ],
+        'United Kingdom': [
+            'Greater London',
+            'South East England',
+            'North West England',
+            'West Midlands',
+            'Yorkshire and the Humber',
+            'East of England',
+            'South West England',
+            'East Midlands',
+            'North East England',
+            'Scotland (Edinburgh/Glasgow)',
+            'Wales (Cardiff/Swansea)',
+            'Northern Ireland (Belfast)',
+            'Other Region'
+        ],
+        'United Arab Emirates': [
+            'Dubai',
+            'Abu Dhabi',
+            'Sharjah',
+            'Ajman',
+            'Ras Al Khaimah',
+            'Fujairah',
+            'Umm Al Quwain'
+        ],
+        'Canada': [
+            'Ontario',
+            'Quebec',
+            'British Columbia',
+            'Alberta',
+            'Manitoba',
+            'Saskatchewan',
+            'Nova Scotia',
+            'New Brunswick',
+            'Newfoundland and Labrador',
+            'Prince Edward Island',
+            'Northwest Territories',
+            'Nunavut',
+            'Yukon',
+            'Other Province / Territory'
+        ],
+        'Australia': [
+            'New South Wales (Sydney)',
+            'Victoria (Melbourne)',
+            'Queensland (Brisbane)',
+            'Western Australia (Perth)',
+            'South Australia (Adelaide)',
+            'Tasmania (Hobart)',
+            'Australian Capital Territory (Canberra)',
+            'Northern Territory (Darwin)',
+            'Other State / Territory'
+        ],
+        'Singapore': [
+            'Central Region',
+            'East Region',
+            'North Region',
+            'North-East Region',
+            'West Region',
+            'Downtown Core',
+            'Jurong',
+            'Tampines',
+            'Woodlands',
+            'Bedok',
+            'Orchard / Marina Bay'
+        ],
+        'Germany': [
+            'Bavaria (Bayern)',
+            'Berlin',
+            'Baden-Württemberg',
+            'North Rhine-Westphalia (Nordrhein-Westfalen)',
+            'Hesse (Hessen)',
+            'Hamburg',
+            'Lower Saxony (Niedersachsen)',
+            'Saxony (Sachsen)',
+            'Rhineland-Palatinate (Rheinland-Pfalz)',
+            'Schleswig-Holstein',
+            'Brandenburg',
+            'Saxony-Anhalt (Sachsen-Anhalt)',
+            'Thuringia (Thüringen)',
+            'Mecklenburg-Vorpommern',
+            'Saarland',
+            'Bremen',
+            'Other State'
+        ],
+        'Saudi Arabia': [
+            'Riyadh Region',
+            'Makkah Region (Jeddah/Mecca)',
+            'Eastern Province (Dammam/Khobar)',
+            'Madinah Region',
+            'Al Qassim',
+            'Asir',
+            'Tabuk',
+            'Hail',
+            'Jazan',
+            'Najran',
+            'Al Bahah',
+            'Al Jawf',
+            'Northern Borders',
+            'Other Province'
+        ],
+        'Qatar': [
+            'Doha (Ad Dawhah)',
+            'Al Rayyan',
+            'Al Wakrah',
+            'Al Khor',
+            'Al Daayen',
+            'Umm Salal',
+            'Al Shamal',
+            'Al Shahaniya'
+        ],
+        'Kuwait': [
+            'Al Asimah (Capital)',
+            'Hawalli',
+            'Farwaniya',
+            'Ahmadi',
+            'Jahra',
+            'Mubarak Al-Kabeer'
+        ],
+        'Oman': [
+            'Muscat',
+            'Dhofar (Salalah)',
+            'Musandam',
+            'Al Buraimi',
+            'Ad Dakhiliyah',
+            'Al Batinah North',
+            'Al Batinah South',
+            'Ash Sharqiyah North',
+            'Ash Sharqiyah South',
+            'Ad Dhahirah',
+            'Al Wusta'
+        ],
+        'Malaysia': [
+            'Selangor',
+            'Kuala Lumpur',
+            'Johor',
+            'Penang (Pulau Pinang)',
+            'Perak',
+            'Sabah',
+            'Sarawak',
+            'Kedah',
+            'Pahang',
+            'Melaka',
+            'Negeri Sembilan',
+            'Terengganu',
+            'Kelantan',
+            'Perlis',
+            'Putrajaya',
+            'Labuan',
+            'Other State'
+        ],
+        'New Zealand': [
+            'Auckland',
+            'Wellington',
+            'Canterbury (Christchurch)',
+            'Waikato (Hamilton)',
+            'Bay of Plenty (Tauranga)',
+            'Otago (Dunedin/Queenstown)',
+            'Manawatu-Wanganui',
+            'Hawke\'s Bay',
+            'Taranaki',
+            'Northland',
+            'Southland',
+            'Nelson / Marlborough / Tasman',
+            'Gisborne',
+            'West Coast'
+        ],
+        'France': [
+            'Île-de-France (Paris)',
+            'Auvergne-Rhône-Alpes (Lyon)',
+            'Provence-Alpes-Côte d\'Azur (Marseille/Nice)',
+            'Nouvelle-Aquitaine (Bordeaux)',
+            'Occitanie (Toulouse/Montpellier)',
+            'Hauts-de-France (Lille)',
+            'Grand Est (Strasbourg)',
+            'Pays de la Loire (Nantes)',
+            'Brittany (Bretagne/Rennes)',
+            'Normandy',
+            'Bourgogne-Franche-Comté',
+            'Centre-Val de Loire',
+            'Corsica',
+            'Other Region / Overseas'
+        ],
+        'Netherlands': [
+            'North Holland (Amsterdam)',
+            'South Holland (Rotterdam/The Hague)',
+            'Utrecht',
+            'North Brabant (Eindhoven)',
+            'Gelderland',
+            'Overijssel',
+            'Limburg (Maastricht)',
+            'Friesland',
+            'Groningen',
+            'Drenthe',
+            'Flevoland',
+            'Zeeland',
+            'Other Province'
+        ],
+        'Ireland': [
+            'Dublin',
+            'Cork',
+            'Galway',
+            'Limerick',
+            'Waterford',
+            'Kildare',
+            'Meath',
+            'Wicklow',
+            'Wexford',
+            'Kerry',
+            'Clare',
+            'Donegal',
+            'Mayo',
+            'Louth',
+            'Tipperary',
+            'Kilkenny',
+            'Sligo',
+            'Other County'
+        ],
+        'South Africa': [
+            'Gauteng (Johannesburg/Pretoria)',
+            'Western Cape (Cape Town)',
+            'KwaZulu-Natal (Durban)',
+            'Eastern Cape (Gqeberha)',
+            'Free State (Bloemfontein)',
+            'Limpopo',
+            'Mpumalanga',
+            'North West',
+            'Northern Cape',
+            'Other Province'
+        ],
+        'Italy': [
+            'Lombardy (Milano)',
+            'Lazio (Roma)',
+            'Campania (Napoli)',
+            'Veneto (Venezia/Verona)',
+            'Piedmont (Torino)',
+            'Emilia-Romagna (Bologna)',
+            'Tuscany (Firenze)',
+            'Sicily (Palermo/Catania)',
+            'Puglia (Bari)',
+            'Liguria (Genova)',
+            'Calabria',
+            'Sardinia (Cagliari)',
+            'Marche',
+            'Abruzzo',
+            'Friuli Venezia Giulia',
+            'Trentino-Alto Adige',
+            'Umbria',
+            'Basilicata',
+            'Molise',
+            'Aosta Valley'
+        ],
+        'Spain': [
+            'Community of Madrid (Madrid)',
+            'Catalonia (Barcelona)',
+            'Andalusia (Sevilla/Málaga)',
+            'Valencian Community (Valencia)',
+            'Galicia',
+            'Basque Country (Bilbao/San Sebastián)',
+            'Canary Islands (Tenerife/Las Palmas)',
+            'Balearic Islands (Mallorca/Ibiza)',
+            'Castile and León',
+            'Castilla-La Mancha',
+            'Region of Murcia',
+            'Aragon (Zaragoza)',
+            'Extremadura',
+            'Asturias',
+            'Navarre',
+            'Cantabria',
+            'La Rioja'
+        ],
+        'Japan': [
+            'Tokyo',
+            'Osaka',
+            'Kanagawa (Yokohama)',
+            'Aichi (Nagoya)',
+            'Hokkaido (Sapporo)',
+            'Fukuoka',
+            'Hyogo (Kobe)',
+            'Saitama',
+            'Chiba',
+            'Kyoto',
+            'Shizuoka',
+            'Hiroshima',
+            'Miyagi (Sendai)',
+            'Okinawa',
+            'Other Prefecture'
+        ],
+        'Brazil': [
+            'São Paulo',
+            'Rio de Janeiro',
+            'Minas Gerais (Belo Horizonte)',
+            'Bahia (Salvador)',
+            'Paraná (Curitiba)',
+            'Rio Grande do Sul (Porto Alegre)',
+            'Pernambuco (Recife)',
+            'Ceará (Fortaleza)',
+            'Santa Catarina (Florianópolis)',
+            'Goiás (Goiânia)',
+            'Federal District (Brasília)',
+            'Pará',
+            'Amazonas (Manaus)',
+            'Espírito Santo',
+            'Maranhão',
+            'Other State'
+        ],
+        'Mexico': [
+            'Mexico City (CDMX)',
+            'Jalisco (Guadalajara)',
+            'Nuevo León (Monterrey)',
+            'State of Mexico (Edomex)',
+            'Puebla',
+            'Guanajuato',
+            'Veracruz',
+            'Yucatán (Mérida)',
+            'Quintana Roo (Cancún)',
+            'Baja California (Tijuana)',
+            'Querétaro',
+            'Chihuahua',
+            'Other State'
+        ],
+        'Other': [
+            'Capital / Main City',
+            'Northern Province / State',
+            'Southern Province / State',
+            'Eastern Province / State',
+            'Western Province / State',
+            'Central Region',
+            'Overseas / Island Territory',
+            'Other State / Province'
+        ]
+    };
+
+    // Function to dynamically populate state names based on the selected country
+    window.populateStatesForCountry = function (countryName, selectedState = '') {
+        const stateSelect = document.getElementById('cust-state');
+        if (!stateSelect) return;
+
+        const states = COUNTRY_STATES_MAP[countryName] || COUNTRY_STATES_MAP['Other'] || [];
+
+        // Save current value if none passed
+        const currentVal = selectedState || stateSelect.value || '';
+
+        // Reset and rebuild options
+        stateSelect.innerHTML = '<option value="">-- Choose State / Province --</option>';
+
+        states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state;
+            option.textContent = state;
+            if (currentVal && state.toLowerCase() === currentVal.toLowerCase()) {
+                option.selected = true;
+            }
+            stateSelect.appendChild(option);
+        });
+
+        if (typeof updateBookingSummaryLive === 'function') {
+            updateBookingSummaryLive();
+        }
+    };
+
+    window.handleCountryChange = function () {
+        const countryEl = document.getElementById('cust-country');
+        const dialCodeEl = document.getElementById('cust-country-code');
+        if (!countryEl) return;
+
+        const selCountry = countryEl.value || 'India';
+        
+        // Update Dial Code
+        if (dialCodeEl) {
+            const code = COUNTRY_CALLING_CODES[selCountry] || '+';
+            dialCodeEl.value = code;
+        }
+
+        // Dynamically repopulate State names according to selected Country
+        populateStatesForCountry(selCountry);
+    };
+
+    window.handleDialCodeChange = function () {
+        const dialCodeEl = document.getElementById('cust-country-code');
+        const countryEl = document.getElementById('cust-country');
+        if (!dialCodeEl || !countryEl) return;
+
+        const selCode = dialCodeEl.value;
+        for (const [country, code] of Object.entries(COUNTRY_CALLING_CODES)) {
+            if (code === selCode) {
+                countryEl.value = country;
+                handleCountryChange();
+                break;
+            }
+        }
     };
 
     window.closeBookingModal = function () {
@@ -1299,6 +1834,13 @@
 
     // Drag & Drop event listeners initialization
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize States for default selected country (India)
+        if (typeof populateStatesForCountry === 'function') {
+            const countryEl = document.getElementById('cust-country');
+            const initialCountry = countryEl ? countryEl.value : 'India';
+            populateStatesForCountry(initialCountry);
+        }
+
         const dropZone = document.getElementById('drag-drop-area');
         if (!dropZone) return;
 
@@ -1347,22 +1889,37 @@
             if (!firstInvalidField) firstInvalidField = document.getElementById('cust-full-name');
         }
 
-        // Mobile Number Validation * (Accepts 10 digits or with +91)
-        const mobile = document.getElementById('cust-mobile')?.value.trim();
-        const digitsOnly = mobile ? mobile.replace(/\D/g, '') : '';
-        const clean10 = digitsOnly.startsWith('91') && digitsOnly.length === 12 ? digitsOnly.slice(2) : digitsOnly.slice(-10);
-        if (!mobile || clean10.length !== 10) {
-            showFieldError('cust-mobile', 'err-mobile');
-            isValid = false;
-            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-mobile');
-        }
-
         // Email Address Validation *
         const email = document.getElementById('cust-email')?.value.trim();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             showFieldError('cust-email', 'err-email');
             isValid = false;
             if (!firstInvalidField) firstInvalidField = document.getElementById('cust-email');
+        }
+
+        // Country Validation *
+        const country = document.getElementById('cust-country')?.value;
+        if (!country) {
+            showFieldError('cust-country', 'err-country');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-country');
+        }
+
+        // State / Province Validation *
+        const state = document.getElementById('cust-state')?.value.trim();
+        if (!state) {
+            showFieldError('cust-state', 'err-state');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-state');
+        }
+
+        // Mobile Number Validation * (Accepts international format: 6 to 15 digits)
+        const mobile = document.getElementById('cust-mobile')?.value.trim();
+        const digitsOnly = mobile ? mobile.replace(/\D/g, '') : '';
+        if (!mobile || digitsOnly.length < 6 || digitsOnly.length > 15) {
+            showFieldError('cust-mobile', 'err-mobile');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('cust-mobile');
         }
 
         // Service Select Validation *
@@ -1373,7 +1930,39 @@
             if (!firstInvalidField) firstInvalidField = document.getElementById('service-select');
         }
 
-        // URL Validation (Optional field)
+        // Project Requirements / Notes Validation *
+        const projectDesc = document.getElementById('project-description')?.value.trim();
+        if (!projectDesc) {
+            showFieldError('project-description', 'err-project-desc');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('project-description');
+        }
+
+        // Preferred Date Validation *
+        const prefDate = document.getElementById('pref-date')?.value;
+        if (!prefDate) {
+            showFieldError('pref-date', 'err-pref-date');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('pref-date');
+        }
+
+        // Preferred Time / Slot Validation *
+        const prefSlot = document.getElementById('pref-slot')?.value;
+        if (!prefSlot) {
+            showFieldError('pref-slot', 'err-pref-slot');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('pref-slot');
+        }
+
+        // Estimated Budget Validation *
+        const estBudget = document.getElementById('est-budget')?.value.trim();
+        if (!estBudget) {
+            showFieldError('est-budget', 'err-est-budget');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('est-budget');
+        }
+
+        // Reference Link Validation (Optional: validates URL format only if provided)
         const link = document.getElementById('ref-link')?.value.trim();
         if (link && !/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i.test(link)) {
             showFieldError('ref-link', 'err-link');
@@ -1432,17 +2021,34 @@
             const bookingId = `ARNE-2026-${randomCode}`;
 
             const fullName = document.getElementById('cust-full-name')?.value.trim() || '';
+            const email = document.getElementById('cust-email')?.value.trim().toLowerCase() || '';
+            const country = document.getElementById('cust-country')?.value || 'India';
+            const state = document.getElementById('cust-state')?.value.trim() || '';
+            
+            const rawDialCode = document.getElementById('cust-country-code')?.value || '+91';
+            const cleanDialCode = rawDialCode.replace('-ca', '');
             const rawMobile = document.getElementById('cust-mobile')?.value.trim() || '';
             const digitsOnly = rawMobile.replace(/\D/g, '');
-            const clean10 = digitsOnly.startsWith('91') && digitsOnly.length === 12 ? digitsOnly.slice(2) : digitsOnly.slice(-10);
-            const formattedPhone = clean10 ? `+91${clean10}` : rawMobile;
+            const dialDigitsOnly = cleanDialCode.replace(/[^0-9]/g, '');
 
-            const email = document.getElementById('cust-email')?.value.trim().toLowerCase() || '';
+            let formattedPhone = '';
+            if (rawMobile.startsWith('+')) {
+                formattedPhone = `+${digitsOnly}`;
+            } else if (dialDigitsOnly) {
+                formattedPhone = `+${dialDigitsOnly}${digitsOnly}`;
+            } else {
+                formattedPhone = `+${digitsOnly}`;
+            }
+
             const serviceName = document.getElementById('service-select')?.value || 'Creative Service';
             const projectDesc = document.getElementById('project-description')?.value.trim() || 'No additional requirements.';
             const prefDate = document.getElementById('pref-date')?.value || new Date().toISOString().split('T')[0];
             const prefSlot = document.getElementById('pref-slot')?.value || 'Flexible Slot';
-            const refLink = document.getElementById('ref-link')?.value.trim() || 'None';
+            const estBudget = document.getElementById('est-budget')?.value.trim() || '';
+            const refLink = document.getElementById('ref-link')?.value.trim() || '';
+            const fileNames = (typeof uploadedRefFiles !== 'undefined' && uploadedRefFiles.length > 0)
+                ? uploadedRefFiles.map(f => f.name).join(', ')
+                : '';
 
             const bookingData = {
                 id: bookingId,
@@ -1454,13 +2060,22 @@
                 client_phone: formattedPhone,
                 customer_phone: formattedPhone,
                 customer_whatsapp: formattedPhone,
+                client_country: country,
+                customer_country: country,
+                client_state: state,
+                customer_state: state,
+                country: country,
+                state: state,
                 service_type: serviceName,
                 service_name: serviceName,
                 project_desc: projectDesc,
                 booking_date: prefDate,
                 booking_time: prefSlot,
                 time_slot: prefSlot,
-                ref_link: refLink,
+                estimated_budget: estBudget,
+                budget: estBudget,
+                ref_link: refLink || 'None',
+                ref_files: fileNames || 'None',
                 status: 'Pending Review',
                 booking_status: 'Pending Review',
                 payment_status: 'Review Pending',
@@ -1476,7 +2091,9 @@
                         full_name: fullName,
                         mobile: formattedPhone,
                         whatsapp: formattedPhone,
-                        email: email
+                        email: email,
+                        country: country,
+                        state: state
                     }]);
                     console.log('[ARNE Supabase] Booking saved with status Pending Review:', bookingId);
                 }
@@ -1493,8 +2110,15 @@
                         fullName: fullName,
                         email: email,
                         mobile: formattedPhone,
+                        country: country,
+                        state: state,
                         service: serviceName,
                         requirements: projectDesc,
+                        date: prefDate,
+                        timeSlot: prefSlot,
+                        budget: estBudget,
+                        refLink: refLink,
+                        refFiles: fileNames,
                         bookingId: bookingId
                     })
                 }).catch(err => console.warn('[ARNE Backend /api/complete-booking notice]', err.message));
@@ -1509,9 +2133,13 @@
                     customerName: fullName,
                     customerPhone: formattedPhone,
                     customerEmail: email,
+                    country: country,
+                    state: state,
                     serviceName: serviceName,
                     date: prefDate,
                     timeSlot: prefSlot,
+                    budget: estBudget,
+                    refLink: refLink,
                     status: 'Pending Review',
                     paymentStatus: 'Review Pending',
                     createdAt: bookingData.created_at
@@ -1541,12 +2169,36 @@
             if (cPhone) cPhone.textContent = formattedPhone;
             if (cEmail) cEmail.textContent = email;
 
-            // 7. Configure Dynamic Business WhatsApp & Business Gmail Links
-            const waMsg = `Hi ARNE Works, I have submitted my creative project booking on your website.\n\n📌 *Booking Reference ID:* ${bookingId}\n👤 *Name:* ${fullName}\n🎬 *Selected Service:* ${serviceName}\n📱 *Contact:* ${formattedPhone}\n✉️ *Gmail:* ${email}\n📝 *Requirements / Notes:* ${projectDesc}`;
+            // 7. Configure Complete Dynamic Business WhatsApp & Business Gmail Links
+            let waMsg = `Hi ARNE Works, I have submitted my creative project booking on your website.\n\n`
+                + `📌 *Booking Reference ID:* ${bookingId}\n`
+                + `👤 *Client Name:* ${fullName}\n`
+                + `🎬 *Selected Service:* ${serviceName}\n`
+                + `🌍 *Location:* ${state ? state + ', ' : ''}${country}\n`
+                + `📱 *Mobile / WhatsApp:* ${formattedPhone}\n`
+                + `✉️ *Gmail / Email:* ${email}\n`
+                + `📅 *Preferred Date:* ${prefDate}\n`
+                + `⏰ *Preferred Time / Slot:* ${prefSlot}\n`
+                + (estBudget ? `💰 *Estimated Budget:* ${estBudget}\n` : '')
+                + (refLink ? `🔗 *Reference Link:* ${refLink}\n` : '')
+                + (fileNames ? `📎 *Reference Files:* ${fileNames}\n` : '')
+                + `📝 *Requirements / Notes:* ${projectDesc}`;
             window.lastBookingWhatsAppUrl = `https://wa.me/919390662637?text=${encodeURIComponent(waMsg)}`;
 
-            const gmSubject = `🎬 ARNE Booking Request: ${bookingId} - ${fullName} (${serviceName})`;
-            const gmBody = `Hi ARNE Works Team,\n\nI have submitted my booking request on your studio website.\n\nBooking ID: ${bookingId}\nClient Name: ${fullName}\nSelected Service: ${serviceName}\nMobile: ${formattedPhone}\nGmail: ${email}\nPreferred Slot: ${prefDate} (${prefSlot})\n\nProject Requirements / Notes:\n${projectDesc}\n\nLooking forward to your response.`;
+            const gmSubject = `🎬 ARNE Booking Request: ${bookingId} - ${fullName} (${serviceName}) [${country}]`;
+            let gmBody = `Hi ARNE Works Team,\n\nI have submitted my booking request on your studio website.\n\n`
+                + `Booking Reference ID: ${bookingId}\n`
+                + `Client Name: ${fullName}\n`
+                + `Location: ${state ? state + ', ' : ''}${country}\n`
+                + `Selected Service: ${serviceName}\n`
+                + `Mobile / WhatsApp: ${formattedPhone}\n`
+                + `Gmail / Email: ${email}\n`
+                + `Preferred Date: ${prefDate}\n`
+                + `Preferred Time / Slot: ${prefSlot}\n`
+                + (estBudget ? `Estimated Budget: ${estBudget}\n` : '')
+                + (refLink ? `Reference Link: ${refLink}\n` : '')
+                + (fileNames ? `Reference Files: ${fileNames}\n` : '')
+                + `\nProject Requirements / Notes:\n${projectDesc}\n\nLooking forward to your response.`;
             window.lastBookingGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=arneworks26@gmail.com&su=${encodeURIComponent(gmSubject)}&body=${encodeURIComponent(gmBody)}`;
 
             // Reset channel selection to default (WhatsApp)
@@ -1651,12 +2303,12 @@
                     </div>
 
                     <div class="contact-bar">
-                        <span>💬 WhatsApp: +91 93906 62637</span>
+                        <span>💬 Official WhatsApp Support</span>
                         <span>✉️ Gmail: arneworks26@gmail.com</span>
                     </div>
 
                     <div class="footer">
-                        ARNE Works • +91 9390662637 • arneworks26@gmail.com<br>
+                        ARNE Works • Official WhatsApp Support • arneworks26@gmail.com<br>
                         Thank you for choosing ARNE Stories & Production.
                     </div>
                 </div>

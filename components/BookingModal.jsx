@@ -117,7 +117,7 @@ const ModalSuccessView = memo(function ModalSuccessView({ data, onClose }) {
             <span className="text-2xl">💬</span>
             <div>
               <span className="block text-[9px] font-extrabold text-[#25D366] uppercase">Business WhatsApp</span>
-              <span className="block text-sm font-bold text-white font-mono">+91 9390662637</span>
+              <span className="block text-sm font-bold text-white">Official Direct Support</span>
             </div>
           </div>
           <span className="text-xs font-bold text-[#25D366] text-right">Chat on WhatsApp ↗</span>

@@ -82,11 +82,9 @@ function sanitizeInput(str) {
 function formatInternationalPhone(phone) {
     const raw = (phone || '').replace(/[\s\-()]/g, '');
     if (!raw) return '';
-    if (raw.startsWith('+91')) return raw;
     if (raw.startsWith('+')) return raw;
     const cleanDigits = raw.replace(/\D/g, '');
-    const tenDigits = cleanDigits.length > 10 ? cleanDigits.slice(-10) : cleanDigits;
-    return `+91${tenDigits}`;
+    return `+${cleanDigits}`;
 }
 
 async function handleCompleteBooking(reqData) {
@@ -98,12 +96,19 @@ async function handleCompleteBooking(reqData) {
     const clientEmail = sanitizeInput(reqData.email || reqData.client_email);
     const rawPhone = sanitizeInput(reqData.mobile || reqData.client_phone || reqData.phone);
     const clientPhone = formatInternationalPhone(rawPhone);
+    const clientCountry = sanitizeInput(reqData.country || reqData.client_country || 'India');
+    const clientState = sanitizeInput(reqData.state || reqData.client_state || '');
     const serviceType = sanitizeInput(reqData.service || reqData.service_type || reqData.serviceName || 'Creative Service');
     const requirements = sanitizeInput(reqData.requirements || reqData.project_desc || reqData.desc || 'No specific requirements.');
+    const prefDate = sanitizeInput(reqData.date || reqData.booking_date || '');
+    const prefSlot = sanitizeInput(reqData.timeSlot || reqData.booking_time || reqData.slot || '');
+    const estBudget = sanitizeInput(reqData.budget || reqData.estimated_budget || '');
+    const refLink = sanitizeInput(reqData.refLink || reqData.ref_link || '');
+    const refFiles = sanitizeInput(reqData.refFiles || reqData.ref_files || '');
 
     if (!clientName) return { success: false, status: 400, message: 'Customer Name is required.' };
     if (!clientEmail) return { success: false, status: 400, message: 'Valid Email Address is required.' };
-    if (!clientPhone || clientPhone.length < 10) return { success: false, status: 400, message: 'Valid 10-digit Phone Number is required.' };
+    if (!clientPhone || clientPhone.length < 7) return { success: false, status: 400, message: 'Valid phone number is required.' };
     if (!serviceType) return { success: false, status: 400, message: 'Service selection is required.' };
 
     const randomCode = Math.floor(100000 + Math.random() * 900000);
@@ -134,9 +139,22 @@ async function handleCompleteBooking(reqData) {
                 client_phone: clientPhone,
                 customer_phone: clientPhone,
                 customer_whatsapp: clientPhone,
+                client_country: clientCountry,
+                customer_country: clientCountry,
+                client_state: clientState,
+                customer_state: clientState,
+                country: clientCountry,
+                state: clientState,
                 service_type: serviceType,
                 service_name: serviceType,
                 project_desc: requirements,
+                booking_date: prefDate,
+                booking_time: prefSlot,
+                time_slot: prefSlot,
+                estimated_budget: estBudget,
+                budget: estBudget,
+                ref_link: refLink,
+                ref_files: refFiles,
                 status: 'New Booking',
                 booking_status: 'New Booking',
                 payment_status: 'Review Pending',
@@ -156,7 +174,9 @@ async function handleCompleteBooking(reqData) {
                     full_name: clientName,
                     mobile: clientPhone,
                     whatsapp: clientPhone,
-                    email: clientEmail
+                    email: clientEmail,
+                    country: clientCountry,
+                    state: clientState
                 }]);
             } catch (_) {}
         } catch (sbErr) {
@@ -179,7 +199,7 @@ async function handleCompleteBooking(reqData) {
             const fromFormatted = twilioFrom.startsWith('whatsapp:') ? twilioFrom : `whatsapp:${twilioFrom}`;
             const toFormatted = businessTo.startsWith('whatsapp:') ? businessTo : `whatsapp:${businessTo}`;
 
-            const whatsappMessageBody = `📌 *New Slot Confirmed by Client*\n• *Client:* ${clientName}\n• *Phone:* ${clientPhone}\n• *Email:* ${clientEmail}\n• *Service:* ${serviceType}\n• *Notes:* ${requirements}`;
+            const whatsappMessageBody = `📌 *New Slot Confirmed by Client*\n• *Client:* ${clientName}\n• *Location:* ${clientState ? clientState + ', ' : ''}${clientCountry}\n• *Phone:* ${clientPhone}\n• *Email:* ${clientEmail}\n• *Service:* ${serviceType}\n• *Preferred Date:* ${prefDate || 'Flexible'}\n• *Preferred Slot:* ${prefSlot || 'Flexible'}${estBudget ? `\n• *Budget:* ${estBudget}` : ''}${refLink ? `\n• *Reference Link:* ${refLink}` : ''}${refFiles ? `\n• *Reference Files:* ${refFiles}` : ''}\n• *Notes:* ${requirements}`;
 
             await twilioClient.messages.create({
                 from: fromFormatted,
@@ -219,9 +239,15 @@ async function handleCompleteBooking(reqData) {
                     <div style="background: rgba(255, 255, 255, 0.05); padding: 22px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Reference ID:</strong> <span style="color: #00ff88; font-family: monospace;">${bookingId}</span></p>
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Client Name:</strong> ${clientName}</p>
+                        <p style="margin: 8px 0; font-size: 14px;"><strong>Location:</strong> ${clientState ? clientState + ', ' : ''}${clientCountry}</p>
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Mobile Number:</strong> <a href="tel:${clientPhone}" style="color: #00ff88; text-decoration: none;">${clientPhone}</a></p>
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Client Gmail:</strong> <a href="mailto:${clientEmail}" style="color: #00ff88; text-decoration: none;">${clientEmail}</a></p>
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Selected Service:</strong> ${serviceType}</p>
+                        <p style="margin: 8px 0; font-size: 14px;"><strong>Preferred Date:</strong> ${prefDate || 'Flexible'}</p>
+                        <p style="margin: 8px 0; font-size: 14px;"><strong>Preferred Slot:</strong> ${prefSlot || 'Flexible Slot'}</p>
+                        ${estBudget ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Estimated Budget:</strong> ${estBudget}</p>` : ''}
+                        ${refLink ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Reference Link:</strong> <a href="${refLink}" target="_blank" style="color: #00ff88;">${refLink}</a></p>` : ''}
+                        ${refFiles ? `<p style="margin: 8px 0; font-size: 14px;"><strong>Reference Files:</strong> ${refFiles}</p>` : ''}
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Booking Status:</strong> <span style="background: rgba(0,255,136,0.15); color: #00ff88; padding: 3px 8px; border-radius: 6px; font-weight: bold;">New Booking</span></p>
                         <p style="margin: 8px 0; font-size: 14px;"><strong>Confirmed At:</strong> ${formattedTimestamp}</p>
                     </div>

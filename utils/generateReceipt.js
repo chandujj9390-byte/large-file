@@ -349,7 +349,7 @@ export function printReceipt(booking, clientUser) {
               <div class="info-label">Studio Provider</div>
               <div class="info-value">ARNE Works Studio</div>
               <div class="info-sub">arneworks26@gmail.com</div>
-              <div class="info-sub">+91 9390662637 (WhatsApp)</div>
+              <div class="info-sub">Official WhatsApp Support</div>
             </div>
           </div>
 
@@ -382,7 +382,7 @@ export function printReceipt(booking, clientUser) {
             </div>
             <div class="summary-row">
               <span>Business WhatsApp:</span>
-              <span style="color:#25D366; font-weight:bold;">+91 9390662637</span>
+              <span style="color:#25D366; font-weight:bold;">Official WhatsApp Direct</span>
             </div>
             <div class="summary-row">
               <span>Business Gmail:</span>
