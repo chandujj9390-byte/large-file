@@ -607,26 +607,26 @@ function BookingForm({ onSlotRequested, className = '' }) {
 
               {/* Terms & Conditions Checkbox */}
               <div className="pt-2">
-                <label className="flex items-center gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#00ff88]/30 transition-all cursor-pointer select-none">
+                <label className="inline-flex items-center gap-2.5 py-1 px-0.5 cursor-pointer select-none text-left">
                   <input
                     type="checkbox"
                     {...register('agreeTerms', { required: 'You must agree to the Terms & Conditions and Privacy Policy.' })}
-                    className="w-4 h-4 rounded border-gray-600 text-[#00ff88] focus:ring-[#00ff88] bg-black/40 cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-600 text-[#00ff88] focus:ring-[#00ff88] bg-black/40 cursor-pointer accent-[#00ff88] flex-shrink-0"
                   />
                   <span className="text-xs text-gray-300 font-medium">
                     I agree to the{' '}
-                    <a href="/terms.html" target="_blank" className="text-[#38bdf8] underline font-semibold hover:text-[#7dd3fc]">
+                    <a href="/terms.html" target="_blank" className="text-[#00ff88] underline underline-offset-2 font-semibold hover:text-white transition-colors">
                       Terms & Conditions
                     </a>{' '}
                     and{' '}
-                    <a href="/privacy-policy.html" target="_blank" className="text-[#38bdf8] underline font-semibold hover:text-[#7dd3fc]">
+                    <a href="/privacy-policy.html" target="_blank" className="text-[#00ff88] underline underline-offset-2 font-semibold hover:text-white transition-colors">
                       Privacy Policy
                     </a>
-                    .<span className="text-[#38bdf8] font-bold"> *</span>
+                    .<span className="text-[#00ff88] font-bold"> *</span>
                   </span>
                 </label>
                 {errors.agreeTerms && (
-                  <span className="text-[11px] text-red-400 mt-1.5 block">
+                  <span className="text-[11px] text-red-400 mt-1 block">
                     {errors.agreeTerms.message}
                   </span>
                 )}
