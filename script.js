@@ -1970,6 +1970,14 @@
             if (!firstInvalidField) firstInvalidField = document.getElementById('ref-link');
         }
 
+        // Terms & Conditions and Privacy Policy Agreement Validation *
+        const agreeTerms = document.getElementById('agree-terms');
+        if (agreeTerms && !agreeTerms.checked) {
+            showFieldError('agree-terms', 'err-agree-terms');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = agreeTerms;
+        }
+
         if (!isValid && firstInvalidField) {
             firstInvalidField.focus();
             firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -849,22 +849,27 @@
                             </div>
                             <span class="field-error-msg" id="err-file">File size exceeds max 50MB limit</span>
                         </div>
+
+                        <!-- TERMS & CONDITIONS CHECKBOX -->
+                        <div class="form-group full-width" style="margin-top: 12px; margin-bottom: 4px;">
+                            <label class="terms-checkbox-card" for="agree-terms">
+                                <input type="checkbox" id="agree-terms" name="agree_terms" class="terms-custom-checkbox" required
+                                    onchange="if(this.checked){ this.closest('.form-group')?.classList.remove('has-error'); const e = document.getElementById('err-agree-terms'); if(e) e.style.display='none'; }">
+                                <span class="terms-checkbox-label">
+                                    I agree to the <a href="terms.html" target="_blank" class="terms-link">Terms & Conditions</a> and <a href="privacy-policy.html" target="_blank" class="terms-link">Privacy Policy</a>.<span class="terms-required-star">*</span>
+                                </span>
+                            </label>
+                            <span class="field-error-msg" id="err-agree-terms" style="display: none; color: #ef4444; font-size: 12px; margin-top: 6px;">You must agree to the Terms & Conditions and Privacy Policy to proceed</span>
+                        </div>
                     </div>
 
                     <!-- ACTION BUTTONS ROW -->
-                    <div class="booking-actions-row" style="margin-top: 20px;">
+                    <div class="booking-actions-row" style="margin-top: 16px;">
                         <button type="button" onclick="handleBookingFormSubmit(event)"
                             class="btn-primary btn-large btn-sparkle" id="btn-book-slot-primary"
                             style="width:100%; cursor:pointer;">
                             <span id="btn-book-text">BOOK NOW ↗</span>
                         </button>
-                        <p class="terms-agreement-note"
-                            style="font-size: 12px; color: rgba(255, 255, 255, 0.6); text-align: center; margin-top: 12px;">
-                            By proceeding, you agree to our <a href="terms.html" target="_blank"
-                                style="color: var(--primary-emerald); text-decoration: underline;">Terms &
-                                Conditions</a> and <a href="privacy-policy.html" target="_blank"
-                                style="color: var(--primary-emerald); text-decoration: underline;">Privacy Policy</a>.
-                        </p>
                     </div>
 
                 </form>

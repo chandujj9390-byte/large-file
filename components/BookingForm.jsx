@@ -598,12 +598,44 @@ function BookingForm({ onSlotRequested, className = '' }) {
                   {...register('requirements', { required: 'Please enter your project requirements / notes.' })}
                   className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 focus:border-[#00ff88] focus:ring-1 focus:ring-[#00ff88] text-white text-sm outline-none placeholder-gray-600 transition-all resize-none"
                 />
+                {errors.requirements && (
+                  <span className="text-[11px] text-red-400 mt-1 block">
+                    {errors.requirements.message}
+                  </span>
+                )}
+              </div>
+
+              {/* Terms & Conditions Checkbox */}
+              <div className="pt-2">
+                <label className="flex items-center gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#00ff88]/30 transition-all cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    {...register('agreeTerms', { required: 'You must agree to the Terms & Conditions and Privacy Policy.' })}
+                    className="w-4 h-4 rounded border-gray-600 text-[#00ff88] focus:ring-[#00ff88] bg-black/40 cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-300 font-medium">
+                    I agree to the{' '}
+                    <a href="/terms.html" target="_blank" className="text-[#38bdf8] underline font-semibold hover:text-[#7dd3fc]">
+                      Terms & Conditions
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy-policy.html" target="_blank" className="text-[#38bdf8] underline font-semibold hover:text-[#7dd3fc]">
+                      Privacy Policy
+                    </a>
+                    .<span className="text-[#38bdf8] font-bold"> *</span>
+                  </span>
+                </label>
+                {errors.agreeTerms && (
+                  <span className="text-[11px] text-red-400 mt-1.5 block">
+                    {errors.agreeTerms.message}
+                  </span>
+                )}
               </div>
 
               {/* Step 1 CTA: Review Booking Details */}
               <button
                 type="submit"
-                className="w-full mt-3 py-4 px-6 rounded-xl font-extrabold text-xs uppercase tracking-widest bg-gradient-to-r from-[#00ff88] via-[#10b981] to-[#00cc6a] text-black hover:opacity-95 hover:shadow-[0_0_30px_rgba(0,255,136,0.4)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-2 py-4 px-6 rounded-xl font-extrabold text-xs uppercase tracking-widest bg-gradient-to-r from-[#00ff88] via-[#10b981] to-[#00cc6a] text-black hover:opacity-95 hover:shadow-[0_0_30px_rgba(0,255,136,0.4)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Review Booking Details</span>
                 <span className="text-base leading-none">→</span>
