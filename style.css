@@ -2384,7 +2384,7 @@ html.lenis body {
     font-weight: 800;
 }
 
-.form-group input,
+.form-group input:not([type="checkbox"]):not([type="radio"]),
 .form-group textarea,
 .form-select {
     width: 100%;
@@ -2399,7 +2399,7 @@ html.lenis body {
     transition: all 0.25s ease;
 }
 
-.form-group input:focus,
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus,
 .form-group textarea:focus,
 .form-select:focus {
     border-color: var(--primary-emerald);
@@ -5208,69 +5208,99 @@ html.lenis body {
 /* ==========================================================================
    BOOKING SYSTEM: MINIMAL THEMED TERMS & CONDITIONS CHECKBOX
    ========================================================================== */
+.form-group.terms-checkbox-group {
+    margin-top: 10px;
+    margin-bottom: 4px;
+    flex-direction: column;
+}
+
+.form-group label.terms-checkbox-card,
 .terms-checkbox-card {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    padding: 6px 2px;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-    user-select: none;
-    width: auto;
-    max-width: 100%;
-    box-sizing: border-box;
-    text-align: left;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    padding: 6px 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    cursor: pointer !important;
+    transition: opacity 0.2s ease !important;
+    user-select: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
+    text-transform: none !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: normal !important;
+    color: var(--text-secondary, #94a3b8) !important;
 }
 
 .terms-checkbox-card:hover {
     opacity: 0.95;
-    background: transparent;
-    border-color: transparent;
+    background: transparent !important;
 }
 
 .form-group.has-error .terms-checkbox-card {
-    border-color: transparent;
-    background: transparent;
+    border: none !important;
+    background: transparent !important;
 }
 
+.form-group label.terms-checkbox-card input[type="checkbox"],
+.form-group input.terms-custom-checkbox,
 .terms-custom-checkbox {
-    width: 17px;
-    height: 17px;
-    min-width: 17px;
-    accent-color: var(--primary-emerald, #00ff88);
-    cursor: pointer;
-    border-radius: 4px;
-    margin: 0;
-    flex-shrink: 0;
+    width: 18px !important;
+    min-width: 18px !important;
+    max-width: 18px !important;
+    height: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 4px !important;
+    accent-color: var(--primary-emerald, #00ff88) !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    display: inline-block !important;
 }
 
 .terms-checkbox-label {
-    font-size: 13px;
-    color: var(--text-secondary, #94a3b8);
-    font-weight: 500;
-    line-height: 1.4;
+    display: inline !important;
+    font-size: 13px !important;
+    color: var(--text-secondary, #94a3b8) !important;
+    font-weight: 500 !important;
+    line-height: 1.5 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    white-space: normal !important;
+    text-align: left !important;
 }
 
 .terms-link {
-    color: var(--primary-emerald, #00ff88);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    color: var(--primary-emerald, #00ff88) !important;
+    text-decoration: underline !important;
+    text-underline-offset: 3px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    transition: all 0.2s ease !important;
 }
 
 .terms-link:hover {
-    color: #ffffff;
-    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6) !important;
 }
 
 .terms-required-star {
-    color: var(--primary-emerald, #00ff88);
-    font-weight: 700;
-    margin-left: 2px;
+    color: var(--primary-emerald, #00ff88) !important;
+    font-weight: 700 !important;
+    margin-left: 2px !important;
 }
 
