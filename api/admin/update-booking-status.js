@@ -84,8 +84,8 @@ async function handleUpdateBookingStatus(reqData) {
     const bookingId = reqData.bookingId;
     const newStatus = reqData.status === 'Confirmed' ? 'Confirmed' : (reqData.status === 'Declined' ? 'Declined' : reqData.status);
 
-    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://yjgbzipdvhgdftxdlccx.supabase.co';
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_9fjwQtl2NjYC7OYLmy1pVw_oyc4ru2C';
+    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ggfehzscglkvxhgtfaon.supabase.co';
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_KL3MMlrvQalOwe7yIZySlw_alMVEl7C';
     let bookingData = null;
 
     try {
