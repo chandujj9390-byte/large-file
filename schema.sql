@@ -190,7 +190,8 @@ CREATE POLICY "Allow public update bookings" ON public.bookings FOR UPDATE USING
 DROP POLICY IF EXISTS "Allow public insert customers" ON public.customers;
 CREATE POLICY "Allow public insert customers" ON public.customers FOR INSERT WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow public select customers" ON public.customers FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public select customers" ON public.customers;
+CREATE POLICY "Allow public select customers" ON public.customers FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "Allow public insert patients" ON public.patients;
 CREATE POLICY "Allow public insert patients" ON public.patients FOR INSERT WITH CHECK (true);
