@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta name="google-site-verification" content="8tz13PPnFQFPUmgGHH1iUfHGxk0fAqbWeET0MNgCmR4">
     <title>Redirecting — ARNE Works</title>
     <script>
+        // Force HTTPS
+        if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            window.location.replace(window.location.href.replace('http:', 'https:'));
+        }
         // GitHub Pages SPA router redirect
         try {
             sessionStorage.redirect = location.href;
