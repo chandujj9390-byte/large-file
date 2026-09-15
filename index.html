@@ -829,8 +829,8 @@
 
                             <div class="form-group">
                                 <label for="est-budget">Estimated Budget <span class="req-star">*</span></label>
-                                <input type="text" id="est-budget" placeholder="" required>
-                                <span class="field-error-msg" id="err-est-budget">Estimated Budget is required</span>
+                                <input type="tel" id="est-budget" inputmode="numeric" pattern="[0-9]*" placeholder="Min ₹599" required>
+                                <span class="field-error-msg" id="err-est-budget">Estimated Budget must be ₹599 or above</span>
                             </div>
 
                             <div class="form-group">

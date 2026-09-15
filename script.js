@@ -1866,6 +1866,39 @@
             const files = dt.files;
             processFiles(Array.from(files));
         }, false);
+
+        // Enforce digits only for Estimated Budget input
+        const budgetInput = document.getElementById('est-budget');
+        if (budgetInput) {
+            budgetInput.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '');
+                const group = this.closest('.form-group');
+                const errEl = document.getElementById('err-est-budget');
+                const num = parseInt(this.value, 10);
+                if (!isNaN(num) && num >= 599) {
+                    if (group) group.classList.remove('has-error');
+                    if (errEl) errEl.style.display = 'none';
+                }
+            });
+
+            budgetInput.addEventListener('keypress', function (e) {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            budgetInput.addEventListener('paste', function (e) {
+                e.preventDefault();
+                const paste = (e.clipboardData || window.clipboardData).getData('text') || '';
+                const digits = paste.replace(/\D/g, '');
+                const start = this.selectionStart || 0;
+                const end = this.selectionEnd || 0;
+                const currentVal = this.value || '';
+                this.value = currentVal.substring(0, start) + digits + currentVal.substring(end);
+                this.setSelectionRange(start + digits.length, start + digits.length);
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        }
     });
 
     // Validation Engine
@@ -1954,10 +1987,16 @@
             if (!firstInvalidField) firstInvalidField = document.getElementById('pref-slot');
         }
 
-        // Estimated Budget Validation *
-        const estBudget = document.getElementById('est-budget')?.value.trim();
-        if (!estBudget) {
-            showFieldError('est-budget', 'err-est-budget');
+        // Estimated Budget Validation * (Must be numeric and ₹599 or above)
+        const estBudgetRaw = document.getElementById('est-budget')?.value.trim();
+        const estBudgetDigits = estBudgetRaw ? estBudgetRaw.replace(/\D/g, '') : '';
+        const estBudgetNum = parseInt(estBudgetDigits, 10);
+        if (!estBudgetDigits) {
+            showFieldError('est-budget', 'err-est-budget', 'Estimated Budget is required (Min ₹599)');
+            isValid = false;
+            if (!firstInvalidField) firstInvalidField = document.getElementById('est-budget');
+        } else if (isNaN(estBudgetNum) || estBudgetNum < 599) {
+            showFieldError('est-budget', 'err-est-budget', 'Estimated Budget must be ₹599 or above');
             isValid = false;
             if (!firstInvalidField) firstInvalidField = document.getElementById('est-budget');
         }
@@ -1986,13 +2025,16 @@
         return isValid;
     }
 
-    function showFieldError(inputId, errMsgId) {
+    function showFieldError(inputId, errMsgId, customMsg) {
         const input = document.getElementById(inputId);
         const group = input?.closest('.form-group');
         const errEl = errMsgId ? document.getElementById(errMsgId) : null;
 
         if (group) group.classList.add('has-error');
-        if (errEl) errEl.style.display = 'block';
+        if (errEl) {
+            if (customMsg) errEl.textContent = customMsg;
+            errEl.style.display = 'block';
+        }
     }
 
     // Submit Handling: Validate, Save Booking, Trigger Server Notifications, and Open Contact Options (WhatsApp + Gmail)
