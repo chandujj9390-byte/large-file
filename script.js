@@ -3978,9 +3978,10 @@
             const num = String(idx + 1).padStart(3, '0');
             return [
                 `frame1/ezgif-frame-${num}.png`,
-                `public/frame1/ezgif-frame-${num}.png`,
+                `/frame1/ezgif-frame-${num}.png`,
                 `./frame1/ezgif-frame-${num}.png`,
-                `./public/frame1/ezgif-frame-${num}.png`,
+                `public/frame1/ezgif-frame-${num}.png`,
+                `/public/frame1/ezgif-frame-${num}.png`,
                 `https://ggfehzscglkvxhgtfaon.supabase.co/storage/v1/object/public/hero-frames/ezgif-frame-${num}.png`
             ];
         }
